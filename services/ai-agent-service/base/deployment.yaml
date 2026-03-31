@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: ai-agent-service
+          name: ai-agent-service
+          ports:
+            - containerPort: 8000
+          command:
+            - sh
+            - -c
+            - "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
+          envFrom:
+            - configMapRef:
+                name: ai-agent-config
+            - secretRef:
+                name: ai-agent-secret
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5

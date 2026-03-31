@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: instagram-gateway-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: instagram-gateway-service
+          name: instagram-gateway-service
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: instagram-gateway-config
+            - secretRef:
+                name: instagram-gateway-secret
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import httpx; httpx.get('http://localhost:8080/health', timeout=5)"
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import httpx; httpx.get('http://localhost:8080/health', timeout=5)"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5

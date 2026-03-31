@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: control-plane-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: control-plane-service
+          name: control-plane-service
+          envFrom:
+            - configMapRef:
+                name: control-plane-config
+            - secretRef:
+                name: control-plane-secret
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - import httpx; httpx.get('http://localhost:8000/health', timeout=5)
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10

@@ -1,0 +1,14 @@
+resources:
+- ../base
+
+namespace: prod
+
+configMapGenerator:
+- name: control-plane-config
+  env: config.properties
+- name: postgres-config
+  env: postgres.properties
+
+secretGenerator:
+- name: control-plane-secret
+  env: secrets.properties

@@ -1,0 +1,11 @@
+resources:
+- ../base
+
+namespace: prod
+
+configMapGenerator:
+- envs:
+  - config.properties
+  name: telegram-gateway-config
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization

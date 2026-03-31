@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegram-gateway-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: telegram-gateway-service
+          name: telegram-gateway-service
+          envFrom:
+            - configMapRef:
+                name: telegram-gateway-config
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - import httpx; httpx.get('http://localhost:8080/health', timeout=5)
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chota-gateway
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: krakend:2.9
+          name: chota-gateway
+          command: ["krakend", "run", "-c", "/etc/krakend/krakend.json"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: krakend-config
+              mountPath: /etc/krakend/krakend.json
+              subPath: krakend.json
+              readOnly: true
+            - name: krakend-jwk
+              mountPath: /etc/krakend/krakend-jwk.json
+              subPath: krakend-jwk.json
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /__health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /__health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+      volumes:
+        - name: krakend-config
+          configMap:
+            name: krakend-config
+        - name: krakend-jwk
+          configMap:
+            name: krakend-jwk

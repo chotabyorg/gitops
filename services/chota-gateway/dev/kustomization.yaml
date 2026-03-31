@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+namespace: dev
+configMapGenerator:
+  - name: krakend-config
+    files:
+      - krakend.json
+  - name: krakend-jwk
+    files:
+      - krakend-jwk.json
