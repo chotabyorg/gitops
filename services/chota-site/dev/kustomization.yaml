@@ -3,6 +3,10 @@ kind: Kustomization
 resources:
   - ../base
 namespace: dev
+images:
+  - name: chota-site
+    newName: ghcr.io/chotabyorg/chota-site
+    newTag: latest
 configMapGenerator:
   - name: chota-site-config
     env: config.properties

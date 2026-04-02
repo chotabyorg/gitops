@@ -152,22 +152,28 @@ For production, consider using [Sealed Secrets](https://github.com/bitnami-labs/
 
 ### Images
 
-Base deployments use generic image names (e.g., `user-service`). To use images from a registry, override with kustomize image transformers:
-
-```bash
-kustomize build services/user-service/dev \
-  --enable-alpha-plugins \
-  | sed 's|image: user-service|image: ghcr.io/chotabyorg/user-service:latest|' \
-  | kubectl apply -f -
-```
-
-Or add an `images` block to each overlay's `kustomization.yaml`:
+Base deployments use generic image names (e.g., `user-service`). Each overlay already has an `images:` block in `kustomization.yaml` that overrides the image to GHCR:
 
 ```yaml
 images:
   - name: user-service
     newName: ghcr.io/chotabyorg/user-service
-    newTag: v1.0.0
+    newTag: latest
+```
+
+The `newTag` defaults to `latest`. CI pipelines or Argo CD Image Updater will update `newTag` to the actual image digest (e.g., a git SHA).
+
+To manually override for a one-off deploy:
+
+```bash
+kustomize build services/user-service/dev | kubectl apply -f -
+```
+
+Or update the tag directly:
+
+```bash
+cd services/user-service/dev
+kustomize edit set image ghcr.io/chotabyorg/user-service:abc1234
 ```
 
 ### KrakenD gateway

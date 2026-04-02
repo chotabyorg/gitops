@@ -3,6 +3,11 @@ resources:
 
 namespace: prod
 
+images:
+  - name: control-plane-service
+    newName: ghcr.io/chotabyorg/control-plane-service
+    newTag: latest
+
 configMapGenerator:
 - name: control-plane-config
   env: config.properties

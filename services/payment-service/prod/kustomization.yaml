@@ -3,6 +3,10 @@ kind: Kustomization
 resources:
   - ../base
 namespace: prod
+images:
+  - name: payment-service
+    newName: ghcr.io/chotabyorg/payment-service
+    newTag: latest
 configMapGenerator:
   - name: payment-config
     env: config.properties
