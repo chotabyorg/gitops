@@ -8,10 +8,10 @@ Kubernetes manifests for the CHOTA platform, managed with [Kustomize](https://ku
 Internet
    |
    v
-Gateway API (nginx)              namespace: gateway
+Traefik Ingress (HTTP/HTTPS)         namespace: dev / prod
    |
    v
-KrakenD (chota-gateway)          namespace: dev / prod
+KrakenD (chota-gateway)              namespace: dev / prod
    |
    +---> user-service            + PostgreSQL 15
    +---> ai-agent-service        + PostgreSQL 15 + Redis 7
@@ -25,25 +25,27 @@ KrakenD (chota-gateway)          namespace: dev / prod
 
 ```
 gitops/
-├── gateway/                          # Gateway API resources
-│   ├── base/
-│   │   ├── gateway.yaml              # Gateway (HTTP :80)
-│   │   ├── httproute.yaml            # HTTPRoute → chota-gateway
-│   │   └── kustomization.yaml
-│   ├── dev/
-│   │   └── kustomization.yaml        # namespace: gateway
-│   └── prod/
-│       └── kustomization.yaml        # backendRefs → prod namespace
+├── cluster/                          # Cluster-wide resources
+│   ├── kustomization.yaml
+│   └── cluster-issuer.yaml          # Let's Encrypt issuer for TLS
 │
 └── services/
     ├── chota-gateway/                # KrakenD API gateway (official image)
+    │   ├── base/
+    │   │   ├── deployment.yaml
+    │   │   ├── service.yaml
+    │   │   └── ingress.yaml         # Ingress for chota.by + api.chota.by
+    │   ├── dev/
+    │   │   └── kustomization.yaml   # HTTP only
+    │   └── prod/
+    │       └── kustomization.yaml   # HTTPS with TLS
     ├── user-service/                 # Auth & user management
     ├── ai-agent-service/             # AI agents & LLM chat
-    ├── control-plane-service/        # Integration lifecycle
-    ├── instagram-gateway-service/    # Instagram webhook handler
-    ├── payment-service/              # bePaid payments
-    ├── chota-site/                   # Next.js frontend
-    └── telegram-gateway-service/     # Telegram bot gateway
+    ├── control-plane-service/       # Integration lifecycle
+    ├── instagram-gateway-service/   # Instagram webhook handler
+    ├── payment-service/             # bePaid payments
+    ├── chota-site/                  # Next.js frontend
+    └── telegram-gateway-service/    # Telegram bot gateway
 ```
 
 Each service follows the same layout:
@@ -84,8 +86,9 @@ Each service follows the same layout:
 
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) (v5+)
-- A Kubernetes cluster with [Gateway API](https://gateway-api.sigs.k8s.io/) CRDs installed
-- A Gateway API implementation (e.g., nginx-gateway-fabric, Istio, Cilium)
+- A Kubernetes cluster with:
+  - [Traefik](https://traefik.io/traefik/) as the ingress controller (default in k3s)
+  - [cert-manager](https://cert-manager.io/) for TLS certificates
 
 ### Build and preview
 
@@ -109,14 +112,12 @@ done
 # Create namespaces
 kubectl create namespace dev
 kubectl create namespace prod
-kubectl create namespace gateway
 
-# Label namespaces for Gateway access
-kubectl label namespace dev gateway-access=true
-kubectl label namespace prod gateway-access=true
+# Deploy cluster-wide resources (cert-manager issuer)
+kustomize build cluster/ | kubectl apply -f -
 
-# Deploy gateway
-kustomize build gateway/dev | kubectl apply -f -
+# Install cert-manager if not already installed
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.0/cert-manager.yaml
 
 # Deploy services (order matters for first deploy)
 kustomize build services/chota-gateway/dev | kubectl apply -f -
@@ -185,15 +186,14 @@ cp krakend-jwk.json gitops/services/chota-gateway/dev/
 cp krakend-jwk.json gitops/services/chota-gateway/prod/
 ```
 
-### Gateway API
+### Ingress + TLS
 
-The `gateway/` directory defines a shared `Gateway` resource and `HTTPRoute` that routes traffic for `chota.by` and `api.chota.by` to the KrakenD service.
+The `chota-gateway` service includes an Ingress resource that exposes `chota.by` and `api.chota.by` via Traefik.
 
-The `gatewayClassName` defaults to `nginx`. Change it in `gateway/base/gateway.yaml` to match your cluster's Gateway API implementation:
+- **Dev**: HTTP only (no TLS)
+- **Prod**: HTTPS with automatic TLS via cert-manager and Let's Encrypt
 
-- `nginx` — [nginx-gateway-fabric](https://github.com/nginx/nginx-gateway-fabric)
-- `istio` — [Istio](https://istio.io/)
-- `cilium` — [Cilium](https://cilium.io/)
+The `cluster/` directory contains the `ClusterIssuer` that cert-manager uses to provision certificates.
 
 ## Adding a new service
 

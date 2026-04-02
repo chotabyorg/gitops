@@ -10,3 +10,20 @@ configMapGenerator:
   - name: krakend-jwk
     files:
       - krakend-jwk.json
+patches:
+  - patch: |
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: chota-gateway
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+      spec:
+        tls:
+          - hosts:
+              - chota.by
+              - api.chota.by
+            secretName: chota-tls
+    target:
+      kind: Ingress
+      name: chota-gateway
