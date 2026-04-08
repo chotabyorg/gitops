@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../base
+  - sealed-secrets.yaml
 namespace: prod
 images:
   - name: instagram-gateway-service
@@ -10,6 +11,3 @@ images:
 configMapGenerator:
   - name: instagram-gateway-config
     env: config.properties
-secretGenerator:
-  - name: instagram-gateway-secret
-    env: secrets.properties

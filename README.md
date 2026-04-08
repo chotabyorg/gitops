@@ -59,9 +59,10 @@ Each service follows the same layout:
 │   ├── postgres-*.yaml    # (if applicable)
 │   └── redis-*.yaml       # (if applicable)
 ├── dev/
-│   ├── kustomization.yaml # namespace: dev, configMapGenerator, secretGenerator
+│   ├── kustomization.yaml # namespace: dev, configMapGenerator
+│   ├── sealed-secrets.yaml # Committed (kubeseal generated)
+│   ├── secrets.yaml.template # Template for secrets.yaml
 │   ├── config.properties  # Non-sensitive env vars
-│   ├── secrets.properties # Sensitive env vars
 │   └── postgres.properties# (if applicable)
 └── prod/
     └── ...                # Same structure, production values
@@ -141,14 +142,38 @@ Each service splits config into two files:
 
 Kustomize turns these into ConfigMaps and Secrets via `configMapGenerator` / `secretGenerator`, which are then referenced in the Deployment via `envFrom`.
 
-### Secrets
 
-All `secrets.properties` files contain **placeholder values**. Before deploying:
+### Sealed Secrets Workflow
 
-1. Replace `changeme` with real values
-2. Never commit real secrets to this repository
+This repository uses [SealedSecrets](https://github.com/bitnami-labs/sealed-secrets) to manage secrets safely in Git.
 
-For production, consider using [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) or [External Secrets Operator](https://external-secrets.io/) instead of plain `secretGenerator`.
+**Workflow:**
+
+1. **Create a template:**
+   ```bash
+   cp secrets.yaml.template secrets.yaml
+   ```
+
+2. **Fill in the secret manifest:**
+   Edit `secrets.yaml` with your actual secret values:
+   ```yaml
+   apiVersion: v1
+   kind: Secret
+   type: Opaque
+   metadata:
+     name: user-service-secret
+     namespace: dev
+   data:
+     POSTGRES_PASSWORD: cGFzc3dvcmQ=
+     SECRET_KEY: c2VjcmV0a2V5
+   ```
+   (Use `echo -n "value" | base64` to encode values)
+
+3. **Seal the secret:**
+   ```bash
+   kubeseal --format yaml -- sealed-secrets.yaml < secrets.yaml
+   ```
+**Note:** `secrets.yaml` is in `.gitignore` and should never be committed.
 
 ### Images
 
