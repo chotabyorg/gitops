@@ -12,6 +12,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: telegram-gateway-config
+            - secretRef:
+                name: telegram-gateway-secret
           livenessProbe:
             exec:
               command:

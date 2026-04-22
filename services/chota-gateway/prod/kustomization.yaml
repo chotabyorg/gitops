@@ -1,29 +1,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - sealed-secrets.yaml
   - ../base
 namespace: prod
+images:
+  - name: krakend
+    newName: krakend/krakend
+    newTag: "2.13.3"
 configMapGenerator:
   - name: krakend-config
     files:
       - krakend.json
-  - name: krakend-jwk
-    files:
-      - krakend-jwk.json
-patches:
-  - patch: |
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: chota-gateway
-        annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-prod
-      spec:
-        tls:
-          - hosts:
-              - chota.by
-              - api.chota.by
-            secretName: chota-tls
-    target:
-      kind: Ingress
-      name: chota-gateway
