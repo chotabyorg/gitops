@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscription-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: subscription-service
+          name: subscription-service
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: subscription-config
+            - secretRef:
+                name: subscription-secret
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5

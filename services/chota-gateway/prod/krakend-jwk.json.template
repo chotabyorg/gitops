@@ -1,0 +1,11 @@
+{
+  "keys": [
+    {
+      "kty": "oct",
+      "k": "REPLACE_WITH_BASE64URL_ENCODED_SECRET_KEY",
+      "alg": "HS256",
+      "use": "sig",
+      "kid": "public-signing-key"
+    }
+  ]
+}
