@@ -6,6 +6,8 @@ spec:
   replicas: 1
   template:
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - image: user-service
           name: user-service

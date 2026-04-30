@@ -6,6 +6,8 @@ spec:
   replicas: 1
   template:
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - image: instagram-gateway-service
           name: instagram-gateway-service

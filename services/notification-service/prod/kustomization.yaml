@@ -11,5 +11,5 @@ images:
 configMapGenerator:
   - name: notification-config
     env: config.properties
-  - name: postgres-config
+  - name: notification-service-postgres-config
     env: postgres.properties

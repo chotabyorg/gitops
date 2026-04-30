@@ -11,5 +11,5 @@ images:
 configMapGenerator:
   - name: ai-agent-config
     env: config.properties
-  - name: postgres-config
+  - name: ai-agent-service-postgres-config
     env: postgres.properties

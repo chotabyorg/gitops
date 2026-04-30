@@ -11,5 +11,5 @@ images:
 configMapGenerator:
   - name: user-service-config
     env: config.properties
-  - name: postgres-config
+  - name: user-service-postgres-config
     env: postgres.properties

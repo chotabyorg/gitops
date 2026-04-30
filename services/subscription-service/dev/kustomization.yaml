@@ -11,5 +11,5 @@ images:
 configMapGenerator:
   - name: subscription-config
     env: config.properties
-  - name: postgres-config
+  - name: subscription-service-postgres-config
     env: postgres.properties

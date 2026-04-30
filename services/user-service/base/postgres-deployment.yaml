@@ -16,7 +16,7 @@ spec:
               mountPath: /var/lib/postgresql/data
           envFrom:
             - configMapRef:
-                name: postgres-config
+                name: user-service-postgres-config
             - secretRef:
                 name: user-service-secret
           livenessProbe:
@@ -32,4 +32,4 @@ spec:
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
-            claimName: postgres-data
+            claimName: user-service-postgres-data

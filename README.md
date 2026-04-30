@@ -30,8 +30,8 @@ gitops/
 ├── .github/workflows/
 │   └── reusable-deploy.yaml       # Reusable workflow for CI/CD
 ├── platform/
-│   ├── cloudflare-tunnel/        # Cloudflare tunnel for ingress
-│   └── monitoring/                # Prometheus, Grafana, Loki, Promtail
+│   ├── argocd/                    # ArgoCD Application manifests
+│   └── cloudflare-tunnel/        # Cloudflare tunnel for ingress
 └── services/
     ├── chota-gateway/            # KrakenD API gateway (official image)
     │   ├── base/

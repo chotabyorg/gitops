@@ -1,5 +1,6 @@
 resources:
   - ../base
+  - sealed-secrets.yaml
 namespace: prod
 images:
   - name: telegram-gateway-service

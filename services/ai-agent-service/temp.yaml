@@ -1,0 +1,1 @@
+kubeseal --recovery-unseal --recovery-private-key ../../../../secrets/main.key

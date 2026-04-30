@@ -12,5 +12,5 @@ images:
 configMapGenerator:
 - name: control-plane-config
   env: config.properties
-- name: postgres-config
+- name: control-plane-service-postgres-config
   env: postgres.properties

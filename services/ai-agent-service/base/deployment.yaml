@@ -6,6 +6,8 @@ spec:
   replicas: 1
   template:
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - image: ai-agent-service
           name: ai-agent-service

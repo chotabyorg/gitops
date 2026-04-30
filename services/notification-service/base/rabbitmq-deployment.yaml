@@ -40,4 +40,4 @@ spec:
       volumes:
         - name: rabbitmq-data
           persistentVolumeClaim:
-            claimName: rabbitmq-data
+            claimName: notification-service-rabbitmq-data

@@ -6,9 +6,13 @@ spec:
   replicas: 1
   template:
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - image: control-plane-service
           name: control-plane-service
+          ports:
+            - containerPort: 8000
           envFrom:
             - configMapRef:
                 name: control-plane-config

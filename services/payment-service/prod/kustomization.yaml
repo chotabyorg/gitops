@@ -11,5 +11,5 @@ images:
 configMapGenerator:
   - name: payment-config
     env: config.properties
-  - name: postgres-config
+  - name: payment-service-postgres-config
     env: postgres.properties
