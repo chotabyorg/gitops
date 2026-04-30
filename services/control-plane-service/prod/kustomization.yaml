@@ -1,16 +1,13 @@
 resources:
   - ../base
   - sealed-secrets.yaml
-
 namespace: prod
-
 images:
   - name: control-plane-service
     newName: ghcr.io/chotabyorg/control-plane-service
-    newTag: latest
-
+    newTag: 7f92a00
 configMapGenerator:
-- name: control-plane-config
-  env: config.properties
-- name: postgres-config
-  env: postgres.properties
+  - name: control-plane-config
+    env: config.properties
+  - name: postgres-config
+    env: postgres.properties
