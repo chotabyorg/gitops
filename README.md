@@ -96,6 +96,93 @@ Each service repository has a `.github/workflows/deploy.yaml` that:
 
 The reusable workflow is at `.github/workflows/reusable-deploy.yaml`.
 
+## ArgoCD Deployment
+
+ArgoCD watches this repository and continuously syncs manifests to the cluster. There is no separate `kubectl apply` step in the pipeline — once CI updates the image tag, ArgoCD picks up the change within 3 minutes (default polling interval) and reconciles the cluster.
+
+### ApplicationSet (prod services)
+
+All prod services are managed by a single [`ApplicationSet`](platform/argocd/prod.yaml) that auto-discovers `services/*/prod` directories:
+
+```yaml
+# platform/argocd/prod.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: prod-services
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: git@github.com:chotabyorg/gitops.git
+        revision: main
+        directories:
+          - path: "services/*/prod"
+          - path: "services/payment-service/prod"
+            exclude: true
+  template:
+    spec:
+      source:
+        path: "{{path}}"
+      destination:
+        namespace: prod
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+```
+
+**Key behavior:**
+- Each `services/<name>/prod` directory becomes an ArgoCD Application named `<name>-prod`
+- Sync is **automated** — no manual intervention needed
+- `selfHeal: true` — any manual cluster changes are reverted to match Git
+- `prune: true` — resources removed from Git are deleted from the cluster
+- `CreateNamespace=true` — the `prod` namespace is created automatically
+- New services are **auto-discovered** — just create `services/<name>/prod/` and ArgoCD picks it up
+- To exclude a service, add an explicit exclude entry (see `payment-service` above)
+
+### Platform Applications
+
+Additional Applications manage platform-level resources:
+
+| Application | Source Path | Namespace |
+|-------------|-------------|-----------|
+| `cloudflare-tunnel` | `platform/cloudflare-tunnel` | `default` |
+
+### Repo Credentials
+
+ArgoCD needs an SSH key to access this private repository. The credential is managed as a SealedSecret in [`platform/argocd/sealed-secrets.yaml`](platform/argocd/sealed-secrets.yaml):
+
+```bash
+# Set up the ArgoCD repo credential
+cp platform/argocd/secrets.yaml.template platform/argocd/secrets.yaml
+# Fill in the SSH private key in secrets.yaml
+kubeseal --format yaml < platform/argocd/secrets.yaml > platform/argocd/sealed-secrets.yaml
+rm platform/argocd/secrets.yaml
+
+# Apply the SealedSecret and the ApplicationSet
+kustomize build --enable-alpha-plugins platform/argocd/prod.yaml
+# or apply directly:
+kubectl apply -f platform/argocd/sealed-secrets.yaml
+kubectl apply -f platform/argocd/prod.yaml
+kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
+```
+
+### Bootstrapping a fresh cluster
+
+```bash
+# 1. Install ArgoCD and Sealed Secrets controller
+# 2. Apply the repo credential SealedSecret
+kubectl apply -f platform/argocd/sealed-secrets.yaml
+# 3. Apply ArgoCD Applications (they pull everything else)
+kubectl apply -f platform/argocd/prod.yaml
+kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
+```
+
+After bootstrap, ArgoCD self-manages — all subsequent changes go through git.
+
 ## Usage
 
 ### Prerequisites
@@ -103,6 +190,7 @@ The reusable workflow is at `.github/workflows/reusable-deploy.yaml`.
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/) (v5+)
 - A Kubernetes cluster with:
+  - [ArgoCD](https://argo-cd.readthedocs.io/) (primary deployment mechanism)
   - [Sealed Secrets controller](https://github.com/bitnami-labs/sealed-secrets)
 
 ### Build and preview
@@ -118,7 +206,9 @@ for svc in services/*/prod; do
 done
 ```
 
-### Deploy manually
+### Deploy manually (without ArgoCD)
+
+ArgoCD is the primary deployment mechanism (see [ArgoCD Deployment](#argocd-deployment) above). Manual `kubectl apply` is useful for local testing or debugging:
 
 ```bash
 # Create namespaces
@@ -228,6 +318,8 @@ The platform uses a Cloudflare Tunnel for external access, configured in `platfo
    ```bash
    kustomize build services/my-service/prod
    ```
+
+6. ArgoCD will auto-discover the new service once the directory is pushed to `main`. No additional ArgoCD Application registration is needed.
 
 ## Troubleshooting
 

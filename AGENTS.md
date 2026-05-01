@@ -1,12 +1,13 @@
 # AGENTS.md — CHOTA GitOps
 
-Kubernetes manifests for the CHOTA platform. Managed with Kustomize (v5+). No application code lives here.
+Kubernetes manifests for the CHOTA platform. Managed with Kustomize (v5+) and deployed via ArgoCD. No application code lives here.
 
 ## Repository boundaries
 
 - **This repo** = GitOps config only (Kustomize overlays)
 - **Service source code** = separate repositories under `ghcr.io/chotabyorg/<service>`
 - **CI** = each service repo calls `.github/workflows/reusable-deploy.yaml` in this repo
+- **Deployment** = ArgoCD watches this repo and auto-syncs to the cluster (no manual `kubectl apply`)
 
 ## Verification
 
@@ -22,6 +23,68 @@ kustomize build services/<service>/prod | kubectl diff -f -
 ```
 
 There are no tests, lint, or typecheck steps. `kustomize build` is the only verification.
+
+## ArgoCD
+
+ArgoCD is the sole deployment mechanism. The repository contains `Application` and `ApplicationSet` manifests in `platform/argocd/`.
+
+### ApplicationSet (prod services)
+
+[`platform/argocd/prod.yaml`](platform/argocd/prod.yaml) uses a git directory generator to auto-discover all `services/*/prod` paths and create an ArgoCD Application for each:
+
+- **Auto-discovery** — new services are picked up automatically when a `services/<name>/prod/` directory appears on `main`
+- **Automated sync** — no manual sync needed; ArgoCD reconciles within 3 minutes of a git change
+- **selfHeal: true** — any drift from git is auto-corrected
+- **prune: true** — resources removed from git are deleted from the cluster
+- **Exclusion** — services can be excluded by adding a entries to the `directories` list with `exclude: true` (see `payment-service`)
+
+### Platform Applications
+
+| Application | Source | Namespace |
+|-------------|--------|-----------|
+| `cloudflare-tunnel` | `platform/cloudflare-tunnel` | `default` |
+
+### Repo Credential
+
+The ArgoCD repo credential (SSH key) is stored as a SealedSecret in `platform/argocd/sealed-secrets.yaml` with the label `argocd.argoproj.io/secret-type: repository`. The template is at `platform/argocd/secrets.yaml.template`.
+
+### Bootstrapping
+
+On a fresh cluster, apply the platform-level ArgoCD manifests first, then ArgoCD syncs everything else:
+
+```bash
+kubectl apply -f platform/argocd/sealed-secrets.yaml
+kubectl apply -f platform/argocd/prod.yaml
+kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
+```
+
+### Sync flow
+
+```
+Service CI pushes Docker image to GHCR
+  → updates newTag in services/<service>/prod/kustomization.yaml
+  → pushes to this repo
+  → ArgoCD detects the git change (polling every 3 minutes)
+  → ArgoCD renders the Kustomize overlay (kustomize build under the hood)
+  → ArgoCD applies the diff to the cluster
+```
+
+### Debugging sync issues
+
+```bash
+# Check ArgoCD app status
+argocd app list
+argocd app get <app-name>
+
+# Trigger immediate refresh
+argocd app get <app-name> --refresh
+
+# View diff between git and cluster
+argocd app diff <app-name>
+
+# Force sync
+argocd app sync <app-name>
+```
 
 ## Service overlay pattern
 
@@ -80,3 +143,4 @@ rm services/<service>/prod/secrets.yaml
 4. Add `config.properties` and `secrets.yaml.template` to each overlay
 5. Generate `sealed-secrets.yaml` for prod
 6. Validate: `kustomize build services/<name>/prod`
+7. Push to `main` — ArgoCD auto-discovers the new directory (no app registration needed)
