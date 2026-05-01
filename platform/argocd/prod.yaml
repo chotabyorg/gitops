@@ -10,6 +10,8 @@ spec:
         revision: main
         directories:
           - path: "services/*/prod"
+          - path: "services/payment-service/prod"
+            exclude: true
   template:
     metadata:
       name: "{{path[1]}}-prod"
