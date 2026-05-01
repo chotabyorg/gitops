@@ -6,7 +6,6 @@ resources:
 namespace: prod
 images:
   - name: krakend
-    newName: krakend/krakend
     newTag: "2.13.3"
 configMapGenerator:
   - name: krakend-config

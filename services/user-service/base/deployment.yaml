@@ -23,7 +23,7 @@ spec:
               command:
                 - python
                 - -c
-                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/docs', timeout=3)"
             initialDelaySeconds: 15
             periodSeconds: 30
             timeoutSeconds: 10
@@ -33,7 +33,7 @@ spec:
               command:
                 - python
                 - -c
-                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/docs', timeout=3)"
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5

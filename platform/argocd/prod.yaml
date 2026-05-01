@@ -12,7 +12,7 @@ spec:
           - path: "services/*/prod"
   template:
     metadata:
-      name: "{{path.basename}}-prod"
+      name: "{{path[1]}}-prod"
     spec:
       project: default
       source:
