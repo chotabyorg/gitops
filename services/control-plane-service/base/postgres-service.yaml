@@ -8,3 +8,4 @@ spec:
       targetPort: 5432
   selector:
     app: control-plane-service
+    component: postgres
