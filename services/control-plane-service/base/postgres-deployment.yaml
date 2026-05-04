@@ -10,7 +10,7 @@ spec:
         component: postgres
     spec:
       containers:
-        - image: postgres:15-alpine
+        - image: postgres:18-alpine
           name: postgres
           volumeMounts:
             - name: postgres-data

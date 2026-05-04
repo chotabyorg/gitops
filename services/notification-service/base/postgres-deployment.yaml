@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       containers:
-        - image: postgres:15-alpine
+        - image: postgres:18-alpine
           name: postgres
           ports:
             - containerPort: 5432
