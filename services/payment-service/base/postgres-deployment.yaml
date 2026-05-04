@@ -13,7 +13,7 @@ spec:
             - containerPort: 5432
           volumeMounts:
             - name: postgres-data
-              mountPath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql
           envFrom:
             - configMapRef:
                 name: payment-service-postgres-config
