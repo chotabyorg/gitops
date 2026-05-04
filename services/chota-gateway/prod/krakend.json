@@ -42,7 +42,7 @@
           "url_pattern": "/api/v1/auth/login",
           "method": "POST",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -60,7 +60,7 @@
           "url_pattern": "/api/v1/auth/register",
           "method": "POST",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -78,7 +78,7 @@
           "url_pattern": "/api/v1/auth/refresh",
           "method": "POST",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -96,7 +96,108 @@
           "url_pattern": "/api/v1/auth/logout",
           "method": "POST",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/email-verification/confirm",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type"
+      ],
+      "input_query_strings": [
+        "token"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/auth/email-verification/confirm",
+          "method": "GET",
+          "host": [
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/email-verification/confirm-by-code",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/auth/email-verification/confirm-by-code",
+          "method": "POST",
+          "host": [
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/email-verification/resend",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/v1/auth/email-verification/resend",
+          "method": "POST",
+          "host": [
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/email-verification/status",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/v1/auth/email-verification/status",
+          "method": "GET",
+          "host": [
+            "http://user-service:8000"
           ]
         }
       ]
@@ -134,7 +235,7 @@
           "url_pattern": "/api/v1/invites",
           "method": "POST",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -151,7 +252,7 @@
           "url_pattern": "/v1/models",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -189,7 +290,7 @@
           "url_pattern": "/api/v1/me",
           "method": "GET",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -227,7 +328,7 @@
           "url_pattern": "/api/v1/me",
           "method": "PATCH",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -265,7 +366,7 @@
           "url_pattern": "/v1/chat/completions",
           "method": "POST",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -303,7 +404,7 @@
           "url_pattern": "/v1/agents/",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -341,7 +442,7 @@
           "url_pattern": "/v1/agents/",
           "method": "POST",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -379,7 +480,7 @@
           "url_pattern": "/v1/agents/{agent_id}",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -417,7 +518,7 @@
           "url_pattern": "/v1/agents/{agent_id}",
           "method": "PUT",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -455,7 +556,7 @@
           "url_pattern": "/v1/agents/{agent_id}",
           "method": "DELETE",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -493,7 +594,7 @@
           "url_pattern": "/v1/agents/{agent_id}/prompt-config",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -531,7 +632,7 @@
           "url_pattern": "/v1/agents/{agent_id}/prompt-config",
           "method": "PUT",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -572,7 +673,7 @@
           "url_pattern": "/v1/agents/{agent_id}/prompt-preview",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -610,7 +711,7 @@
           "url_pattern": "/v1/agents/{agent_id}/credentials",
           "method": "PUT",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -648,7 +749,7 @@
           "url_pattern": "/v1/agents/{agent_id}/credentials",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -686,7 +787,7 @@
           "url_pattern": "/v1/agents/{agent_id}/credentials/{service_name}",
           "method": "DELETE",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -724,7 +825,7 @@
           "url_pattern": "/v1/agents/{agent_id}/tools/{service_name}",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -762,7 +863,121 @@
           "url_pattern": "/v1/agents/{agent_id}/tools/{service_name}",
           "method": "PUT",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/openrouter-key",
+      "method": "PUT",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/openrouter-key",
+          "method": "PUT",
+          "host": [
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/openrouter-key",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/openrouter-key",
+          "method": "GET",
+          "host": [
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/openrouter-key",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/openrouter-key",
+          "method": "DELETE",
+          "host": [
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -800,7 +1015,7 @@
           "url_pattern": "/api/v1/users/{user_id}",
           "method": "GET",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -838,7 +1053,7 @@
           "url_pattern": "/api/v1/users/{user_id}",
           "method": "PATCH",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -876,7 +1091,7 @@
           "url_pattern": "/api/v1/users/{user_id}",
           "method": "DELETE",
           "host": [
-            "http://user-service"
+            "http://user-service:8000"
           ]
         }
       ]
@@ -914,7 +1129,7 @@
           "url_pattern": "/v1/mcp-services",
           "method": "GET",
           "host": [
-            "http://ai-agent-service"
+            "http://ai-agent-service:8000"
           ]
         }
       ]
@@ -952,7 +1167,7 @@
           "url_pattern": "/v1/integrations/",
           "method": "POST",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -995,7 +1210,7 @@
           "url_pattern": "/v1/integrations/",
           "method": "GET",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1033,7 +1248,7 @@
           "url_pattern": "/v1/integrations/{id}",
           "method": "GET",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1071,7 +1286,7 @@
           "url_pattern": "/v1/integrations/{id}/activate",
           "method": "POST",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1109,7 +1324,7 @@
           "url_pattern": "/v1/integrations/{id}/deactivate",
           "method": "POST",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1147,7 +1362,7 @@
           "url_pattern": "/v1/integrations/{id}",
           "method": "DELETE",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1188,7 +1403,7 @@
           "url_pattern": "/v1/instagram/auth",
           "method": "GET",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1209,7 +1424,7 @@
           "url_pattern": "/v1/instagram/callback",
           "method": "GET",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1231,7 +1446,7 @@
           "url_pattern": "/webhooks",
           "method": "GET",
           "host": [
-            "http://instagram-gateway-service"
+            "http://instagram-gateway-service:8080"
           ]
         }
       ]
@@ -1249,7 +1464,7 @@
           "url_pattern": "/webhooks",
           "method": "POST",
           "host": [
-            "http://instagram-gateway-service"
+            "http://instagram-gateway-service:8080"
           ]
         }
       ]
@@ -1287,7 +1502,7 @@
           "url_pattern": "/v1/widget/create",
           "method": "POST",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1325,7 +1540,7 @@
           "url_pattern": "/v1/widget/{integration_id}/config",
           "method": "PUT",
           "host": [
-            "http://control-plane-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1363,234 +1578,7 @@
           "url_pattern": "/v1/widget/{integration_id}/embed",
           "method": "GET",
           "host": [
-            "http://control-plane-service"
-          ]
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/auth/email-verification/confirm",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "Content-Type"
-      ],
-      "input_query_strings": [
-        "token"
-      ],
-      "backend": [
-        {
-          "url_pattern": "/api/v1/auth/email-verification/confirm",
-          "method": "GET",
-          "host": [
-            "http://user-service"
-          ]
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/auth/email-verification/confirm-by-code",
-      "method": "POST",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "Content-Type"
-      ],
-      "backend": [
-        {
-          "url_pattern": "/api/v1/auth/email-verification/confirm-by-code",
-          "method": "POST",
-          "host": [
-            "http://user-service"
-          ]
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/auth/email-verification/resend",
-      "method": "POST",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "Content-Type",
-        "Cookie",
-        "X-User-Id",
-        "X-User-Role"
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "HS256",
-          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
-          "disable_jwk_security": true,
-          "cookie_key": "access_token",
-          "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
-          ]
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/auth/email-verification/resend",
-          "method": "POST",
-          "host": [
-            "http://user-service"
-          ]
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/auth/email-verification/status",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "Content-Type",
-        "Cookie",
-        "X-User-Id",
-        "X-User-Role"
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "HS256",
-          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
-          "disable_jwk_security": true,
-          "cookie_key": "access_token",
-          "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
-          ]
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/auth/email-verification/status",
-          "method": "GET",
-          "host": [
-            "http://user-service"
-          ]
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/agents/{agent_id}/openrouter-key",
-      "method": "PUT",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "Content-Type",
-        "Cookie",
-        "X-User-Id",
-        "X-User-Role"
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "HS256",
-          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
-          "disable_jwk_security": true,
-          "cookie_key": "access_token",
-          "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
-          ]
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/v1/agents/{agent_id}/openrouter-key",
-          "method": "PUT",
-          "host": [
-            "http://ai-agent-service"
-          ]
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/agents/{agent_id}/openrouter-key",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "Content-Type",
-        "Cookie",
-        "X-User-Id",
-        "X-User-Role"
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "HS256",
-          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
-          "disable_jwk_security": true,
-          "cookie_key": "access_token",
-          "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
-          ]
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/v1/agents/{agent_id}/openrouter-key",
-          "method": "GET",
-          "host": [
-            "http://ai-agent-service"
-          ]
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/agents/{agent_id}/openrouter-key",
-      "method": "DELETE",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "Content-Type",
-        "Cookie",
-        "X-User-Id",
-        "X-User-Role"
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "HS256",
-          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
-          "disable_jwk_security": true,
-          "cookie_key": "access_token",
-          "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
-          ]
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/v1/agents/{agent_id}/openrouter-key",
-          "method": "DELETE",
-          "host": [
-            "http://ai-agent-service"
+            "http://control-plane-service:8000"
           ]
         }
       ]
@@ -1607,7 +1595,7 @@
           "url_pattern": "/v1/plans",
           "method": "GET",
           "host": [
-            "http://subscription-service"
+            "http://subscription-service:8000"
           ]
         }
       ]
@@ -1645,7 +1633,7 @@
           "url_pattern": "/v1/subscriptions/me",
           "method": "GET",
           "host": [
-            "http://subscription-service"
+            "http://subscription-service:8000"
           ]
         }
       ]
@@ -1683,7 +1671,7 @@
           "url_pattern": "/v1/subscriptions/check",
           "method": "GET",
           "host": [
-            "http://subscription-service"
+            "http://subscription-service:8000"
           ]
         }
       ]
@@ -1721,7 +1709,7 @@
           "url_pattern": "/v1/subscriptions/limits",
           "method": "GET",
           "host": [
-            "http://subscription-service"
+            "http://subscription-service:8000"
           ]
         }
       ]
@@ -1759,7 +1747,7 @@
           "url_pattern": "/api/v1/payments/checkouts",
           "method": "POST",
           "host": [
-            "http://payment-service"
+            "http://payment-service:8000"
           ]
         }
       ]
@@ -1797,7 +1785,7 @@
           "url_pattern": "/api/v1/payments/checkouts/{token}",
           "method": "GET",
           "host": [
-            "http://payment-service"
+            "http://payment-service:8000"
           ]
         }
       ]
@@ -1835,7 +1823,7 @@
           "url_pattern": "/api/v1/payments/checkouts/{token}/redirect",
           "method": "GET",
           "host": [
-            "http://payment-service"
+            "http://payment-service:8000"
           ]
         }
       ]
