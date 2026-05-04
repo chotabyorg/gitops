@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: payment-service
     newName: ghcr.io/chotabyorg/payment-service
-    newTag: e5c4ab0
+    newTag: eef4a62
 configMapGenerator:
   - name: payment-config
     env: config.properties
