@@ -30,17 +30,6 @@ spec:
           name: notification-service
           ports:
             - containerPort: 8000
-          env:
-            - name: SENDPULSE_SMTP_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: notification-secret
-                  key: SMTP_USER
-            - name: SENDPULSE_SMTP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: notification-secret
-                  key: SMTP_PASS
           envFrom:
             - configMapRef:
                 name: notification-config
