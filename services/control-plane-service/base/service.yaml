@@ -8,3 +8,4 @@ spec:
       targetPort: 8000
   selector:
     app: control-plane-service
+    component: api
