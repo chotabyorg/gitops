@@ -13,3 +13,5 @@ configMapGenerator:
     env: config.properties
   - name: user-service-postgres-config
     env: postgres.properties
+patches:
+  - path: notification-api-key-env-patch.yaml

@@ -5,6 +5,9 @@ metadata:
 spec:
   replicas: 1
   template:
+    metadata:
+      labels:
+        component: redis
     spec:
       containers:
         - image: redis:7-alpine

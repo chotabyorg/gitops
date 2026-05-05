@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: user-service
+          env:
+            - name: NOTIFICATION_SERVICE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: notification-secret
+                  key: API_KEY
