@@ -11,6 +11,18 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-pull-secret
+      initContainers:
+        - image: ai-agent-service
+          name: ai-agent-migrations
+          command:
+            - alembic
+            - upgrade
+            - head
+          envFrom:
+            - configMapRef:
+                name: ai-agent-config
+            - secretRef:
+                name: ai-agent-secret
       containers:
         - image: ai-agent-service
           name: ai-agent-service
