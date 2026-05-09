@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: user-service
     newName: ghcr.io/chotabyorg/user-service
-    newTag: d843dda
+    newTag: b2229ee
 configMapGenerator:
   - name: user-service-config
     env: config.properties
