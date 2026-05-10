@@ -1827,6 +1827,301 @@
           ]
         }
       ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases",
+          "method": "POST",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "input_query_strings": [
+        "agent_id",
+        "status"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases",
+          "method": "GET",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases/{kb_id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases/{kb_id}",
+          "method": "GET",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases/{kb_id}",
+      "method": "PATCH",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases/{kb_id}",
+          "method": "PATCH",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases/{kb_id}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases/{kb_id}",
+          "method": "DELETE",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases/{kb_id}/documents",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases/{kb_id}/documents",
+          "method": "POST",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases/{kb_id}/documents",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "input_query_strings": [
+        "status"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases/{kb_id}/documents",
+          "method": "GET",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases/{kb_id}/documents/{document_id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases/{kb_id}/documents/{document_id}",
+          "method": "GET",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/knowledge-bases/{kb_id}/documents/{document_id}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/knowledge-bases/{kb_id}/documents/{document_id}",
+          "method": "DELETE",
+          "host": [
+            "http://knowledge-base-service:8000"
+          ]
+        }
+      ]
     }
   ]
 }
