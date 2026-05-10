@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: chunking-service
     newName: ghcr.io/chotabyorg/chunking-service-lite
-    newTag: latest
+    newTag: "7889799"
 configMapGenerator:
   - name: chunking-service-config
     env: config.properties
