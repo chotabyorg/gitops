@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: rag-service
     newName: ghcr.io/chotabyorg/rag-service
-    newTag: latest
+    newTag: 7565cc9
 configMapGenerator:
   - name: rag-service-config
     env: config.properties
