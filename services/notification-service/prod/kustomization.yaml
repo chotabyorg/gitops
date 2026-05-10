@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: notification-service
     newName: ghcr.io/chotabyorg/notification-service
-    newTag: "a72decc"
+    newTag: "1b3da35"
 configMapGenerator:
   - name: notification-config
     env: config.properties
