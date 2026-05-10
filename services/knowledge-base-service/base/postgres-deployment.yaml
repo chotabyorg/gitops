@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knowledge-base-service-postgres
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      containers:
+        - image: postgres:15-alpine
+          name: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+          envFrom:
+            - configMapRef:
+                name: knowledge-base-postgres-config
+            - secretRef:
+                name: knowledge-base-secret
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - admin
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: knowledge-base-service-postgres-data
