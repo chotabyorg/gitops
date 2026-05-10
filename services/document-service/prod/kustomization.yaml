@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: document-service
     newName: ghcr.io/chotabyorg/document-service
-    newTag: latest
+    newTag: 563c986
 configMapGenerator:
   - name: document-service-config
     env: config.properties
