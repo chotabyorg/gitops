@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: document-service
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: api
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - image: document-service
+          name: document-service
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: document-service-config
+            - secretRef:
+                name: document-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - wget
+                - --no-verbose
+                - --tries=1
+                - --spider
+                - http://127.0.0.1:8080/api/health
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - wget
+                - --no-verbose
+                - --tries=1
+                - --spider
+                - http://127.0.0.1:8080/api/health
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5

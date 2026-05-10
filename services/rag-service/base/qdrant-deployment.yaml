@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-service-qdrant
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: qdrant
+    spec:
+      containers:
+        - image: qdrant/qdrant:latest
+          name: qdrant
+          ports:
+            - containerPort: 6333
+            - containerPort: 6334
+          volumeMounts:
+            - name: qdrant-data
+              mountPath: /qdrant/storage
+          livenessProbe:
+            exec:
+              command:
+                - wget
+                - --no-verbose
+                - --tries=1
+                - --spider
+                - http://127.0.0.1:6333/health
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: qdrant-data
+          persistentVolumeClaim:
+            claimName: rag-service-qdrant-data

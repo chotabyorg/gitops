@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: document-service-minio
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: minio
+    spec:
+      containers:
+        - image: minio/minio:latest
+          name: minio
+          args:
+            - server
+            - /data
+            - --console-address
+            - ":9001"
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
+          envFrom:
+            - secretRef:
+                name: document-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - http://127.0.0.1:9000/minio/health/live
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: minio-data
+          persistentVolumeClaim:
+            claimName: document-service-minio-data

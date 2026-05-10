@@ -16,6 +16,10 @@ KrakenD (chota-gateway)              namespace: prod
    +---> user-service            + PostgreSQL 15
    +---> ai-agent-service        + PostgreSQL 15 + Redis 7
    +---> control-plane-service   + PostgreSQL 15
+   +---> knowledge-base-service  + PostgreSQL 15
+   +---> rag-service             + Qdrant
+   +---> document-service        + PostgreSQL 15 + MinIO
+   +---> chunking-service        (no sidecar)
    +---> instagram-gateway-service
    +---> payment-service         + PostgreSQL 16
    +---> subscription-service     + PostgreSQL 15
@@ -40,6 +44,10 @@ gitops/
     ├── user-service/              # Auth & user management
     ├── ai-agent-service/          # AI agents & LLM chat (+ Redis)
     ├── control-plane-service/     # Integration lifecycle
+    ├── knowledge-base-service/    # Knowledge base CRUD & document indexing
+    ├── rag-service/               # RAG vector store & generation (+ Qdrant)
+    ├── document-service/          # Document storage in S3 (+ MinIO)
+    ├── chunking-service/          # Document chunking (no sidecar)
     ├── instagram-gateway-service/ # Instagram webhook handler
     ├── payment-service/           # bePaid payments
     ├── subscription-service/      # Plans & subscriptions
@@ -77,6 +85,10 @@ Each service follows the same layout:
 | user-service | `ghcr.io/chotabyorg/user-service` | 8000 | PostgreSQL 15 |
 | ai-agent-service | `ghcr.io/chotabyorg/ai-agent-service` | 8000 | PostgreSQL 15, Redis 7 |
 | control-plane-service | `ghcr.io/chotabyorg/control-plane-service` | 8000 | PostgreSQL 15 |
+| knowledge-base-service | `ghcr.io/chotabyorg/knowledge-base-service` | 8000 | PostgreSQL 15 |
+| rag-service | `ghcr.io/chotabyorg/rag-service` | 8080 | Qdrant |
+| document-service | `ghcr.io/chotabyorg/document-service` | 8080 | PostgreSQL 15, MinIO |
+| chunking-service | `ghcr.io/chotabyorg/chunking-service-lite` | 8000 | — |
 | instagram-gateway-service | `ghcr.io/chotabyorg/instagram-gateway-service` | 8080 | — |
 | payment-service | `ghcr.io/chotabyorg/payment-service` | 8000 | PostgreSQL 16 |
 | subscription-service | `ghcr.io/chotabyorg/subscription-service` | 8000 | PostgreSQL 15 |

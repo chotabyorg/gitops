@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+namespace: dev
+images:
+  - name: document-service
+    newName: ghcr.io/chotabyorg/document-service
+    newTag: latest
+configMapGenerator:
+  - name: document-service-config
+    env: config.properties
+  - name: document-service-postgres-config
+    env: postgres.properties

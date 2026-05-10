@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+  - sealed-secrets.yaml
+namespace: prod
+images:
+  - name: rag-service
+    newName: ghcr.io/chotabyorg/rag-service
+    newTag: latest
+configMapGenerator:
+  - name: rag-service-config
+    env: config.properties
