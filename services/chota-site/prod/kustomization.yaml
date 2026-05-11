@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: chota-site
     newName: ghcr.io/chotabyorg/chota-site
-    newTag: "4752099"
+    newTag: "5357d56"
 configMapGenerator:
   - name: chota-site-config
     env: config.properties
