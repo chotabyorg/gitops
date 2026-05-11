@@ -24,7 +24,8 @@ KrakenD (chota-gateway)              namespace: prod
    +---> payment-service         + PostgreSQL 16
    +---> subscription-service     + PostgreSQL 15
    +---> notification-service    + PostgreSQL 15 + RabbitMQ 3.13
-   +---> chota-site              (Next.js frontend)
+    +---> chota-site              (Next.js frontend)
+    +---> blockrise              (Vite static frontend)
 ```
 
 ## Directory Structure
@@ -55,6 +56,7 @@ gitops/
     ├── telegram-gateway-service/ # Telegram bot gateway
     ├── website-gateway-service/  # Website chat widget gateway
     └── chota-site/               # Next.js frontend
+    └── blockrise/               # Block Rise 3D (static Vite, no backend)
 ```
 
 Each service follows the same layout:
@@ -95,6 +97,7 @@ Each service follows the same layout:
 | notification-service | `ghcr.io/chotabyorg/notification-service` | 8000 | PostgreSQL 15, RabbitMQ 3.13 |
 | telegram-gateway-service | `ghcr.io/chotabyorg/telegram-gateway-service` | 8080 | — |
 | website-gateway-service | `ghcr.io/chotabyorg/website-gateway-service` | 8080 | — |
+| blockrise | `ghcr.io/chotabyorg/blockrise` | 80 | — |
 | chota-site | `ghcr.io/chotabyorg/chota-site` | 3000 | — |
 
 ## CI/CD
