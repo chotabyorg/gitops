@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: knowledge-base-service
     newName: ghcr.io/chotabyorg/knowledge-base-service
-    newTag: 6f1facc
+    newTag: 3716ba2
 configMapGenerator:
   - name: knowledge-base-config
     env: config.properties
