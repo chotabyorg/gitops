@@ -9,6 +9,7 @@ resources:
   - minio-deployment.yaml
   - minio-service.yaml
   - minio-pvc.yaml
+  - minio-bucket-job.yaml
 labels:
 - includeSelectors: true
   pairs:
