@@ -241,6 +241,93 @@
       ]
     },
     {
+      "endpoint": "/api/v1/admin/users/lookup",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "input_query_strings": [
+        "email"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "roles_key": "role",
+          "roles": [
+            "admin"
+          ],
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/v1/admin/users/lookup",
+          "method": "GET",
+          "host": [
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/admin/users/{user_id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "roles_key": "role",
+          "roles": [
+            "admin"
+          ],
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/v1/admin/users/{user_id}",
+          "method": "GET",
+          "host": [
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
       "endpoint": "/v1/models",
       "method": "GET",
       "output_encoding": "no-op",
@@ -1708,6 +1795,90 @@
         {
           "url_pattern": "/v1/subscriptions/limits",
           "method": "GET",
+          "host": [
+            "http://subscription-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/admin/users/{user_id}/subscriptions",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "roles_key": "role",
+          "roles": [
+            "admin"
+          ],
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/admin/v1/users/{user_id}/subscriptions",
+          "method": "GET",
+          "host": [
+            "http://subscription-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/admin/users/{user_id}/subscriptions/manual-grant",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "roles_key": "role",
+          "roles": [
+            "admin"
+          ],
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/admin/v1/users/{user_id}/subscriptions/manual-grant",
+          "method": "POST",
           "host": [
             "http://subscription-service:8000"
           ]
