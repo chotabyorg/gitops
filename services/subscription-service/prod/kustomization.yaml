@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: subscription-service
     newName: ghcr.io/chotabyorg/subscription-service
-    newTag: f520f28
+    newTag: 03ea84c
 configMapGenerator:
   - name: subscription-config
     env: config.properties
