@@ -11,6 +11,18 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-pull-secret
+      initContainers:
+        - image: control-plane-service
+          name: control-plane-migrations
+          command:
+            - alembic
+            - upgrade
+            - head
+          envFrom:
+            - configMapRef:
+                name: control-plane-config
+            - secretRef:
+                name: control-plane-secret
       containers:
         - image: control-plane-service
           name: control-plane-service

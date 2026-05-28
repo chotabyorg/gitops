@@ -198,6 +198,23 @@ kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
 
 After bootstrap, ArgoCD self-manages — all subsequent changes go through git.
 
+## Database Migrations
+
+All services with PostgreSQL sidecars apply database migrations via **initContainers** defined in their `base/deployment.yaml`. The initContainer runs `alembic upgrade head` using the same image and database credentials as the main application, before the main container starts.
+
+| Service | Migration tool | Method |
+|---------|:---:|--------|
+| ai-agent-service | Alembic | initContainer |
+| control-plane-service | Alembic | initContainer |
+| knowledge-base-service | Alembic | initContainer |
+| notification-service | Alembic | initContainer |
+| payment-service | Alembic | initContainer |
+| subscription-service | Alembic | initContainer |
+| user-service | Alembic | initContainer |
+| document-service | Liquibase | Spring Boot startup (auto) |
+
+Services without PostgreSQL sidecars (`chota-gateway`, `chota-site`, `blockrise`, `chunking-service`, `rag-service`, gateway services) do not require migrations.
+
 ## Usage
 
 ### Prerequisites

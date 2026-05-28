@@ -121,6 +121,46 @@ Every service (except `chota-gateway`) follows this convention:
 - **Only prod overlays are updated by CI** — dev overlays always use `newTag: latest`
 - chota-gateway uses a separate `sync-config.yaml` that copies `krakend.json` into this repo on push
 
+## Database migrations
+
+All services that use PostgreSQL apply schema migrations via **initContainers** in their Deployment specs. The initContainer runs `alembic upgrade head` before the main application container starts, ensuring the database schema is up to date before the app serves traffic.
+
+### How it works
+
+The initContainer uses the same Docker image and environment variables as the main container, so it has access to the database URL via `configMapRef` and `secretRef`. If the migration fails, the pod does not start.
+
+```yaml
+initContainers:
+  - image: <service-name>
+    name: <service-name>-migrations
+    command:
+      - alembic
+      - upgrade
+      - head
+    envFrom:
+      - configMapRef:
+          name: <service-name>-config
+      - secretRef:
+          name: <service-name>-secret
+```
+
+### Services using alembic initContainers
+
+| Service | Command |
+|---------|---------|
+| ai-agent-service | `alembic upgrade head` |
+| control-plane-service | `alembic upgrade head` |
+| knowledge-base-service | `alembic upgrade head` |
+| notification-service | `alembic -c alembic.ini upgrade head` |
+| payment-service | `alembic upgrade head` |
+| subscription-service | `alembic upgrade head` |
+| user-service | `alembic upgrade head` |
+
+### Exceptions
+
+- **document-service** — Uses [Liquibase](https://www.liquibase.org/) via Spring Boot. Migrations run automatically on application startup through the `spring-boot-starter-liquibase` integration. No initContainer needed.
+- **No-database services** — `chota-gateway`, `chota-site`, `blockrise`, `chunking-service`, `instagram-gateway-service`, `rag-service`, `telegram-gateway-service`, `website-gateway-service` do not need migrations.
+
 ## Sealed Secrets workflow
 
 ```bash
