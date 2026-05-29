@@ -102,6 +102,40 @@
       ]
     },
     {
+      "endpoint": "/api/v1/auth/password/forgot",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/auth/password/forgot",
+          "method": "POST",
+          "host": [
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1/auth/password/reset",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/auth/password/reset",
+          "method": "POST",
+          "host": [
+            "http://user-service:8000"
+          ]
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1/auth/email-verification/confirm",
       "method": "GET",
       "output_encoding": "no-op",
