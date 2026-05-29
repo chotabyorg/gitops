@@ -1920,6 +1920,58 @@
       ]
     },
     {
+      "endpoint": "/api/v1/admin/audit-logs",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset",
+        "action",
+        "target_user_id",
+        "admin_user_id",
+        "target_resource_type",
+        "date_from",
+        "date_to"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "roles_key": "role",
+          "roles": [
+            "admin"
+          ],
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/admin/v1/audit-logs",
+          "method": "GET",
+          "host": [
+            "http://subscription-service:8000"
+          ]
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1/payments/checkouts",
       "method": "POST",
       "output_encoding": "no-op",
