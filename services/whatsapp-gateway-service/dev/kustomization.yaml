@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+namespace: dev
+images:
+  - name: whatsapp-gateway-service
+    newName: ghcr.io/chotabyorg/whatsapp-gateway-service
+    newTag: latest
+configMapGenerator:
+  - name: whatsapp-gateway-config
+    envs:
+      - config.properties
+secretGenerator:
+  - name: whatsapp-gateway-secret
+    literals:
+      - INTERNAL_API_TOKEN=CHANGE_ME_SHARED_INTERNAL_TOKEN
+      - WHATSAPP_APP_SECRET=CHANGE_ME_META_APP_SECRET
+      - WHATSAPP_WEBHOOK_VERIFY_TOKEN=CHANGE_ME_WEBHOOK_VERIFY_TOKEN

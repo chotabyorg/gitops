@@ -92,6 +92,7 @@ Each service follows the same layout:
 | document-service | `ghcr.io/chotabyorg/document-service` | 8080 | PostgreSQL 15, MinIO |
 | chunking-service | `ghcr.io/chotabyorg/chunking-service-lite` | 8000 | — |
 | instagram-gateway-service | `ghcr.io/chotabyorg/instagram-gateway-service` | 8080 | — |
+| whatsapp-gateway-service | `ghcr.io/chotabyorg/whatsapp-gateway-service` | 8080 | — |
 | payment-service | `ghcr.io/chotabyorg/payment-service` | 8000 | PostgreSQL 16 |
 | subscription-service | `ghcr.io/chotabyorg/subscription-service` | 8000 | PostgreSQL 15 |
 | notification-service | `ghcr.io/chotabyorg/notification-service` | 8000 | PostgreSQL 15, RabbitMQ 3.13 |
