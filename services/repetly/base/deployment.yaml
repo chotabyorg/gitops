@@ -15,8 +15,8 @@ spec:
         - image: repetly
           name: repetly-migrations
           command:
-            - npx
-            - prisma
+            - node
+            - node_modules/prisma/build/index.js
             - migrate
             - deploy
           envFrom:
