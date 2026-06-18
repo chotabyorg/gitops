@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repetly-postgres
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      containers:
+        - image: postgres:18-alpine
+          name: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+          envFrom:
+            - configMapRef:
+                name: repetly-postgres-config
+            - secretRef:
+                name: repetly-secret
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - repetly
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: repetly-postgres-data

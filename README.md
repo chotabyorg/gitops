@@ -55,8 +55,9 @@ gitops/
     ├── notification-service/     # Email notifications (+ RabbitMQ)
     ├── telegram-gateway-service/ # Telegram bot gateway
     ├── website-gateway-service/  # Website chat widget gateway
-    └── chota-site/               # Next.js frontend
-    └── blockrise/               # Block Rise 3D (static Vite, no backend)
+    ├── chota-site/               # Next.js frontend
+    ├── blockrise/               # Block Rise 3D (static Vite, no backend)
+    └── repetly/                 # Tutor SaaS (Next.js + Prisma + PostgreSQL)
 ```
 
 Each service follows the same layout:
@@ -100,6 +101,7 @@ Each service follows the same layout:
 | website-gateway-service | `ghcr.io/chotabyorg/website-gateway-service` | 8080 | — |
 | blockrise | `ghcr.io/chotabyorg/blockrise` | 80 | — |
 | chota-site | `ghcr.io/chotabyorg/chota-site` | 3000 | — |
+| repetly | `ghcr.io/chotabyorg/repetly` | 3000 | PostgreSQL 18 (Prisma) |
 
 ## CI/CD
 
@@ -213,6 +215,7 @@ All services with PostgreSQL sidecars apply database migrations via **initContai
 | subscription-service | Alembic | initContainer |
 | user-service | Alembic | initContainer |
 | document-service | Liquibase | Spring Boot startup (auto) |
+| repetly | Prisma | initContainer (`npx prisma migrate deploy`) |
 
 Services without PostgreSQL sidecars (`chota-gateway`, `chota-site`, `blockrise`, `chunking-service`, `rag-service`, gateway services) do not require migrations.
 

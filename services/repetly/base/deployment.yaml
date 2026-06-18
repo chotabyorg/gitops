@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repetly
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: api
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      initContainers:
+        - image: repetly
+          name: repetly-migrations
+          command:
+            - npx
+            - prisma
+            - migrate
+            - deploy
+          envFrom:
+            - configMapRef:
+                name: repetly-config
+            - secretRef:
+                name: repetly-secret
+      containers:
+        - image: repetly
+          name: repetly
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: repetly-config
+            - secretRef:
+                name: repetly-secret
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
