@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: repetly
     newName: ghcr.io/chotabyorg/repetly
-    newTag: "b7af5b0"
+    newTag: "083f0ff"
 configMapGenerator:
   - name: repetly-config
     env: config.properties
