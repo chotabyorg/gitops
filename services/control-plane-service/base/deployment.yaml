@@ -34,12 +34,18 @@ spec:
             - secretRef:
                 name: control-plane-secret
           livenessProbe:
-            exec:
-              command:
-                - python
-                - -c
-                - import httpx; httpx.get('http://localhost:8000/health', timeout=5)
-            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 15
             periodSeconds: 30
             timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3

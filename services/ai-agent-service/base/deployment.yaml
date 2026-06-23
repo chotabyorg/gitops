@@ -34,21 +34,18 @@ spec:
             - secretRef:
                 name: ai-agent-secret
           livenessProbe:
-            exec:
-              command:
-                - python
-                - -c
-                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 20
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
-            exec:
-              command:
-                - python
-                - -c
-                - "import httpx; httpx.get('http://localhost:8000/health', timeout=5)"
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 3

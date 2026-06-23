@@ -22,25 +22,18 @@ spec:
             - secretRef:
                 name: rag-service-secret
           livenessProbe:
-            exec:
-              command:
-                - wget
-                - --no-verbose
-                - --tries=1
-                - --spider
-                - http://127.0.0.1:8080/api/health
+            httpGet:
+              path: /api/health
+              port: 8080
             initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
-            exec:
-              command:
-                - wget
-                - --no-verbose
-                - --tries=1
-                - --spider
-                - http://127.0.0.1:8080/api/health
+            httpGet:
+              path: /api/health
+              port: 8080
             initialDelaySeconds: 20
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 3

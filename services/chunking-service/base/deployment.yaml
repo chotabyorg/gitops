@@ -20,21 +20,18 @@ spec:
             - configMapRef:
                 name: chunking-service-config
           livenessProbe:
-            exec:
-              command:
-                - python
-                - -c
-                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 15
             periodSeconds: 30
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
-            exec:
-              command:
-                - python
-                - -c
-                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
+            failureThreshold: 3
