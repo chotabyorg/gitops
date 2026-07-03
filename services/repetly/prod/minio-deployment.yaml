@@ -38,6 +38,8 @@ spec:
                 secretKeyRef:
                   name: repetly-minio-secret
                   key: MINIO_ROOT_PASSWORD
+            - name: MINIO_API_CORS_ALLOW_ORIGIN
+              value: https://repetly.chota.by
           ports:
             - name: api
               containerPort: 9000

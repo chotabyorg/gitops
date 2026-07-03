@@ -7,9 +7,10 @@
 - Private bucket: `repetly-homework`.
 - Persistent data: `repetly-minio-data`, 10Gi on the cluster default `local-path` StorageClass.
 - The MinIO console listens inside the pod but is not exposed by a Service or Cloudflare route.
+- MinIO API CORS is restricted at server startup to `https://repetly.chota.by` with `MINIO_API_CORS_ALLOW_ORIGIN`.
 - Repetly uses a dedicated bucket-scoped application user. Root and application credentials are stored only as SealedSecrets.
 
-The bootstrap Job is an idempotent Argo CD sync hook. It creates the bucket if needed, enforces private anonymous access, applies browser CORS, reconciles the application user, and attaches an object-only policy for the Repetly bucket.
+The bootstrap Job is an idempotent Argo CD sync hook. It creates the bucket if needed, enforces private anonymous access, reconciles the application user, and attaches an object-only policy for the Repetly bucket. MinIO does not implement the S3 BucketCORS API; the Deployment-level setting above provides the supported origin restriction for every API response.
 
 ## Post-merge verification
 
