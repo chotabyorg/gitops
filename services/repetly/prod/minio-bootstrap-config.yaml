@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: repetly-minio-bootstrap
+data:
+  cors.xml: |
+    <CORSConfiguration>
+      <CORSRule>
+        <AllowedOrigin>https://repetly.chota.by</AllowedOrigin>
+        <AllowedMethod>PUT</AllowedMethod>
+        <AllowedMethod>GET</AllowedMethod>
+        <AllowedMethod>HEAD</AllowedMethod>
+        <AllowedHeader>Content-Type</AllowedHeader>
+        <AllowedHeader>x-amz-*</AllowedHeader>
+        <ExposeHeader>ETag</ExposeHeader>
+        <MaxAgeSeconds>3600</MaxAgeSeconds>
+      </CORSRule>
+    </CORSConfiguration>
+  policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject"
+          ],
+          "Resource": [
+            "arn:aws:s3:::repetly-homework/*"
+          ]
+        }
+      ]
+    }
