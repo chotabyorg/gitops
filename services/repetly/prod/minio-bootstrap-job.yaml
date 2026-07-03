@@ -1,0 +1,94 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: repetly-minio-bootstrap
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  activeDeadlineSeconds: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: repetly-minio-bootstrap
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+          env:
+            - name: MC_CONFIG_DIR
+              value: /tmp/.mc
+            - name: MINIO_ENDPOINT
+              value: http://repetly-minio:9000
+            - name: MINIO_BUCKET
+              value: repetly-homework
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-minio-secret
+                  key: MINIO_ROOT_USER
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-minio-secret
+                  key: MINIO_ROOT_PASSWORD
+            - name: S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-secret
+                  key: S3_ACCESS_KEY_ID
+            - name: S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-secret
+                  key: S3_SECRET_ACCESS_KEY
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              until mc alias set repetly "$MINIO_ENDPOINT" "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do
+                echo "Waiting for Repetly MinIO API..."
+                sleep 2
+              done
+
+              mc mb --ignore-existing --region us-east-1 "repetly/$MINIO_BUCKET"
+              mc anonymous set private "repetly/$MINIO_BUCKET"
+              mc cors set "repetly/$MINIO_BUCKET" /bootstrap/cors.xml
+
+              if ! mc admin user add repetly "$S3_ACCESS_KEY_ID" "$S3_SECRET_ACCESS_KEY" >/dev/null 2>&1; then
+                echo "Failed to reconcile the Repetly application user."
+                exit 1
+              fi
+              mc admin policy create repetly repetly-homework-rw /bootstrap/policy.json
+              if ! mc admin policy attach repetly repetly-homework-rw --user "$S3_ACCESS_KEY_ID" >/dev/null 2>&1; then
+                echo "Failed to attach the Repetly bucket policy."
+                exit 1
+              fi
+
+              echo "Repetly MinIO bucket, CORS, and application policy are ready."
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          volumeMounts:
+            - name: bootstrap-config
+              mountPath: /bootstrap
+              readOnly: true
+      volumes:
+        - name: bootstrap-config
+          configMap:
+            name: repetly-minio-bootstrap
