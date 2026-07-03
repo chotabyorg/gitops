@@ -9,6 +9,8 @@ resources:
   - minio-service.yaml
   - minio-sealed-secrets.yaml
   - sealed-secrets.yaml
+patches:
+  - path: repetly-deployment-wave-patch.yaml
 namespace: prod
 images:
   - name: repetly

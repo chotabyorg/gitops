@@ -26,13 +26,48 @@ The bootstrap Job is an idempotent Argo CD sync hook. It creates the bucket if n
 
 Disable application storage through a reviewed GitOps change:
 
-1. Remove `STORAGE_PROVIDER`, `S3_ENDPOINT`, `S3_REGION`, and `S3_BUCKET` from `config.properties`.
-2. Seal empty values for `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` in `repetly-secret`, so no required S3 value remains while the provider is unset.
-3. Keep the MinIO Deployment, Service, bootstrap resources, bucket, and PVC in GitOps.
-4. Verify Repetly returns to its storage-disabled behavior.
+1. First remove `minio-bootstrap-job.yaml` from the `resources` list in `kustomization.yaml`. Keep the Job manifest tracked, but do not run the bootstrap hook while application credentials are intentionally disabled.
+2. Remove `STORAGE_PROVIDER`, `S3_ENDPOINT`, `S3_REGION`, and `S3_BUCKET` from `config.properties`.
+3. Add a rollback-only patch to the production `patches` list that overrides the two app-visible credentials with empty values. Explicit `env` entries override values imported through `envFrom`, while the sealed credentials remain intact for MinIO and a later re-enable:
+
+   ```yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: repetly
+   spec:
+     template:
+       spec:
+         initContainers:
+           - name: repetly-migrations
+             env:
+               - name: S3_ACCESS_KEY_ID
+                 value: ""
+               - name: S3_SECRET_ACCESS_KEY
+                 value: ""
+         containers:
+           - name: repetly
+             env:
+               - name: S3_ACCESS_KEY_ID
+                 value: ""
+               - name: S3_SECRET_ACCESS_KEY
+                 value: ""
+   ```
+
+4. Keep both SealedSecrets unchanged. Also keep the MinIO Deployment, Service, bootstrap ConfigMap, bucket, application user, and PVC intact.
+5. Preserve all database metadata; rollback disables new file transfers and does not delete homework attachment or submission records.
+6. Verify the Argo CD sync succeeds and Repetly returns to its storage-disabled behavior.
+
+To re-enable storage later, remove the rollback-only credential override, restore the required S3 config, and restore `minio-bootstrap-job.yaml` to the Kustomization in the same reviewed change. The preserved credentials let the wave 1 hook reconcile the MinIO application user before the wave 2 Repetly rollout.
 
 Do not remove `minio-pvc.yaml` during rollback. Argo CD pruning and the `local-path` reclaim policy can delete storage when the PVC is removed.
 
 ## Durability and operations
 
-This is a single-replica MinIO instance backed by node-local storage. It has no high availability, cross-node replication, or repository-managed backup. Establish an encrypted off-node backup and restore drill, monitor node capacity, and plan migration to managed S3-compatible storage if the durability requirement grows. The current StorageClass does not support volume expansion, so increasing capacity requires a separate migration plan.
+This is a single-node MVP: one MinIO replica backed by node-local storage. It has no high availability, cross-node replication, or repository-managed backup. Establish and test encrypted off-node backup and restore before relying on the storage broadly, monitor node capacity, and plan migration to managed S3-compatible storage if the durability requirement grows. The current StorageClass does not support volume expansion, so increasing capacity requires a separate migration plan.
+
+The following application-level safeguards remain follow-up work and must be operationally accepted before broad storage usage:
+
+- an orphan/PENDING upload reaper for abandoned two-phase uploads;
+- malware scanning and byte-level content sniffing rather than MIME/extension checks alone;
+- UX polish for rare upload transaction/version conflicts.
