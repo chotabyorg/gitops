@@ -4,3 +4,8 @@ metadata:
   name: repetly
   annotations:
     argocd.argoproj.io/sync-wave: "2"
+spec:
+  template:
+    metadata:
+      annotations:
+        repetly.chota.by/telegram-webhook-secret-revision: "2026-07-14-1"
