@@ -26,6 +26,7 @@ KrakenD (chota-gateway)              namespace: prod
    +---> notification-service    + PostgreSQL 15 + RabbitMQ 3.13
     +---> chota-site              (Next.js frontend)
     +---> blockrise              (Vite static frontend)
+    +---> outsors               (Vite static frontend)
 ```
 
 ## Directory Structure
@@ -57,6 +58,7 @@ gitops/
     ├── website-gateway-service/  # Website chat widget gateway
     ├── chota-site/               # Next.js frontend
     ├── blockrise/               # Block Rise 3D (static Vite, no backend)
+    ├── outsors/                 # Outsors landing page (static Vite, no backend)
     └── repetly/                 # Tutor SaaS (Next.js + Prisma + PostgreSQL)
 ```
 
@@ -100,6 +102,7 @@ Each service follows the same layout:
 | telegram-gateway-service | `ghcr.io/chotabyorg/telegram-gateway-service` | 8080 | — |
 | website-gateway-service | `ghcr.io/chotabyorg/website-gateway-service` | 8080 | — |
 | blockrise | `ghcr.io/chotabyorg/blockrise` | 80 | — |
+| outsors | `ghcr.io/chotabyorg/outsors` | 80 | — |
 | chota-site | `ghcr.io/chotabyorg/chota-site` | 3000 | — |
 | repetly | `ghcr.io/chotabyorg/repetly` | 3000 | PostgreSQL 18 (Prisma) |
 
@@ -217,7 +220,7 @@ All services with PostgreSQL sidecars apply database migrations via **initContai
 | document-service | Liquibase | Spring Boot startup (auto) |
 | repetly | Prisma | initContainer (`npx prisma migrate deploy`) |
 
-Services without PostgreSQL sidecars (`chota-gateway`, `chota-site`, `blockrise`, `chunking-service`, `rag-service`, gateway services) do not require migrations.
+Services without PostgreSQL sidecars (`chota-gateway`, `chota-site`, `blockrise`, `outsors`, `chunking-service`, `rag-service`, gateway services) do not require migrations.
 
 ## Usage
 

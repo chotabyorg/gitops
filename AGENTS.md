@@ -160,7 +160,7 @@ initContainers:
 
 - **document-service** — Uses [Liquibase](https://www.liquibase.org/) via Spring Boot. Migrations run automatically on application startup through the `spring-boot-starter-liquibase` integration. No initContainer needed.
 - **repetly** — Uses [Prisma](https://www.prisma.io/) with `npx prisma migrate deploy` as an initContainer.
-- **No-database services** — `chota-gateway`, `chota-site`, `blockrise`, `chunking-service`, `instagram-gateway-service`, `rag-service`, `telegram-gateway-service`, `website-gateway-service` do not need migrations.
+- **No-database services** — `chota-gateway`, `chota-site`, `blockrise`, `outsors`, `chunking-service`, `instagram-gateway-service`, `rag-service`, `telegram-gateway-service`, `website-gateway-service` do not need migrations.
 
 ## Sealed Secrets workflow
 
