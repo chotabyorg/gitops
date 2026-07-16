@@ -1,12 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: repetly-telegram-linking-migrate-6cb8a89
+  name: repetly-telegram-linking-migrate-6cb8a89-a1
   annotations:
     argocd.argoproj.io/sync-wave: "3"
     repetly.chota.by/operation: secure-telegram-linking-migration
+    repetly.chota.by/migration-attempt: "1"
     repetly.chota.by/application-commit: 6cb8a891911d1c194ff7792790689d882b69cf0e
-    repetly.chota.by/application-image: ghcr.io/chotabyorg/repetly:6cb8a89
+    repetly.chota.by/application-image-digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
 spec:
   activeDeadlineSeconds: 900
   backoffLimit: 0
@@ -28,7 +29,10 @@ spec:
           type: RuntimeDefault
       containers:
         - name: migrate
-          image: repetly
+          # Fail-closed inert sentinel. An execution PR must replace this with the
+          # independently verified digest for the reviewed application commit.
+          image: ghcr.io/chotabyorg/repetly@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          imagePullPolicy: Always
           command:
             - node
             - node_modules/prisma/build/index.js

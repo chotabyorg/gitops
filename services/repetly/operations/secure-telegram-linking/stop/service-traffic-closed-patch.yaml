@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: repetly
-spec:
-  selector:
-    repetly.chota.by/maintenance-gate: closed
