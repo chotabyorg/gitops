@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod
+resources:
+  - service-demo-external.yaml
+  - ingressroute-outsors.yaml
+  - ingressroute-www.yaml
+  - ingressroute-api.yaml
+  - ingressroute-agents.yaml
+  - ingressroute-blockrise.yaml
+  - ingressroute-demo.yaml
+  - ingressroute-repetly.yaml
+  - ingressroute-repetly-storage.yaml
+  - ingressroute-widget.yaml

@@ -3,7 +3,7 @@
 ## Topology
 
 - Dedicated MinIO workload and API-only ClusterIP service: `repetly-minio:9000`.
-- Public S3 API: `https://repetly-storage.chota.by`, routed by the remotely managed Cloudflare Tunnel to `http://repetly-minio.prod.svc.cluster.local:9000`.
+- Public S3 API: `https://repetly-storage.chota.by`, routed by Traefik (k3s ingress) to `http://repetly-minio.prod.svc.cluster.local:9000`.
 - Private bucket: `repetly-homework`.
 - Persistent data: `repetly-minio-data`, 10Gi on the cluster default `local-path` StorageClass.
 - The MinIO console listens inside the pod but is not exposed by a Service or Cloudflare route.

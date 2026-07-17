@@ -1,0 +1,32 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-www-chota
+  namespace: prod
+spec:
+  redirectRegex:
+    regex: ^https?://www\.chota\.by/(.*)
+    replacement: https://chota.by/${1}
+    permanent: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: www-chota-by
+  namespace: prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`www.chota.by`)
+      middlewares:
+        - name: redirect-www-chota
+          namespace: prod
+      services:
+        - kind: Service
+          name: outsors
+          namespace: prod
+          port: 80
+  tls:
+    certResolver: le

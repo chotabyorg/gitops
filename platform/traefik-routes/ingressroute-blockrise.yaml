@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: blockrise-chota-by
+  namespace: prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`blockrise.chota.by`)
+      services:
+        - kind: Service
+          name: blockrise
+          namespace: prod
+          port: 80
+  tls:
+    certResolver: le

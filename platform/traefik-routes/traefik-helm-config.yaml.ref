@@ -1,0 +1,27 @@
+# Reference: k3s HelmChartConfig for Traefik ACME HTTP-01
+# Apply this to kube-system namespace to configure Traefik's Let's Encrypt integration
+#
+# PREREQUISITE: Create host directory and set ownership:
+#   sudo mkdir -p /var/lib/rancher/k3s/traefik-acme
+#   sudo chown 65532:65532 /var/lib/rancher/k3s/traefik-acme
+#
+# PREREQUISITE: Patch Traefik deployment to use hostPath for /data volume
+# (replace emptyDir with hostPath for ACME persistence):
+#   kubectl patch deploy traefik -n kube-system --type json -p '[...]'
+#
+# This file is only a reference. The HelmChartConfig is managed by k3s Helm controller.
+# 
+# kubectl apply -f traefik-helm-config.yaml -n kube-system
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.le.acme.email=n.ogorodniy@chota.by"
+      - "--certificatesresolvers.le.acme.storage=/data/acme.json"
+      - "--providers.kubernetescrd.allowExternalNameServices=true"

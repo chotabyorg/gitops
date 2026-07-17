@@ -8,25 +8,30 @@ Kubernetes manifests for the CHOTA platform, managed with [Kustomize](https://ku
 Internet
    |
    v
-Cloudflare Tunnel                    namespace: default
+Traefik (ingress + TLS)              namespace: kube-system
+   |  (Let's Encrypt HTTP-01 auto-renewal)
    |
-   v
-KrakenD (chota-gateway)              namespace: prod
+   +---> outsors:80              (chota.by — landing page)
+   +---> chota-site:3000         (agents.chota.by — main frontend)
+   +---> blockrise:80            (blockrise.chota.by)
+   +---> demo-website:80         (demo.chota.by)
+   +---> repetly:3000            (repetly.chota.by)
+   +---> repetly-minio:9000      (repetly-storage.chota.by)
+   +---> website-gateway-service:8080  (widget.chota.by)
    |
-   +---> user-service            + PostgreSQL 15
-   +---> ai-agent-service        + PostgreSQL 15 + Redis 7
-   +---> control-plane-service   + PostgreSQL 15
-   +---> knowledge-base-service  + PostgreSQL 15
-   +---> rag-service             + Qdrant
-   +---> document-service        + PostgreSQL 15 + MinIO
-   +---> chunking-service        (no sidecar)
-   +---> instagram-gateway-service
-   +---> payment-service         + PostgreSQL 16
-   +---> subscription-service     + PostgreSQL 15
-   +---> notification-service    + PostgreSQL 15 + RabbitMQ 3.13
-    +---> chota-site              (Next.js frontend)
-    +---> blockrise              (Vite static frontend)
-    +---> outsors               (Vite static frontend)
+   +---> KrakenD (chota-gateway):8080  (api.chota.by)
+          |
+          +---> user-service            + PostgreSQL 15
+          +---> ai-agent-service        + PostgreSQL 15 + Redis 7
+          +---> control-plane-service   + PostgreSQL 15
+          +---> knowledge-base-service  + PostgreSQL 15
+          +---> rag-service             + Qdrant
+          +---> document-service        + PostgreSQL 15 + MinIO
+          +---> chunking-service        (no sidecar)
+          +---> instagram-gateway-service
+          +---> payment-service         + PostgreSQL 16
+          +---> subscription-service    + PostgreSQL 15
+          +---> notification-service    + PostgreSQL 15 + RabbitMQ 3.13
 ```
 
 ## Directory Structure
@@ -37,7 +42,7 @@ gitops/
 │   └── reusable-deploy.yaml       # Reusable workflow for CI/CD
 ├── platform/
 │   ├── argocd/                    # ArgoCD Application manifests
-│   └── cloudflare-tunnel/        # Cloudflare tunnel for ingress
+│   └── traefik-routes/           # Traefik IngressRoutes and TLS config
 └── services/
     ├── chota-gateway/            # KrakenD API gateway (official image)
     │   ├── base/
@@ -170,7 +175,7 @@ Additional Applications manage platform-level resources:
 
 | Application | Source Path | Namespace |
 |-------------|-------------|-----------|
-| `cloudflare-tunnel` | `platform/cloudflare-tunnel` | `default` |
+| `traefik-routes` | `platform/traefik-routes` | `prod` |
 
 ### Repo Credentials
 
@@ -188,7 +193,7 @@ kustomize build --enable-alpha-plugins platform/argocd/prod.yaml
 # or apply directly:
 kubectl apply -f platform/argocd/sealed-secrets.yaml
 kubectl apply -f platform/argocd/prod.yaml
-kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
+kubectl apply -f platform/argocd/traefik-routes.yaml
 ```
 
 ### Bootstrapping a fresh cluster
@@ -199,7 +204,7 @@ kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
 kubectl apply -f platform/argocd/sealed-secrets.yaml
 # 3. Apply ArgoCD Applications (they pull everything else)
 kubectl apply -f platform/argocd/prod.yaml
-kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
+kubectl apply -f platform/argocd/traefik-routes.yaml
 ```
 
 After bootstrap, ArgoCD self-manages — all subsequent changes go through git.
@@ -332,7 +337,27 @@ All backend services use Kubernetes service DNS names (e.g., `http://user-servic
 
 ### Ingress
 
-The platform uses a Cloudflare Tunnel for external access, configured in `platform/cloudflare-tunnel/`. No TLS certificates or ingress controllers are needed.
+External traffic enters via **Traefik** (k3s built-in ingress controller) with **Let's Encrypt HTTP-01** for automatic TLS. IngressRoutes are defined in `platform/traefik-routes/` and managed by ArgoCD.
+
+**Hostname → Service mapping:**
+
+| Hostname | Service | Port |
+|----------|---------|------|
+| `chota.by` | `outsors` | 80 |
+| `www.chota.by` | → redirect to `chota.by` | |
+| `api.chota.by` | `chota-gateway` (KrakenD) | 8080 |
+| `agents.chota.by` | `chota-site` | 3000 |
+| `blockrise.chota.by` | `blockrise` | 80 |
+| `demo.chota.by` | `demo-website` (ExternalName → default ns) | 80 |
+| `repetly.chota.by` | `repetly` | 3000 |
+| `repetly-storage.chota.by` | `repetly-minio` | 9000 |
+| `widget.chota.by` | `website-gateway-service` | 8080 |
+
+**DNS:** All hostnames have A records pointing to the server's public IP. Cloudflare proxy is disabled (DNS-only mode).
+
+**TLS:** Traefik automatically obtains and renews Let's Encrypt certificates via HTTP-01 challenges. Certificates are stored on the host at `/var/lib/rancher/k3s/traefik-acme/acme.json`. No cert-manager or manual certificate management is needed.
+
+**Traefik configuration** is managed via k3s's HelmChartConfig (see `platform/traefik-routes/traefik-helm-config.yaml.ref`).
 
 ## Adding a new service
 

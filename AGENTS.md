@@ -42,7 +42,7 @@ ArgoCD is the sole deployment mechanism. The repository contains `Application` a
 
 | Application | Source | Namespace |
 |-------------|--------|-----------|
-| `cloudflare-tunnel` | `platform/cloudflare-tunnel` | `default` |
+| `traefik-routes` | `platform/traefik-routes` | `prod` |
 
 ### Repo Credential
 
@@ -55,7 +55,7 @@ On a fresh cluster, apply the platform-level ArgoCD manifests first, then ArgoCD
 ```bash
 kubectl apply -f platform/argocd/sealed-secrets.yaml
 kubectl apply -f platform/argocd/prod.yaml
-kubectl apply -f platform/argocd/cloudflare-tunnel.yaml
+kubectl apply -f platform/argocd/traefik-routes.yaml
 ```
 
 ### Sync flow

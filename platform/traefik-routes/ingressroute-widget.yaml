@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: widget-chota-by
+  namespace: prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`widget.chota.by`)
+      services:
+        - kind: Service
+          name: website-gateway-service
+          namespace: prod
+          port: 8080
+  tls:
+    certResolver: le
