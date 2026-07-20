@@ -1,0 +1,247 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: repetly-postgres-restore-template
+  annotations:
+    repetly.chota.by/inert: "true"
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  ttlSecondsAfterFinished: 900
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: restore-postgres
+          image: postgres:18-alpine@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          restartPolicy: Always
+          args:
+            - postgres
+            - -c
+            - listen_addresses=127.0.0.1
+            - -c
+            - port=55432
+          env:
+            - name: POSTGRES_DB
+              value: repetly_restore_drill
+            - name: POSTGRES_USER
+              value: restore_drill
+            # This is safe only for this target: the native sidecar binds to
+            # loopback, has no Service, is credentialless, and is deleted with
+            # the bounded-memory Job Pod.
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: restore-pgdata
+              mountPath: /var/lib/postgresql
+            - name: restore-work
+              mountPath: /work
+            - name: restore-socket
+              mountPath: /var/run/postgresql
+        - name: download-backup
+          image: ghcr.io/chotabyorg/repetly-postgres-backup@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          command:
+            - /bin/bash
+            - /scripts/restore.sh
+            - --contract-dir
+            - /contract
+            - --work-dir
+            - /work
+            - download
+          env:
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-postgres-backup-s3-reader
+                  key: endpoint
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-postgres-backup-s3-reader
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-postgres-backup-s3-reader
+                  key: secret-access-key
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-postgres-backup-s3-reader
+                  key: region
+            - name: AWS_EC2_METADATA_DISABLED
+              value: "true"
+            - name: AWS_PAGER
+              value: ""
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: restore-contract
+              mountPath: /contract
+              readOnly: true
+            - name: restore-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: restore-work
+              mountPath: /work
+        - name: restore-database
+          image: ghcr.io/chotabyorg/repetly-postgres-backup@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          command:
+            - /bin/bash
+            - /scripts/restore.sh
+            - --contract-dir
+            - /contract
+            - --work-dir
+            - /work
+            - restore
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 750m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: restore-contract
+              mountPath: /contract
+              readOnly: true
+            - name: restore-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: restore-work
+              mountPath: /work
+        - name: structural-verification
+          image: ghcr.io/chotabyorg/repetly-postgres-backup@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          command:
+            - /bin/bash
+            - /scripts/restore.sh
+            - --contract-dir
+            - /contract
+            - --work-dir
+            - /work
+            - verify
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: restore-contract
+              mountPath: /contract
+              readOnly: true
+            - name: restore-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: restore-work
+              mountPath: /work
+        - name: application-verification
+          image: ghcr.io/chotabyorg/repetly@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          command:
+            - /bin/sh
+            - /scripts/verify-application.sh
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: restore-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: restore-work
+              mountPath: /tmp
+      containers:
+        - name: completion
+          image: ghcr.io/chotabyorg/repetly-postgres-backup@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          command:
+            - /bin/sh
+            - -ec
+            - printf '%s\n' 'restore template is inert'
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: restore-work
+              mountPath: /work
+      volumes:
+        - name: restore-pgdata
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
+        - name: restore-work
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: restore-socket
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+        - name: restore-contract
+          configMap:
+            name: repetly-postgres-restore-contract-template
+        - name: restore-scripts
+          configMap:
+            name: repetly-postgres-restore-scripts
+            defaultMode: 0444

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # An execution PR replaces this with a unique immutable, reviewed selection.
+  # The template values are deliberately non-executable sentinels.
+  name: repetly-postgres-restore-contract-template
+  annotations:
+    repetly.chota.by/inert: "true"
+immutable: true
+data:
+  backup-reference: s3://replace-before-execution.invalid/postgres/production/repetly/repetly/00000000T000000Z-v1-prisma-00000000.dump
+  backup-version-id: REPLACE_BEFORE_EXECUTION
+  completion-reference: s3://replace-before-execution.invalid/postgres/production/repetly/repetly/00000000T000000Z-v1-prisma-00000000.dump.complete.json
+  completion-version-id: REPLACE_BEFORE_EXECUTION
+  format-version: v1
+  # The runner refuses endpoints that are not this reviewed off-cluster FQDN.
+  storage-approved-fqdn: replace-before-execution.invalid

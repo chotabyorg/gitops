@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: repetly-postgres-backup-config
+  labels:
+    app: repetly
+    component: postgres-backup
+  annotations:
+    repetly.chota.by/activation-required: "off-cluster storage and least-privilege identities"
+data:
+  BACKUP_ENVIRONMENT: production
+  BACKUP_APPLICATION: repetly
+  PGDATABASE: repetly
+  BACKUP_FORMAT_VERSION: v1
+  BACKUP_SCHEMA_REVISION: prisma
+  BACKUP_WORKDIR: /work
+  AWS_DEFAULT_REGION: us-east-1
+  S3_ENDPOINT: https://backup-storage.example.invalid
+  # The script accepts production storage only when this reviewed FQDN exactly
+  # matches the configured endpoint host.
+  S3_APPROVED_FQDN: backup-storage.example.invalid
+  S3_BUCKET: repetly-backups-replace-me
+  S3_PREFIX: postgres
+  S3_SERVER_SIDE_ENCRYPTION: AES256

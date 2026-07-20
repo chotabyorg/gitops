@@ -1,0 +1,42 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadApprovedDumpVersionOnly",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObjectVersion"
+      ],
+      "Resource": "REPLACE_WITH_BACKUP_BUCKET_ARN/REPLACE_WITH_APPROVED_DUMP_KEY",
+      "Condition": {
+        "StringEquals": {
+          "s3:VersionId": "REPLACE_WITH_APPROVED_DUMP_VERSION_ID"
+        }
+      }
+    },
+    {
+      "Sid": "ReadApprovedCompletionMarkerVersionOnly",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObjectVersion"
+      ],
+      "Resource": "REPLACE_WITH_BACKUP_BUCKET_ARN/REPLACE_WITH_APPROVED_DUMP_KEY.complete.json",
+      "Condition": {
+        "StringEquals": {
+          "s3:VersionId": "REPLACE_WITH_APPROVED_MARKER_VERSION_ID"
+        }
+      }
+    },
+    {
+      "Sid": "DenyMutation",
+      "Effect": "Deny",
+      "Action": [
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:DeleteObjectVersion",
+        "s3:AbortMultipartUpload"
+      ],
+      "Resource": "REPLACE_WITH_BACKUP_BUCKET_ARN/*"
+    }
+  ]
+}
