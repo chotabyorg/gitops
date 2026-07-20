@@ -7,7 +7,7 @@ metadata:
     repetly.chota.by/operation: secure-telegram-linking-migration
     repetly.chota.by/migration-attempt: "1"
     repetly.chota.by/application-commit: 6cb8a891911d1c194ff7792790689d882b69cf0e
-    repetly.chota.by/application-image-digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+    repetly.chota.by/application-image-digest: sha256:1fe2b603a398011cbe93166fdf0ddecfa0569c0aaf0ad9a68d5c99ac5aabed9b
 spec:
   activeDeadlineSeconds: 900
   backoffLimit: 0
@@ -31,7 +31,7 @@ spec:
         - name: migrate
           # Fail-closed inert sentinel. An execution PR must replace this with the
           # independently verified digest for the reviewed application commit.
-          image: ghcr.io/chotabyorg/repetly@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          image: ghcr.io/chotabyorg/repetly@sha256:1fe2b603a398011cbe93166fdf0ddecfa0569c0aaf0ad9a68d5c99ac5aabed9b
           imagePullPolicy: Always
           command:
             - node
