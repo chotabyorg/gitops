@@ -9,15 +9,14 @@ resources:
   - minio-service.yaml
   - minio-sealed-secrets.yaml
   - sealed-secrets.yaml
-  - operations/secure-telegram-linking/migrate/migration-job.yaml
 patches:
   - path: repetly-deployment-wave-patch.yaml
-  # Issue #75 planned maintenance STOP. Backup/restore evidence:
+  # Issue #75 RESUME-CLOSED after the retained migration Job completed and the
+  # aggregate production postflight passed. Backup/restore evidence:
   # https://github.com/chotabyorg/repetly/issues/75#issuecomment-5025216959
-  # After observed zero Repetly pods/endpoints, run the post-drain aggregate
-  # preflight; do not run a migration automatically.
-  - path: operations/secure-telegram-linking/stop/service-traffic-closed-patch.yaml
-  - path: operations/secure-telegram-linking/stop/replicas-zero-patch.yaml
+  # Keep public traffic closed until the new pod is Ready and direct smoke
+  # checks pass; do not recreate or rerun the migration Job.
+  - path: operations/secure-telegram-linking/resume-closed/service-traffic-closed-patch.yaml
   - path: operations/secure-telegram-linking/release-identity-patch.yaml
 namespace: prod
 images:
