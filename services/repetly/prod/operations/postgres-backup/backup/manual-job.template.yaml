@@ -1,0 +1,100 @@
+# Explicit on-demand template. Do not add this file to any active Kustomization.
+# Kubernetes allocates one unique name. Replace the annotation only during an
+# authorized maintenance operation; no automatic retry is configured.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: repetly-postgres-backup-manual-
+  labels:
+    app: repetly
+    component: postgres-backup
+    repetly.chota.by/operation: postgres-backup-manual
+  annotations:
+    repetly.chota.by/maintenance-reference: REPLACE_WITH_APPROVED_REFERENCE
+    repetly.chota.by/inert-template: "true"
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  ttlSecondsAfterFinished: 604800
+  template:
+    metadata:
+      labels:
+        app: repetly
+        component: postgres-backup
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: dump
+          image: ghcr.io/chotabyorg/repetly-postgres-backup@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          imagePullPolicy: IfNotPresent
+          command: ["/opt/repetly-backup/backup.sh", "--dump-only"]
+          envFrom:
+            - configMapRef:
+                name: repetly-postgres-backup-config
+            - secretRef:
+                name: repetly-postgres-backup-db-credentials
+          env:
+            - name: BACKUP_RUN_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            # Explicit entries override any hostile or stale Secret values.
+            - name: PGSSLMODE
+              value: verify-full
+            - name: PGSSLROOTCERT
+              value: /var/run/repetly-backup-db-ca/ca.crt
+          resources:
+            requests: {cpu: 100m, memory: 128Mi, ephemeral-storage: 128Mi}
+            limits: {cpu: 500m, memory: 256Mi, ephemeral-storage: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - {name: scripts, mountPath: /opt/repetly-backup, readOnly: true}
+            - {name: work, mountPath: /work}
+            - {name: database-ca, mountPath: /var/run/repetly-backup-db-ca, readOnly: true}
+      containers:
+        - name: upload
+          image: ghcr.io/chotabyorg/repetly-postgres-backup@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          imagePullPolicy: IfNotPresent
+          command: ["/opt/repetly-backup/backup.sh", "--upload-only"]
+          envFrom:
+            - configMapRef:
+                name: repetly-postgres-backup-config
+            - secretRef:
+                name: repetly-postgres-backup-writer-credentials
+          env:
+            - name: BACKUP_RUN_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          resources:
+            requests: {cpu: 100m, memory: 128Mi, ephemeral-storage: 128Mi}
+            limits: {cpu: 500m, memory: 256Mi, ephemeral-storage: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - {name: scripts, mountPath: /opt/repetly-backup, readOnly: true}
+            - {name: work, mountPath: /work}
+      volumes:
+        - name: scripts
+          configMap:
+            name: repetly-postgres-backup-scripts
+            defaultMode: 0555
+        - name: work
+          emptyDir: {medium: Memory, sizeLimit: 512Mi}
+        - name: database-ca
+          secret:
+            secretName: repetly-postgres-backup-db-ca
+            defaultMode: 0444
