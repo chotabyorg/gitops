@@ -11,12 +11,11 @@ resources:
   - sealed-secrets.yaml
 patches:
   - path: repetly-deployment-wave-patch.yaml
-  # Issue #75 RESUME-CLOSED after the retained migration Job completed and the
-  # aggregate production postflight passed. Backup/restore evidence:
+  # Issue #75 OPEN after migration, production postflight, one Ready pod, and
+  # direct-to-pod smoke checks passed. Backup/restore evidence:
   # https://github.com/chotabyorg/repetly/issues/75#issuecomment-5025216959
-  # Keep public traffic closed until the new pod is Ready and direct smoke
-  # checks pass; do not recreate or rerun the migration Job.
-  - path: operations/secure-telegram-linking/resume-closed/service-traffic-closed-patch.yaml
+  # The migration Job stays absent; the verified digest and release identity
+  # remain pinned while the ordinary Service selector is restored.
   - path: operations/secure-telegram-linking/release-identity-patch.yaml
 namespace: prod
 images:
