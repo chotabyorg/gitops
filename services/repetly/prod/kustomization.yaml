@@ -11,11 +11,17 @@ resources:
   - sealed-secrets.yaml
 patches:
   - path: repetly-deployment-wave-patch.yaml
+  # Issue #75 planned maintenance STOP. Backup/restore evidence:
+  # https://github.com/chotabyorg/repetly/issues/75#issuecomment-5025216959
+  # After observed zero Repetly pods/endpoints, run the post-drain aggregate
+  # preflight; do not run a migration automatically.
+  - path: operations/secure-telegram-linking/stop/service-traffic-closed-patch.yaml
+  - path: operations/secure-telegram-linking/stop/replicas-zero-patch.yaml
 namespace: prod
 images:
   - name: repetly
     newName: ghcr.io/chotabyorg/repetly
-    newTag: "cd7ea68"
+    digest: sha256:e45fd2627abf222eb275e4beed7e715e3e992213a991378ba766fb367092d894
 configMapGenerator:
   - name: repetly-config
     env: config.properties
