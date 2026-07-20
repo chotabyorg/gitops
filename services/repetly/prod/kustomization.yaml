@@ -9,6 +9,7 @@ resources:
   - minio-service.yaml
   - minio-sealed-secrets.yaml
   - sealed-secrets.yaml
+  - operations/secure-telegram-linking/migrate/migration-job.yaml
 patches:
   - path: repetly-deployment-wave-patch.yaml
   # Issue #75 planned maintenance STOP. Backup/restore evidence:
@@ -17,12 +18,12 @@ patches:
   # preflight; do not run a migration automatically.
   - path: operations/secure-telegram-linking/stop/service-traffic-closed-patch.yaml
   - path: operations/secure-telegram-linking/stop/replicas-zero-patch.yaml
+  - path: operations/secure-telegram-linking/release-identity-patch.yaml
 namespace: prod
 images:
   - name: repetly
     newName: ghcr.io/chotabyorg/repetly
-    digest: sha256:e45fd2627abf222eb275e4beed7e715e3e992213a991378ba766fb367092d894
-    newTag: 3f3b769
+    digest: sha256:1fe2b603a398011cbe93166fdf0ddecfa0569c0aaf0ad9a68d5c99ac5aabed9b
 configMapGenerator:
   - name: repetly-config
     env: config.properties
