@@ -28,7 +28,7 @@ REVOKE CREATE ON SCHEMA public FROM repetly_backup;
 REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM repetly_backup;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO repetly_backup;
 REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM repetly_backup;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO repetly_backup;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO repetly_backup;
 
 -- The owner named here must remain the owner that creates Repetly objects.
 -- If ownership changes, update this clause and rerun through the same channel.
@@ -39,6 +39,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE repetly IN SCHEMA public
 ALTER DEFAULT PRIVILEGES FOR ROLE repetly IN SCHEMA public
   REVOKE ALL ON SEQUENCES FROM repetly_backup;
 ALTER DEFAULT PRIVILEGES FOR ROLE repetly IN SCHEMA public
-  GRANT USAGE, SELECT ON SEQUENCES TO repetly_backup;
+  GRANT SELECT ON SEQUENCES TO repetly_backup;
 
 COMMIT;

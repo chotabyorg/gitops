@@ -19,6 +19,18 @@ done
 [[ -f "${PACKAGE_DIR}/restore/reader-credentials.secret.yaml.template" ]] \
   || fail 'restore reader Secret template is missing'
 
+ruby - "${PACKAGE_DIR}/role/postgres-backup-role.sql" <<'RUBY'
+role_sql = File.read(ARGV.fetch(0))
+sequence_grants = role_sql.scan(/\bGRANT\b.*?;/mi).select do |grant|
+  grant.match?(/\bON\s+(?:ALL\s+)?SEQUENCES\b/i)
+end
+
+abort "backup role must define current and future sequence grants" unless sequence_grants.length == 2
+abort "backup role sequence grants must be SELECT-only so it cannot call nextval or advance sequence state" unless sequence_grants.all? do |grant|
+  grant.gsub(/\s+/, " ").match?(/\AGRANT SELECT ON (?:ALL )?SEQUENCES\b/i)
+end
+RUBY
+
 grep -Eq '^[[:space:]]*PGDATABASE:[[:space:]]*repetly[[:space:]]*$' \
   "${PACKAGE_DIR}/backup/backup-config.yaml" \
   || fail 'non-secret database name must reach both split backup phases'

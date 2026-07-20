@@ -20,11 +20,14 @@ identity, which currently has elevated rights.
 
 The role is LOGIN, `NOSUPERUSER`, `NOCREATEDB`, `NOCREATEROLE`,
 `NOREPLICATION`, `NOBYPASSRLS`, and `NOINHERIT`. It receives only CONNECT,
-schema USAGE, table SELECT, and sequence USAGE/SELECT in `public`; it receives
-no password in this SQL and no table or sequence write privilege. PostgreSQL may
-still expose the database-wide `TEMPORARY` privilege through its default `PUBLIC`
-grant. A role-specific `REVOKE` cannot override that additive grant; removing it
-would be a separately reviewed database-wide change and is not hidden here.
+schema USAGE, table SELECT, and sequence SELECT in `public`; it receives no
+password in this SQL and no table or sequence write privilege. It deliberately
+does not receive sequence USAGE or UPDATE, so it cannot call `nextval` or mutate
+sequence state; sequence SELECT remains sufficient for `pg_dump` to read the
+sequence state. PostgreSQL may still expose the database-wide `TEMPORARY`
+privilege through its default `PUBLIC` grant. A role-specific `REVOKE` cannot
+override that additive grant; removing it would be a separately reviewed
+database-wide change and is not hidden here.
 
 Before activation, run a sanitized verification that returns only booleans and
 aggregates:
@@ -53,12 +56,25 @@ SELECT has_database_privilege('repetly_backup', 'repetly', 'CONNECT') AS can_con
 FROM pg_class AS c
 JOIN pg_namespace AS n ON n.oid = c.relnamespace
 WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p', 'v', 'm', 'f');
+
+SELECT count(*) FILTER (
+         WHERE has_sequence_privilege('repetly_backup', c.oid, 'USAGE')
+            OR has_sequence_privilege('repetly_backup', c.oid, 'UPDATE')
+       ) AS sequence_state_mutation_capabilities,
+       count(*) FILTER (
+         WHERE NOT has_sequence_privilege('repetly_backup', c.oid, 'SELECT')
+       ) AS unreadable_sequences
+FROM pg_class AS c
+JOIN pg_namespace AS n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind = 'S';
 ```
 
 Expected result: `can_connect=true`, `no_direct_temp_grant=true`, every elevated
-role attribute false, and `writable_relations=0`. `effective_temp` may be true
-only because of the database-wide `PUBLIC` grant; record that explicitly in the
-activation review rather than claiming a role-specific denial.
+role attribute false, `writable_relations=0`,
+`sequence_state_mutation_capabilities=0`, and `unreadable_sequences=0`.
+`effective_temp` may be true only because of the database-wide `PUBLIC` grant;
+record that explicitly in the activation review rather than claiming a
+role-specific denial.
 
 ## Row-level security caveat
 
