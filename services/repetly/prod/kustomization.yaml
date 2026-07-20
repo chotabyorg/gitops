@@ -22,6 +22,7 @@ images:
   - name: repetly
     newName: ghcr.io/chotabyorg/repetly
     digest: sha256:e45fd2627abf222eb275e4beed7e715e3e992213a991378ba766fb367092d894
+    newTag: 3f3b769
 configMapGenerator:
   - name: repetly-config
     env: config.properties
