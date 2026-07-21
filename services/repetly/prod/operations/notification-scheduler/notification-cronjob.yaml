@@ -14,7 +14,7 @@ spec:
   timeZone: Etc/UTC
   # Activation is a separate reviewed GitOps transition after the application
   # digest, migrations, runtime health, and the rotated secret are verified.
-  suspend: true
+  suspend: false
   concurrencyPolicy: Forbid
   startingDeadlineSeconds: 30
   successfulJobsHistoryLimit: 3
