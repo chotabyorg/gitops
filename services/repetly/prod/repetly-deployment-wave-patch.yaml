@@ -10,5 +10,5 @@ spec:
       annotations:
         # Rotate the Pod template so the application reloads CRON_SECRET before
         # the separately reviewed CronJob activation transition.
-        repetly.chota.by/cron-secret-revision: "2026-07-21-1"
+        repetly.chota.by/cron-secret-revision: "2026-07-21-2"
         repetly.chota.by/telegram-webhook-secret-revision: "2026-07-14-1"
