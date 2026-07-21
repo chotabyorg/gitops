@@ -1,0 +1,80 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: repetly-notification-scheduler
+  labels:
+    app: repetly
+    component: notification-scheduler
+  annotations:
+    repetly.chota.by/operation: notification-scheduler
+    repetly.chota.by/application-release: 42333d2007a07d3bec63879eb3c240c0d40cf9e9
+    repetly.chota.by/activation-required: "true"
+spec:
+  schedule: "* * * * *"
+  timeZone: Etc/UTC
+  # Activation is a separate reviewed GitOps transition after the application
+  # digest, migrations, runtime health, and the rotated secret are verified.
+  suspend: true
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 30
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 50
+      ttlSecondsAfterFinished: 86400
+      template:
+        metadata:
+          labels:
+            app: repetly
+            component: notification-scheduler
+        spec:
+          automountServiceAccountToken: false
+          enableServiceLinks: false
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: invoke
+              image: curlimages/curl:8.16.0@sha256:5a91ea0c9c3ee27b4abe657b68cf6bf0676afa13b236b3bda34283cb3924d4f6
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  printf 'header = "x-cron-secret: %s"\n' "${CRON_SECRET}" |
+                    curl --config - \
+                      --fail \
+                      --silent \
+                      --show-error \
+                      --request POST \
+                      --connect-timeout 5 \
+                      --max-time 45 \
+                      --output /dev/null \
+                      --url http://repetly.prod.svc.cluster.local:3000/api/cron/notifications
+                  printf '%s\n' 'notification cron completed'
+              env:
+                - name: CRON_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: repetly-secret
+                      key: CRON_SECRET
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                  ephemeral-storage: 8Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+                  ephemeral-storage: 64Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                readOnlyRootFilesystem: true
