@@ -47,6 +47,16 @@ spec:
                 - /bin/sh
                 - -ec
                 - |
+                  if [ "${#CRON_SECRET}" -ne 64 ]; then
+                    printf '%s\n' 'CRON_SECRET must be exactly 64 lowercase hex characters' >&2
+                    exit 1
+                  fi
+                  case "${CRON_SECRET}" in
+                    *[!0-9a-f]*)
+                      printf '%s\n' 'CRON_SECRET must be exactly 64 lowercase hex characters' >&2
+                      exit 1
+                      ;;
+                  esac
                   printf 'header = "x-cron-secret: %s"\n' "${CRON_SECRET}" |
                     curl --config - \
                       --fail \
