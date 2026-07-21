@@ -9,6 +9,7 @@ resources:
   - minio-service.yaml
   - minio-sealed-secrets.yaml
   - sealed-secrets.yaml
+  - operations/notification-scheduler
 patches:
   - path: repetly-deployment-wave-patch.yaml
   # Issue #75 OPEN after migration, production postflight, one Ready pod, and
