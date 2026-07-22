@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: prod
 resources:
   - service-demo-external.yaml
+  - ingressroute-chota-http.yaml
   - ingressroute-outsors.yaml
   - ingressroute-www.yaml
   - ingressroute-api.yaml
