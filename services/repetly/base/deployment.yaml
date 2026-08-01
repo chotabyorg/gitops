@@ -34,9 +34,16 @@ spec:
                 name: repetly-config
             - secretRef:
                 name: repetly-secret
+          startupProbe:
+            httpGet:
+              path: /api/health/live
+              port: 3000
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 30
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/health/live
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 30
@@ -44,7 +51,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/health/ready
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
