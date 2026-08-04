@@ -1,0 +1,35 @@
+name: Repetly backup and restore contracts
+
+on:
+  pull_request:
+    paths:
+      - "services/repetly/prod/operations/postgres-backup/**"
+      - ".github/workflows/repetly-postgres-backup-contracts.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "services/repetly/prod/operations/postgres-backup/**"
+      - ".github/workflows/repetly-postgres-backup-contracts.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check script syntax
+        run: |
+          bash -n services/repetly/prod/operations/postgres-backup/backup/backup.sh
+          bash -n services/repetly/prod/operations/postgres-backup/restore/restore.sh
+          bash -n services/repetly/prod/operations/postgres-backup/backup/tests/test-backup-script.sh
+          bash -n services/repetly/prod/operations/postgres-backup/restore/test_restore_runner.sh
+      - name: Run backup contract tests
+        run: services/repetly/prod/operations/postgres-backup/backup/tests/test-backup-script.sh
+      - name: Run isolated restore contract tests
+        run: |
+          services/repetly/prod/operations/postgres-backup/restore/test_restore_runner.sh
+          services/repetly/prod/operations/postgres-backup/restore/test_restore_contract.sh
+      - name: Run package contract tests
+        run: services/repetly/prod/operations/postgres-backup/tests/test-package-contract.sh
