@@ -1,6 +1,6 @@
 # Repetly PostgreSQL backup and verified restore
 
-This directory is an **inert operations package** for issue #8. It is deliberately
+This directory is an **inert operations package** for Repetly issue #150. It is deliberately
 absent from `services/repetly/prod/kustomization.yaml`, the scheduled backup is
 suspended, and executable images use non-runnable digest sentinels. Merging this
 package does not create a CronJob, Job, Secret, database role, or storage object.
@@ -69,7 +69,7 @@ activation change:
 
 ## First-time validation
 
-From the GitOps repository root:
+Contract tests run in `.github/workflows/repetly-postgres-backup-contracts.yaml` on every change to this package. From the GitOps repository root:
 
 ```sh
 services/repetly/prod/operations/postgres-backup/validate.sh
