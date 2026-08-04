@@ -13,4 +13,4 @@ spec:
         repetly.chota.by/cron-secret-revision: "2026-07-21-2"
         repetly.chota.by/telegram-webhook-secret-revision: "2026-07-14-1"
         # Force ArgoCD to replace any pod rendered before the health/proxy contract rollout.
-        repetly.chota.by/health-rollout-revision: "2026-08-04-1"
+        repetly.chota.by/health-rollout-revision: "2026-08-04-2"
