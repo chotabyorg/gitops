@@ -14,8 +14,7 @@ BUCKET="repetly-backup-drill"
 ACCESS_KEY="repetly-drill-writer"
 SECRET_KEY="repetly-drill-writer-secret"
 DB_PASSWORD="repetly-drill-db-password"
-RUN_ID="$GITHUB_RUN_ID"
-[ -n "$RUN_ID" ] || RUN_ID=local
+RUN_ID="${GITHUB_RUN_ID:-local}"
 
 rm -rf "$WORK"
 mkdir -p "$WORK" "$REPORT_DIR"
@@ -36,7 +35,7 @@ for command in aws docker jq openssl sha256sum; do
   command -v "$command" >/dev/null 2>&1 || fail "missing-$command"
 done
 
-docker run -d --name "$MINIO" --network host \
+docker run -d --name "$MINIO" -p 9000:9000 \
   -e MINIO_ROOT_USER="$ACCESS_KEY" \
   -e MINIO_ROOT_PASSWORD="$SECRET_KEY" \
   "$MINIO_IMAGE" server /data --address :9000 >/dev/null
@@ -52,7 +51,7 @@ aws --endpoint-url http://127.0.0.1:9000 s3api create-bucket --bucket "$BUCKET" 
 aws --endpoint-url http://127.0.0.1:9000 s3api put-bucket-versioning \
   --bucket "$BUCKET" --versioning-configuration Status=Enabled
 
-docker run -d --name "$SOURCE" --network host \
+docker run -d --name "$SOURCE" -p 55431:5432 \
   -e POSTGRES_USER=drill \
   -e POSTGRES_PASSWORD="$DB_PASSWORD" \
   -e POSTGRES_DB=repetly \
@@ -99,7 +98,7 @@ file_version="$(aws --endpoint-url http://127.0.0.1:9000 s3api head-object \
   --bucket "$BUCKET" --key "$file_key" --query VersionId --output text)"
 backup_finished="$(date +%s)"
 
-docker run -d --name "$RESTORE" --network host \
+docker run -d --name "$RESTORE" -p 55432:5432 \
   -e POSTGRES_USER=restore_drill \
   -e POSTGRES_PASSWORD="$DB_PASSWORD" \
   -e POSTGRES_DB=repetly_restore_drill \
