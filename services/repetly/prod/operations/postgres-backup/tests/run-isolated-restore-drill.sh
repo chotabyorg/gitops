@@ -120,7 +120,7 @@ restored_file_sha="$(sha256sum "$WORK/restored-file.txt" | awk '{print $1}')"
 
 docker cp "$WORK/restored.dump" "$RESTORE:/tmp/restored.dump" >/dev/null
 docker exec -e PGPASSWORD="$DB_PASSWORD" "$RESTORE" \
-  pg_restore --dbname=repetly_restore_drill --single-transaction \
+  pg_restore -U restore_drill --dbname=repetly_restore_drill --single-transaction \
   --exit-on-error --no-owner --no-privileges /tmp/restored.dump >/dev/null
 db_facts="$(docker exec -e PGPASSWORD="$DB_PASSWORD" "$RESTORE" \
   psql -U restore_drill -d repetly_restore_drill -At -c \
