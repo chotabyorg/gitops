@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: repetly
   annotations:
-    repetly.chota.by/application-commit: 3ff2de7ec1fda1409b5faaa79af50bce66fa5330
+    repetly.chota.by/application-commit: 43b8392e8cfaebb05a69cf57b00aa7311e1c7060
     # Fail-closed inert sentinel. An execution PR must replace this with the
     # independently verified digest used by every Repetly workload container.
-    repetly.chota.by/application-image-digest: sha256:631eaa4912baeea80d928d1f98c210ca9ec86a321855ff6730384fb069e4ab50
+    repetly.chota.by/application-image-digest: sha256:c664c45a78e7abd84b8bf98b1c34137eb2aa3a9b7abfb368fb8d2de741372478
