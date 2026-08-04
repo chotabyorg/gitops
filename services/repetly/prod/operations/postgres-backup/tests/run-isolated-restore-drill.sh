@@ -77,8 +77,7 @@ docker exec "$SOURCE" pg_dump -U drill -d repetly --format=custom > "$WORK/backu
 archive_sha="$(sha256sum "$WORK/backup.dump" | awk '{print $1}')"
 archive_size="$(wc -c < "$WORK/backup.dump" | tr -d '[:space:]')"
 aws --endpoint-url http://127.0.0.1:9000 s3api put-object \
-  --bucket "$BUCKET" --key "$object_key" --body "$WORK/backup.dump" \
-  --server-side-encryption AES256 >/dev/null
+  --bucket "$BUCKET" --key "$object_key" --body "$WORK/backup.dump" >/dev/null
 archive_version="$(aws --endpoint-url http://127.0.0.1:9000 s3api head-object \
   --bucket "$BUCKET" --key "$object_key" --query VersionId --output text)"
 marker_key="$object_key.complete.json"
@@ -87,13 +86,11 @@ jq -n --arg key "$object_key" --arg version "$archive_version" \
   '{status:"complete",object_key:$key,object_version:$version,sha256:$sha,size_bytes:$size}' \
   > "$WORK/marker.json"
 aws --endpoint-url http://127.0.0.1:9000 s3api put-object \
-  --bucket "$BUCKET" --key "$marker_key" --body "$WORK/marker.json" \
-  --server-side-encryption AES256 >/dev/null
+  --bucket "$BUCKET" --key "$marker_key" --body "$WORK/marker.json" >/dev/null
 marker_version="$(aws --endpoint-url http://127.0.0.1:9000 s3api head-object \
   --bucket "$BUCKET" --key "$marker_key" --query VersionId --output text)"
 aws --endpoint-url http://127.0.0.1:9000 s3api put-object \
-  --bucket "$BUCKET" --key "$file_key" --body "$WORK/fixture.txt" \
-  --server-side-encryption AES256 >/dev/null
+  --bucket "$BUCKET" --key "$file_key" --body "$WORK/fixture.txt" >/dev/null
 file_version="$(aws --endpoint-url http://127.0.0.1:9000 s3api head-object \
   --bucket "$BUCKET" --key "$file_key" --query VersionId --output text)"
 backup_finished="$(date +%s)"
@@ -155,6 +152,7 @@ jq -n \
     finished_at:$finished_at,
     database_restore:"PASS",
     files_restore:"PASS",
+    storage_encryption:"not_configured_in_disposable_minio",
     archive_checksum_verified:($archive_sha == $archive_sha),
     file_checksum_match:($fixture_sha == $restored_file_sha),
     archive:{object_key:$object_key,version:$archive_version,size_bytes:$archive_size,sha256:$archive_sha},
