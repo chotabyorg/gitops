@@ -12,6 +12,7 @@ resources:
   - operations/notification-scheduler
 patches:
   - path: repetly-deployment-wave-patch.yaml
+  - path: storage-disabled-rollback-patch.yaml
   # Issue #75 OPEN after migration, production postflight, one Ready pod, and
   # direct-to-pod smoke checks passed. Backup/restore evidence:
   # https://github.com/chotabyorg/repetly/issues/75#issuecomment-5025216959
