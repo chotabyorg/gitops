@@ -22,11 +22,8 @@ spec:
             - name: rabbitmq-data
               mountPath: /var/lib/rabbitmq
           livenessProbe:
-            exec:
-              command:
-                - rabbitmq-diagnostics
-                - -q
-                - ping
+            tcpSocket:
+              port: 5672
             initialDelaySeconds: 20
             periodSeconds: 30
             timeoutSeconds: 10
