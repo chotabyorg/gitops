@@ -29,11 +29,8 @@ spec:
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
-            exec:
-              command:
-                - rabbitmq-diagnostics
-                - -q
-                - ping
+            tcpSocket:
+              port: 5672
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
