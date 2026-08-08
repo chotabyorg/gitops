@@ -1,0 +1,23 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: repetly-file-scanner-internal
+  labels:
+    app.kubernetes.io/name: repetly-file-scanner
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      # This private DNS name and certificate are infrastructure-owner inputs.
+      # Do not replace this with a public route without an architecture review.
+      match: Host(`repetly-file-scanner.internal.chota.by`)
+      services:
+        - kind: Service
+          name: repetly-file-scanner
+          namespace: prod
+          port: 8080
+  tls:
+    secretName: repetly-file-scanner-tls
