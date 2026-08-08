@@ -19,6 +19,14 @@ done
 [[ -f "${PACKAGE_DIR}/restore/reader-credentials.secret.yaml.template" ]] \
   || fail 'restore reader Secret template is missing'
 
+drill_script="${PACKAGE_DIR}/tests/run-isolated-restore-drill.sh"
+grep -Fq 'archive_checksum_verified:($archive_sha == $restored_archive_sha)' "${drill_script}" \
+  || fail 'restore drill report must compare the restored archive checksum'
+grep -Fq 'openssl dgst -sha256 -verify' "${drill_script}" \
+  || fail 'restore drill must verify the detached report signature'
+grep -Fq 'signature-verification.txt' "${drill_script}" \
+  || fail 'restore drill must publish signature verification evidence'
+
 ruby - "${PACKAGE_DIR}/role/postgres-backup-role.sql" <<'RUBY'
 role_sql = File.read(ARGV.fetch(0))
 sequence_grants = role_sql.scan(/\bGRANT\b.*?;/mi).select do |grant|
