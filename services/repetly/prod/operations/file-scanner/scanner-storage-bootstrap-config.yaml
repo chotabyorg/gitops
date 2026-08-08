@@ -12,7 +12,10 @@ data:
         {
           "Effect": "Allow",
           "Action": ["s3:GetObject"],
-          "Resource": ["arn:aws:s3:::repetly-homework/*"]
+          "Resource": [
+            "arn:aws:s3:::repetly-homework/homework/*",
+            "arn:aws:s3:::repetly-homework/staging/homework/*"
+          ]
         }
       ]
     }

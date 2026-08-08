@@ -65,13 +65,25 @@ spec:
                   echo "Failed to reconcile the scanner storage identity."
                   exit 1
                 }
+                echo "Scanner user already exists; mc cannot compare its secret key. Owner-controlled credential rotation and verification remain an activation prerequisite."
               fi
 
-              if ! mc admin policy info repetly repetly-homework-scanner-read >/dev/null 2>&1; then
+              policy_tmp=$(mktemp)
+              if mc admin policy info repetly repetly-homework-scanner-read --policy-file "$policy_tmp" >/dev/null 2>&1; then
+                expected_policy_hash=$(tr -d '[:space:]' < /bootstrap/policy.json | sha256sum | cut -d ' ' -f 1)
+                actual_policy_hash=$(tr -d '[:space:]' < "$policy_tmp" | sha256sum | cut -d ' ' -f 1)
+                if [ "$expected_policy_hash" != "$actual_policy_hash" ]; then
+                  echo "Scanner policy drift detected; replacing the named policy before attachment."
+                  mc admin policy detach repetly repetly-homework-scanner-read --user "$SCANNER_ACCESS_KEY_ID" >/dev/null 2>&1 || true
+                  mc admin policy remove repetly repetly-homework-scanner-read
+                  mc admin policy create repetly repetly-homework-scanner-read /bootstrap/policy.json
+                fi
+              else
                 mc admin policy create repetly repetly-homework-scanner-read /bootstrap/policy.json
               fi
+              rm -f "$policy_tmp"
               mc admin policy attach repetly repetly-homework-scanner-read --user "$SCANNER_ACCESS_KEY_ID"
-              echo "Repetly scanner read-only storage identity is ready."
+              echo "Repetly scanner policy is reconciled. Credential equality and absence of other user policies still require owner verification before activation."
           resources:
             requests:
               cpu: 10m
