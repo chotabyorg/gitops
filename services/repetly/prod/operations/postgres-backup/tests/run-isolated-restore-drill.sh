@@ -140,6 +140,7 @@ jq -n \
   --arg archive_version "$archive_version" \
   --arg marker_version "$marker_version" \
   --arg archive_sha "$archive_sha" \
+  --arg restored_archive_sha "$restored_archive_sha" \
   --arg fixture_sha "$fixture_sha" \
   --arg restored_file_sha "$restored_file_sha" \
   --argjson archive_size "$archive_size" \
@@ -153,7 +154,7 @@ jq -n \
     database_restore:"PASS",
     files_restore:"PASS",
     storage_encryption:"not_configured_in_disposable_minio",
-    archive_checksum_verified:($archive_sha == $archive_sha),
+    archive_checksum_verified:($archive_sha == $restored_archive_sha),
     file_checksum_match:($fixture_sha == $restored_file_sha),
     archive:{object_key:$object_key,version:$archive_version,size_bytes:$archive_size,sha256:$archive_sha},
     completion_marker_version:$marker_version,
@@ -167,6 +168,10 @@ openssl rsa -in "$REPORT_DIR/ephemeral-signing-key.pem" -pubout \
   -out "$REPORT_DIR/ephemeral-signing-public.pem" >/dev/null 2>&1
 openssl dgst -sha256 -sign "$REPORT_DIR/ephemeral-signing-key.pem" \
   -out "$REPORT_DIR/report.json.sig" "$REPORT_DIR/report.json"
+openssl dgst -sha256 -verify "$REPORT_DIR/ephemeral-signing-public.pem" \
+  -signature "$REPORT_DIR/report.json.sig" "$REPORT_DIR/report.json" >/dev/null 2>&1 \
+  || fail report-signature
+printf '%s\n' 'PASS: report signature verified' > "$REPORT_DIR/signature-verification.txt"
 rm -f "$REPORT_DIR/ephemeral-signing-key.pem"
 printf 'restore-drill status=PASS database=PASS files=PASS rpo_seconds=%s rto_seconds=%s\n' \
   "$rpo_seconds" "$rto_seconds"
