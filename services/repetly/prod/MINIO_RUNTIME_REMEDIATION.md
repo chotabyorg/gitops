@@ -76,6 +76,13 @@ The candidate is newer than every fixed release listed above and is available
 from the official AIStor release feed. The digest is recorded as a candidate
 only; it is not authorized for the active production overlay.
 
+The current Repetly CI workflow is not an exact-target validation: it starts
+the historical open-source image
+`minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e`
+and the historical `minio/mc` pin. Those checks are useful application
+regression coverage, but they do not prove that this AIStor candidate starts,
+preserves the S3 contract, or accepts the current IAM policy.
+
 ### Option B — AIStor Operator/ObjectStore migration
 
 This is the vendor-documented Kubernetes migration path. It installs the
