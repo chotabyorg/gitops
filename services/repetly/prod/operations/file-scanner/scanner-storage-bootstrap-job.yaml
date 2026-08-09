@@ -1,0 +1,111 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: repetly-file-scanner-storage-bootstrap
+  labels:
+    app.kubernetes.io/name: repetly-file-scanner
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  activeDeadlineSeconds: 600
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: repetly-file-scanner-storage-bootstrap
+    spec:
+      restartPolicy: OnFailure
+      automountServiceAccountToken: false
+      containers:
+        - name: bootstrap
+          image: minio/mc@sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727
+          env:
+            - name: MC_CONFIG_DIR
+              value: /tmp/.mc
+            - name: MINIO_ENDPOINT
+              value: http://repetly-minio:9000
+            - name: MINIO_BUCKET
+              value: repetly-homework
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-minio-secret
+                  key: MINIO_ROOT_USER
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-minio-secret
+                  key: MINIO_ROOT_PASSWORD
+            - name: SCANNER_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-file-scanner-s3-access
+                  key: S3_ACCESS_KEY_ID
+            - name: SCANNER_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: repetly-file-scanner-s3-secret
+                  key: S3_SECRET_ACCESS_KEY
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              until mc alias set repetly "$MINIO_ENDPOINT" "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do
+                echo "Waiting for Repetly MinIO API..."
+                sleep 2
+              done
+
+              mc mb --ignore-existing --region us-east-1 "repetly/$MINIO_BUCKET"
+              mc anonymous set private "repetly/$MINIO_BUCKET"
+
+              if ! mc admin user add repetly "$SCANNER_ACCESS_KEY_ID" "$SCANNER_SECRET_ACCESS_KEY" >/dev/null 2>&1; then
+                mc admin user info repetly "$SCANNER_ACCESS_KEY_ID" >/dev/null 2>&1 || {
+                  echo "Failed to reconcile the scanner storage identity."
+                  exit 1
+                }
+                echo "Scanner user already exists; mc cannot compare its secret key. Owner-controlled credential rotation and verification remain an activation prerequisite."
+              fi
+
+              policy_tmp=$(mktemp)
+              if mc admin policy info repetly repetly-homework-scanner-read --policy-file "$policy_tmp" >/dev/null 2>&1; then
+                expected_policy_hash=$(tr -d '[:space:]' < /bootstrap/policy.json | sha256sum | cut -d ' ' -f 1)
+                actual_policy_hash=$(tr -d '[:space:]' < "$policy_tmp" | sha256sum | cut -d ' ' -f 1)
+                if [ "$expected_policy_hash" != "$actual_policy_hash" ]; then
+                  echo "Scanner policy drift detected; replacing the named policy before attachment."
+                  mc admin policy detach repetly repetly-homework-scanner-read --user "$SCANNER_ACCESS_KEY_ID" >/dev/null 2>&1 || true
+                  mc admin policy remove repetly repetly-homework-scanner-read
+                  mc admin policy create repetly repetly-homework-scanner-read /bootstrap/policy.json
+                fi
+              else
+                mc admin policy create repetly repetly-homework-scanner-read /bootstrap/policy.json
+              fi
+              rm -f "$policy_tmp"
+              mc admin policy attach repetly repetly-homework-scanner-read --user "$SCANNER_ACCESS_KEY_ID"
+              echo "Repetly scanner policy is reconciled. Credential equality and absence of other user policies still require owner verification before activation."
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+              ephemeral-storage: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+              ephemeral-storage: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          volumeMounts:
+            - name: bootstrap-config
+              mountPath: /bootstrap
+              readOnly: true
+      volumes:
+        - name: bootstrap-config
+          configMap:
+            name: repetly-file-scanner-bootstrap

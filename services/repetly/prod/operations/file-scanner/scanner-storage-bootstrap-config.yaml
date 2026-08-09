@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: repetly-file-scanner-bootstrap
+  labels:
+    app.kubernetes.io/name: repetly-file-scanner
+data:
+  policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": ["s3:GetObject"],
+          "Resource": [
+            "arn:aws:s3:::repetly-homework/homework/*",
+            "arn:aws:s3:::repetly-homework/staging/homework/*"
+          ]
+        }
+      ]
+    }

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: repetly-clamav
+  labels:
+    app.kubernetes.io/name: repetly-clamav
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: repetly-clamav
+  ports:
+    - name: clamd
+      port: 3310
+      targetPort: clamd
+      protocol: TCP
