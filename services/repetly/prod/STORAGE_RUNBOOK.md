@@ -29,7 +29,9 @@ The package contains:
   bounded scanner configuration, and a placeholder that must be replaced by a
   published immutable scanner image digest;
 - an idempotent MinIO bootstrap hook that grants only `s3:GetObject` on
-  `repetly-homework/*` to the scanner identity;
+  `homework/*` and `staging/homework/*` within `repetly-homework` to the scanner
+  identity; this covers canonical homework/chat objects and teacher/student
+  staging objects without granting bucket-wide access;
 - three separate secret templates for the scanner bearer token, S3 access key,
   and S3 secret key; and
 - a Traefik HTTPS route contract using the private DNS name
@@ -109,10 +111,15 @@ for ArgoCD `repetly-prod` to report Synced/Healthy. Then verify:
    delete, list, or administer objects.
 6. Browser PUTs for teacher attachments and student submissions must target only
    a `staging/...` key. Verify the application performs HEAD/GET `If-Match`, scans
-   that ETag, then uses conditional server-side copy with destination
-   `If-None-Match: *` and source `x-amz-copy-source-if-match` before marking the
-   canonical object READY. Replay of an old browser URL may only replace its
-   staging object and must never change a promoted canonical object.
+   that ETag, then reads the complete staging object with `GET` and
+   `If-Match: <expected ETag>` before streaming it through a server-controlled
+   `PutObject` to the canonical `homework/...` key with `If-None-Match: *`.
+   Reconciliation must use the server-owned promotion token, expected source
+   ETag metadata, and expected size before marking the canonical object READY.
+   Replay of an old browser URL may only replace its staging object and must
+   never change a promoted canonical object. If the exact pinned MinIO
+   deployment cannot provide atomic create-only semantics, stop and keep
+   storage activation blocked.
 
 Do not run EICAR or failure injection against production without explicit
 approval and a cleanup plan. Prefer an isolated cluster or maintenance window.
@@ -144,9 +151,10 @@ keep objects quarantined.
 4. Confirm `https://repetly-storage.chota.by/minio/health/live` responds successfully over HTTPS.
 5. Send an OPTIONS preflight from origin `https://repetly.chota.by` for PUT with
    `Content-Type`; confirm the response allows that origin and method. The
-   browser PUT is staging-only; immutable canonical promotion is server-side.
+   browser PUT is staging-only; immutable canonical promotion is a
+   server-controlled conditional `PutObject`.
 6. Confirm an unsigned request for a non-existent object under `repetly-homework` is denied rather than exposing a bucket listing.
-7. Use approved tutor/student test accounts to upload and download a tiny generated text file. Confirm the signed PUT, server-side HEAD completion, signed GET, and expiry behavior. Remove the test object and product metadata afterward.
+7. Use approved tutor/student test accounts to upload and download a tiny generated text file. Confirm the browser PUT targets staging, server-side HEAD/GET `If-Match` validation and scanner binding, canonical `PutObject` with `If-None-Match: *`, promotion-marker reconciliation, signed GET, and expiry behavior. Remove the test object and product metadata afterward.
 8. Review Repetly and MinIO logs for configuration errors without printing environment variables, credentials, or signed URLs.
 
 ## Rollback
