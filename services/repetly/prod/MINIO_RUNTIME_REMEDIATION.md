@@ -83,6 +83,16 @@ and the historical `minio/mc` pin. Those checks are useful application
 regression coverage, but they do not prove that this AIStor candidate starts,
 preserves the S3 contract, or accepts the current IAM policy.
 
+A disposable linux/amd64 smoke of the exact candidate was run locally on
+2026-08-09 using tmpfs only. The image reported version
+`2026-08-07T18:34:35Z`, formatted one pool with one online drive, and returned
+live health `200`. Readiness returned `503`; `mc admin info` confirmed the
+version and drive, but bucket creation was denied with `No license is
+installed`. This proves startup/platform behavior and the license gate only;
+it is not S3 contract evidence. Docker Scout was available but could not
+produce the CVE report without Docker registry authentication. The official
+release feed provides CycloneDX and SPDX SBOM artifacts for the candidate.
+
 ### Option B — AIStor Operator/ObjectStore migration
 
 This is the vendor-documented Kubernetes migration path. It installs the
