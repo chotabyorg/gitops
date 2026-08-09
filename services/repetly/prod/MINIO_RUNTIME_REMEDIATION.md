@@ -57,6 +57,9 @@ Primary sources:
 - <https://github.com/minio/minio/security/advisories/GHSA-h749-fxx7-pwpg>
 - <https://github.com/minio/minio/security/advisories/GHSA-3rh2-v3gr-35p9>
 - <https://github.com/minio/minio/security/advisories/GHSA-jjjj-jwhf-8rgr>
+- <https://docs.min.io/aistor/operations/licenses/>
+- <https://docs.min.io/aistor/reference/cli/mc-license/mc-license-update/>
+- <https://www.min.io/pricing>
 
 ## Supported target options
 
@@ -74,7 +77,8 @@ linux/amd64 manifest: sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e8
 
 The candidate is newer than every fixed release listed above and is available
 from the official AIStor release feed. The digest is recorded as a candidate
-only; it is not authorized for the active production overlay.
+only for production; its startup/platform behavior is confirmed below, but it
+is not authorized for the active production overlay.
 
 The current Repetly CI workflow is not an exact-target validation: it starts
 the historical open-source image
@@ -89,9 +93,22 @@ A disposable linux/amd64 smoke of the exact candidate was run locally on
 live health `200`. Readiness returned `503`; `mc admin info` confirmed the
 version and drive, but bucket creation was denied with `No license is
 installed`. This proves startup/platform behavior and the license gate only;
-it is not S3 contract evidence. Docker Scout was available but could not
-produce the CVE report without Docker registry authentication. The official
-release feed provides CycloneDX and SPDX SBOM artifacts for the candidate.
+licensed S3/IAM/storage-contract evidence remains blocked until a valid AIStor
+license is available. Docker Scout was available but could not produce the CVE
+report without Docker registry authentication. The official release feed
+provides CycloneDX and SPDX SBOM artifacts for the candidate.
+
+The owner has authorized AIStor Free for disposable local/Kubernetes rehearsal
+only. The owner has not approved production architecture or migration. To
+obtain the free license, the owner must use the MinIO pricing page's Free
+"Get Started" flow, sign in to MinIO SUBNET, open Deployments, choose License
+Key, and download `minio.license` (or copy the license value). Store it only
+in a local permission-restricted file or secret manager, never Git or logs.
+For a disposable alias, apply it with `mc license update ALIAS /path/to/minio.license`
+or register with `mc license register ALIAS --license /path/to/minio.license`,
+then verify with `mc license info ALIAS`. The owner must provide the file or
+complete the interactive registration; this repository does not contain or
+invent a license.
 
 ### Option B — AIStor Operator/ObjectStore migration
 
@@ -114,17 +131,19 @@ was found that can be pinned as a production target for this workload.
 
 ## Decision gate
 
-The minimum-risk supported direction is **AIStor Free single-node**, but it
-cannot be approved for production until the owner confirms:
+The minimum-risk supported direction remains **AIStor Free single-node** as a
+rehearsal candidate. The owner has approved disposable AIStor Free rehearsal,
+but production architecture and migration are explicitly **not approved**.
+Before production work, the owner must confirm:
 
-1. acceptance of the AIStor license and Free-tier limitations;
+1. acceptance of the AIStor license and Free-tier limitations for production;
 2. whether a one-way migration from this repository-managed workload is
    acceptable, or whether the storage architecture must first move to the
    supported Operator/ObjectStore model; and
 3. the required outage/bake window and an operator with cluster-admin access.
 
-This PR deliberately stops at that gate. It does not invent an in-place
-OSS-Deployment-to-AIStor migration.
+This PR deliberately stops at that production gate. It does not invent an
+in-place OSS-Deployment-to-AIStor migration.
 
 ## Preservation and migration plan after approval
 
@@ -171,7 +190,7 @@ Before any candidate is applied to data-bearing infrastructure:
 
 The following evidence is intentionally **not claimed** by this memo:
 
-- exact target runtime startup/version output;
+- licensed exact-target readiness and S3 service availability;
 - exact-target conditional create, ETag, replay, collision, concurrent-winner,
   lost-response, metadata, range, CORS, signed URL, and normal S3 regression
   results;
@@ -181,10 +200,11 @@ The following evidence is intentionally **not claimed** by this memo:
 - live cluster image, PVC, bucket inventory, credential, console, TLS, and
   NetworkPolicy verification.
 
-The local Docker daemon is unavailable and no production SSH session was
-obtained, so these gates require a disposable Kubernetes environment and
-cluster-owner access. Do not merge an active runtime image change until they
-are attached to the implementation PR.
+The exact candidate startup/platform smoke is complete, but licensed S3
+contract evidence requires the owner-provided Free license. No production SSH
+session was obtained, so live inventory and production preflight still require
+cluster-owner access. Do not merge an active runtime image change until the
+remaining gates are attached to the implementation PR.
 
 ## Activation boundary
 
