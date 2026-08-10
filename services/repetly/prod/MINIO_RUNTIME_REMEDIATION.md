@@ -1,8 +1,9 @@
 # MinIO runtime remediation decision gate
 
-Status: **blocked before runtime change**. This document is a reviewable
-decision memo for GitOps #44. It intentionally does not change the active
-production image, PVC, secrets, storage rollback patch, or scanner activation.
+Status: **decision/evidence record complete; runtime activation remains blocked**.
+This document is the reviewable decision memo for GitOps #44. It intentionally
+does not change the active production image, PVC, secrets, storage rollback
+patch, or scanner activation.
 
 ## Current deployment and security impact
 
@@ -60,7 +61,16 @@ Primary sources:
 - <https://github.com/grpc/grpc-go/security/advisories/GHSA-hrxh-6v49-42gf>
 - <https://docs.min.io/aistor/operations/licenses/>
 - <https://docs.min.io/aistor/reference/cli/mc-license/mc-license-update/>
+- <https://docs.min.io/aistor/reference/cli/>
+- <https://docs.min.io/aistor/operations/release-artifacts/>
 - <https://docs.min.io/aistor/upgrade-aistor-server/>
+- <https://docs.min.io/aistor/installation/kubernetes/install/deploy-aistor-on-kubernetes/>
+- <https://docs.min.io/aistor/reference/kubernetes/>
+- <https://docs.min.io/aistor/reference/kubernetes/pvc-protection/>
+- <https://docs.min.io/aistor/upgrade-aistor-server/open-source-minio/kubernetes/>
+- <https://dl.min.io/aistor/mc/release/notes/release-notes-RELEASE.2026-07-24T01-15-12Z.md>
+- <https://dl.min.io/aistor/mc/release/linux-amd64/archive/mc.RELEASE.2026-07-24T01-15-12Z.sha256sum>
+- <https://quay.io/repository/minio/aistor/mc?tab=tags>
 - <https://trivy.dev/docs/dev/docs/configuration/db/>
 - <https://dl.min.io/aistor/minio/release/notes/>
 - <https://github.com/kubernetes-sigs/kind/releases/tag/v0.32.0>
@@ -69,7 +79,7 @@ Primary sources:
 
 ## Supported target options
 
-### Option A — AIStor Free, single-node
+### Option A — AIStor Free, single-node (disposable evidence only)
 
 AIStor Free is the only vendor-supported free-tier direction that matches the
 current single-compute MVP shape. It requires an active license, supports a
@@ -82,9 +92,11 @@ linux/amd64 manifest: sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e8
 ```
 
 The candidate is newer than every fixed release listed above and is available
-from the official AIStor release feed. The digest is recorded as a candidate
-only for production; its startup/platform behavior is confirmed below, but it
-is not authorized for the active production overlay.
+from the official AIStor release feed. The digest is recorded as a reviewed
+server candidate for the future GREEN environment; its startup/platform
+behavior is confirmed below, but it is not authorized for the active
+production overlay. A raw AIStor `Deployment` is not the final production
+architecture.
 
 The current Repetly CI workflow is not an exact-target validation: it starts
 the historical open-source image
@@ -154,8 +166,48 @@ The direct exact-image result is **0 CRITICAL / 2 HIGH**:
 The direct result is therefore **CONDITIONALLY ACCEPTABLE WITH EXPLICIT
 DISPOSITIONS**, not a clean package-level `SECURITY PASS`: the CVE is closed as
 product-version not affected, while the embedded gRPC finding remains present
-but not runtime-reachable and requires owner risk acceptance. No global ignore,
-`--ignore-unfixed`, or generic suppression was used.
+but not runtime-reachable and is accepted by the owner only with the production
+execution restrictions recorded below. No global ignore, `--ignore-unfixed`, or
+generic suppression was used.
+
+### Separate production admin client (`mc`) gate — 2026-08-10
+
+The server image's embedded `/usr/bin/mc` is not an approved production admin
+tool. It must not be used for production bootstrap, license registration or
+update, probes, lifecycle hooks, admin jobs, background services, or
+troubleshooting automation. The AIStor server container is server-only; its
+normal entrypoint must continue to execute `/usr/bin/minio` only.
+
+The current BLUE bootstrap hook still references the historical separate
+`minio/mc` image. It remains inert behind the existing storage-disabled
+rollback patch and is not GREEN admin evidence. The runtime implementation PR
+must replace that hook with the separately pinned, independently scanned,
+gRPC-fixed admin client contract before any production bootstrap or license/IAM
+reconciliation is enabled.
+
+The official stable AIStor Client candidate checked on 2026-08-10 is:
+
+```text
+quay.io/minio/aistor/mc:RELEASE.2026-07-24T01-15-12Z
+linux/amd64 manifest: sha256:132c8d47976ca9d60b8af26c77bb96d29ed6ae79e6428fa9464cd82803ff2010
+mc version: RELEASE.2026-07-24T01-15-12Z
+official binary checksum:
+e3d3b53ca6d276c6f9056e99b7db59159be3befb5871bf088bb804955752d6ca
+```
+
+The exact immutable container archive was scanned with the same pinned Trivy
+`0.72.0` scanner and the current vulnerability database. The direct result was
+**0 CRITICAL / 1 HIGH**: `google.golang.org/grpc v1.81.1` in
+`/usr/bin/mc`, fixed in `1.82.1`. The official release notes describe this as
+the current stable client and provide the binary, signatures, checksum, and
+SBOM artifacts, but this candidate is **not eligible for production admin
+use** under the owner rule requiring `grpc-go >= 1.82.1` when the dependency is
+present. No newer stable Quay AIStor `mc` manifest was published at review time.
+
+The future runtime PR must therefore use a separately pinned official client
+image or binary only after a fresh scan confirms the fixed gRPC version and
+zero HIGH/CRITICAL findings, or remain Draft with the admin-tool contract
+explicitly unresolved. It must never call the server image's `/usr/bin/mc`.
 
 The official CycloneDX SBOM was scanned as supplemental evidence. Trivy
 reported 197 HIGH/CRITICAL records: 12 CRITICAL and 185 HIGH, of which 12
@@ -247,18 +299,31 @@ reviewed candidate, but Quay returned no manifest for
 future-dated entries. No newer candidate was substituted without a verifiable
 immutable manifest, official artifact/SBOM, and fresh S3/IAM regression.
 
-### Option B — AIStor Operator/ObjectStore migration
+### Option B — AIStor Operator/ObjectStore BLUE/GREEN migration (production target)
 
-This is the vendor-documented Kubernetes migration path. It installs the
-AIStor Operator, converts a Community Operator `Tenant` to an AIStor
-`ObjectStore`, requires cluster-admin access and a license, and deliberately
-deletes/recreates the managed object-store resources while retaining PVCs.
-The procedure is permanent and cannot be reversed.
+This is the final production architecture. BLUE remains the current
+repository-managed OSS `Deployment`, its existing PVC, objects, config/IAM,
+and rollback Service path. GREEN is created separately through the official
+AIStor Operator and `ObjectStore` resource, using the AIStor Free single-node
+topology, a separate PVC, exact reviewed server digest, PVC protection, a
+separate license Secret, and separate credentials/config. The production
+Service must remain on BLUE until preflight, migration, reconciliation, and
+approval complete.
 
-It does **not** directly apply to this repository-managed `Deployment`, because
-there is no `Tenant` or Operator-owned PVC topology to convert. Adopting it
-requires a separate architecture change and a lower-environment rehearsal;
-creating a `Tenant`/`ObjectStore` manifest by analogy is not a safe migration.
+The vendor-documented Kubernetes model installs the AIStor Operator and
+`aistor-objectstore` chart, requires cluster-admin access and a license, and
+uses `ObjectStore` rather than the OSS Operator's `Tenant`. AIStor Free
+supports only single-node single-drive or single-node multi-drive patterns.
+PVC protection must be enabled explicitly. The migration procedure is
+permanent for an Operator-managed object store and must be rehearsed in a
+lower environment.
+
+It does **not** directly convert this repository-managed `Deployment`, because
+there is no existing `Tenant` or Operator-owned PVC topology. GREEN must be
+provisioned as a new Operator/ObjectStore environment on its own PVC; the
+existing BLUE PVC must not be reused for GREEN. Creating a
+`Tenant`/`ObjectStore` manifest by analogy, or replacing the OSS binary on the
+existing PVC, is unsupported and rejected.
 
 ### Option C — remain on open-source `minio/minio`
 
@@ -266,27 +331,48 @@ Rejected. The upstream repository is archived and vendor advisories direct OSS
 users to AIStor for fixed releases. No current supported OSS security stream
 was found that can be pinned as a production target for this workload.
 
-## Decision gate
+## Owner decision and final architecture
 
-The minimum-risk supported direction remains **AIStor Free single-node** as a
-rehearsal candidate. The owner has approved disposable AIStor Free rehearsal,
-but production architecture and migration are explicitly **not approved**.
-Before production work, the owner must confirm:
+The owner accepted the final security and architecture disposition on
+2026-08-10:
 
-1. acceptance of the AIStor license and Free-tier limitations for production;
-2. whether a one-way migration from this repository-managed workload is
-   acceptable, or whether the storage architecture must first move to the
-   supported Operator/ObjectStore model; and
-3. the required outage/bake window and an operator with cluster-admin access.
+1. `CVE-2026-39414` is **NOT AFFECTED — scanner product/version mapping
+   mismatch** for the reviewed AIStor server binary. The direct finding remains
+   visible with its advisory/version evidence.
+2. The server image's embedded gRPC finding is **PRESENT BUT NOT
+   RUNTIME-REACHABLE — OWNER ACCEPTED** for the server-only workload. This
+   acceptance does not permit any production execution of the embedded
+   `/usr/bin/mc`; the separate clean-client gate above remains mandatory.
+3. Production is **BLUE/GREEN**. BLUE is preserved as the rollback environment;
+   GREEN is an official AIStor Operator/ObjectStore Free single-node deployment
+   on a separate PVC with separate license/credentials/configuration.
+4. Direct OSS-Deployment-to-AIStor replacement on the current production PVC
+   is **REJECTED / UNSUPPORTED**. No existing BLUE PVC may be attached to GREEN.
 
-This PR deliberately stops at that production gate. It does not invent an
-in-place OSS-Deployment-to-AIStor migration.
+This PR remains the final ADR/evidence gate. It does not apply production
+GitOps, install the Operator, create a PVC, register a license, change the
+Service, or activate storage/scanner workloads.
 
-Current rehearsal verdict: **BLUE/GREEN RECOMMENDED** for production data
-movement; direct OSS-binary replacement on the existing production PVC is
-**REJECTED / UNSUPPORTED** for this repository-managed topology. An
-Operator/ObjectStore adoption remains a separate architecture decision, not
-an automatic implementation of this PR.
+### Production read-only preflight required before runtime activation
+
+The future implementation PR may be Draft without production access, but no
+merge or activation recommendation is allowed until a legitimate read-only
+preflight captures, without secret values or resource changes:
+
+- current image tag/digest, Deployment/Service selectors, replicas, probes,
+  resources, and rendered Argo/Kustomize state;
+- PVC name, capacity, used/free filesystem, StorageClass, access mode, reclaim
+  policy, mount status, and volume identity;
+- bucket/object counts, total bytes, inventory summary, ETags/content metadata,
+  and reconciliation with PostgreSQL `StoredFile` rows;
+- IAM users/policies, anonymous bucket policy, TLS/Ingress/edge behavior, and
+  NetworkPolicy coverage;
+- Secret names and key names only, never values; and
+- capacity/headroom calculation for GREEN's separate PVC and the reviewed
+  Operator/ObjectStore chart, CRD, and image digests.
+
+No SSH or production Kubernetes context was obtained in this run, so this
+preflight remains open and production remains untouched.
 
 ## Preservation and migration plan after approval
 
@@ -312,6 +398,35 @@ Before any candidate is applied to data-bearing infrastructure:
 6. Keep the rollback patch and scanner package inert during the runtime bake.
    Only after storage contract evidence and security sign-off may a separate
    activation change remove the rollback override or set `FILE_SCANNER_URL`.
+
+### Required production migration sequence
+
+The runtime implementation PR must encode this sequence as a reviewed runbook
+and reconciliation contract, not as an automatic Argo sync:
+
+1. **Preflight:** read-only inventory, encrypted config/IAM/bucket exports,
+   object inventory, PostgreSQL reconciliation, capacity/headroom calculation,
+   backup/restore evidence, TLS/NetworkPolicy review, and an explicit rollback
+   window. BLUE remains the only active endpoint.
+2. **Provision GREEN:** install the exact reviewed AIStor Operator and
+   `ObjectStore` chart/CRDs, create the separate Free-tier single-node PVC,
+   enable PVC protection, mount a separate license Secret, configure separate
+   credentials, private TLS, resources, probes, and NetworkPolicy. Keep storage
+   writes and Repetly/scanner activation disabled.
+3. **Initial reconcile:** use only the separately pinned clean admin client for
+   license/admin operations, exports, mirror, and reconciliation. Create the
+   bucket, private policy, IAM identities, and configuration on GREEN; never
+   execute the server image's `/usr/bin/mc`.
+4. **Freeze and final delta:** freeze storage writes, keep the application and
+   scanner inactive, mirror the final BLUE delta to GREEN, reconcile object
+   keys, sizes, hashes/ETags, metadata, IAM, and bucket policy.
+5. **Cut over:** switch the reviewed green S3 Service/endpoint, run health,
+   S3, IAM, restart, and application smoke checks, and record the evidence.
+   Keep BLUE and its PVC intact through the bake window; keep
+   `MINIO_API_AUTO_BUMP=off` and do not manually bump the API.
+6. **Rollback:** if rollback is needed after GREEN accepted writes, freeze
+   writes, reverse-sync GREEN → BLUE, reconcile, and only then switch
+   `Service → BLUE`. Never reopen writes after a blind endpoint rollback.
 
 ### Disposable blue/green and rollback rehearsal — 2026-08-10
 
@@ -422,17 +537,17 @@ direct OSS-PVC binary replacement supported.
   SealedSecrets, bucket, user metadata, and PostgreSQL rows; keep storage and
   scanner disabled.
 
-## Release gates still open
+## Release and activation gates still open
 
 The following evidence is intentionally **not claimed** by this memo:
 
-- final security sign-off of the exact candidate: `CVE-2026-39414` is
-  dispositioned **NOT AFFECTED — scanner product/version mapping mismatch**;
-  the embedded gRPC finding remains **PRESENT BUT NOT RUNTIME-REACHABLE** and
-  needs explicit owner risk acceptance;
+- the separate production admin client: the currently published stable
+  `mc.RELEASE.2026-07-24T01-15-12Z` is pinned and directly scanned but is not
+  eligible because it contains `grpc-go v1.81.1` (fixed `1.82.1`); a clean
+  separately pinned candidate is required before production admin use;
 - production-cluster Deployment/Service/PVC/Secret/ConfigMap/NetworkPolicy,
-  TLS, cluster-admin, and Operator validation; the disposable Kubernetes
-  rehearsal is complete but is not production proof;
+  TLS, cluster-admin, exact Operator/Helm chart and image digest validation;
+  the disposable Kubernetes rehearsal is complete but is not production proof;
 - direct OSS-Deployment-to-AIStor data migration compatibility;
 - live cluster image, PVC, bucket inventory, credential, console, TLS, and
   NetworkPolicy verification.
@@ -441,29 +556,57 @@ The exact candidate startup/platform smoke, licensed readiness, S3 contract,
 restart persistence, container and Kubernetes blue/green reconciliation,
 rollback contract, and disposable IAM checks are complete. No production SSH
 session was obtained, so live inventory and production preflight still require
-cluster-owner access. Do not merge an active runtime image change until the
-explicit gRPC risk acceptance and production-specific gates are attached to
-the implementation PR.
+cluster-owner access. The owner-accepted server-image gRPC residual is not a
+reason to suppress the direct finding, and it does not waive the separate clean
+admin-client requirement. Do not merge or activate a runtime implementation
+until the production-specific gates are attached to that separate PR.
 
 ## Decision status and implementation-PR gate
 
-- **Blocker:** owner/security approval of the residual `GHSA-hrxh-6v49-42gf`
-  image finding as `PRESENT BUT NOT RUNTIME-REACHABLE`; keep the direct Trivy
-  finding visible and do not add a generic ignore.
-- **Blocker:** production read-only preflight, cluster-owner access, exact
-  image/PVC/Service/Secret/TLS/NetworkPolicy inventory, and final supported
-  architecture decision.
-- **Important:** keep `MINIO_API_AUTO_BUMP=off`, preserve both environments
-  through the bake window, and require write-freeze + reverse-sync + reconcile
-  for rollback after writes reopen.
-- **Minor/tech debt:** formal production RTO measurement, encrypted backup
-  restore rehearsal, TLS/NetworkPolicy validation, and the separate
-  Operator/ObjectStore architecture decision remain to be scheduled.
+- **Owner-accepted residual:** server-image `GHSA-hrxh-6v49-42gf` remains
+  visible as **PRESENT BUT NOT RUNTIME-REACHABLE**. It is accepted only because
+  the server workload does not execute `/usr/bin/mc`; the production ban on
+  embedded `mc` use is part of the architecture contract.
+- **Implementation/activation gate:** the separate clean admin client,
+  production read-only preflight, exact Operator/ObjectStore chart/CRDs and
+  image digests, capacity proof, private TLS/NetworkPolicy, backup/restore, and
+  owner-approved outage/bake window.
+- **Required invariant:** `MINIO_API_AUTO_BUMP=off`, BLUE remains intact
+  through bake, and rollback after writes requires freeze → reverse-sync →
+  reconcile → `Service → BLUE`.
+- **Follow-up evidence:** formal production RTO measurement and restore drill
+  remain required before production sign-off; they are not fabricated by this
+  disposable rehearsal.
 
-A runtime implementation PR is **not ready to create**. A future
-owner-approved implementation PR may use the blue/green sequence from this
-memo; this Draft PR remains the decision/evidence gate and must not be merged
-or applied to production.
+After the fresh independent review confirms no unresolved Blocker/Important
+finding in this ADR/evidence PR, #45 may be marked **Ready for Review**. #44
+remains **In Progress** and #45 must not be merged automatically. A separate
+runtime implementation PR may then be opened as Draft only with inert,
+non-active GitOps content and the exact Operator/ObjectStore design; it must
+not contain a floating or currently ineligible `mc` pin and must not be
+applied to production.
+
+## Independent ADR/docs/architecture/security review — 2026-08-10
+
+Review scope was limited to this decision/evidence PR, the active production
+Kustomization, the exact server/client scan evidence, and the official AIStor
+Operator/ObjectStore and release-artifact documentation. The review checked
+security dispositions, reachability claims, production execution boundaries,
+BLUE/GREEN storage separation, PVC protection, Free-tier topology, preflight
+coverage, API-bump controls, and the post-write rollback order.
+
+Verdict: **PASS for the ADR/evidence scope; no unresolved Blocker or Important
+review finding**. The owner-accepted server-image residual is explicitly
+retained, the current client failure is an explicit runtime implementation
+gate, and neither is hidden by a suppression. The separate clean-client gate,
+production read-only preflight, and operator/chart digest validation still
+block runtime merge/activation; they do not authorize changing the active
+overlay in this PR.
+
+Validation evidence: `git diff --check` passed; only this memo changed;
+`kubectl kustomize services/repetly/prod` rendered successfully; the active
+Kustomization still contains the current BLUE resources and
+`storage-disabled-rollback-patch.yaml`; no Kubernetes current context was set.
 
 ## Activation boundary
 
