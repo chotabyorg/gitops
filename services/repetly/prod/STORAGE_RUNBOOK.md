@@ -1,5 +1,12 @@
 # Repetly production object storage
 
+## Runtime remediation gate
+
+The MinIO runtime upgrade remains blocked before any production change. See
+[`MINIO_RUNTIME_REMEDIATION.md`](./MINIO_RUNTIME_REMEDIATION.md) for the
+advisory applicability, supported-target decision, preservation plan, and
+owner approval gates.
+
 ## Topology
 
 - Dedicated MinIO workload and API-only ClusterIP service: `repetly-minio:9000`.
