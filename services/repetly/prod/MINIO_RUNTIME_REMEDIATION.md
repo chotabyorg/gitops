@@ -200,9 +200,14 @@ The exact immutable container archive was scanned with the same pinned Trivy
 **0 CRITICAL / 1 HIGH**: `google.golang.org/grpc v1.81.1` in
 `/usr/bin/mc`, fixed in `1.82.1`. The official release notes describe this as
 the current stable client and provide the binary, signatures, checksum, and
-SBOM artifacts, but this candidate is **not eligible for production admin
-use** under the owner rule requiring `grpc-go >= 1.82.1` when the dependency is
-present. No newer stable Quay AIStor `mc` manifest was published at review time.
+SBOM artifacts, but this candidate is **not eligible as a general or
+long-running production administrative component**. The owner accepts it only
+for narrowly constrained one-shot administrative/migration usage under the
+boundary below. The `grpc-go v1.81.1` residual remains present and the
+candidate is not package-clean. A newer clean official client remains
+preferred, but its future availability is no longer a blocker for this
+decision-only record or the inert runtime implementation. No newer stable Quay
+AIStor `mc` manifest was published at review time.
 
 ### Standalone exact-client reachability analysis — 2026-08-10
 
@@ -223,7 +228,15 @@ unlicensed AIStor endpoint accepted alias, admin-info, and config-export;
 `ready` timed out at the license gate and `license info` returned non-zero as
 expected. These endpoint-specific outcomes do not change the boundary result.
 
-Every sampled command reported `process_exited=1`; every in-flight socket probe
+Every sampled command reported `process_exited=true`; this boolean means the
+process was absent after the harness waited for it. The actual shell exit codes
+for successful checks were `0`: OSS alias/ready/admin-info/config-export,
+bucket/object operations, mirror/mirror-dry-run, and command-help paths. The
+OSS endpoint returned `1` for unsupported import/IAM/bucket-export semantics;
+the unlicensed AIStor endpoint returned `124` for the expected readiness
+timeout and `1` for license-info. These non-zero endpoint results are separate
+from the process-exited boolean and do not indicate that a successful command
+ended with shell exit code `1`. Every in-flight socket probe
 reported `listener_count=0` by checking `/proc/net/tcp` and `/proc/net/tcp6`.
 The evidence supports all six approved one-shot checks:
 
@@ -241,18 +254,20 @@ Therefore the exact finding is classified as:
 `PRESENT BUT NOT REACHABLE IN APPROVED ONE-SHOT ADMIN CLIENT USAGE`
 
 This is not a package-clean verdict and does not waive the owner rule. The
-candidate remains blocked for production because `grpc-go v1.81.1` is below the
-fixed `1.82.1`; future production use remains limited to a one-shot Job or
-command with `restartPolicy: Never`, non-root/no privilege escalation,
-read-only root filesystem where possible, no inbound Service, ingress-deny
-NetworkPolicy with only required endpoint/DNS egress, lifetime-scoped
-credentials, cleanup/TTL, and secret-free logs. Any command that requires a
-gRPC/xDS server path is a client blocker.
+owner accepts the current client only for a one-shot Job or equivalent process
+with `restartPolicy: Never`, exact immutable digest, non-root/no privilege
+escalation, read-only root filesystem where possible, no inbound Service,
+ingress-deny NetworkPolicy with only required endpoint/DNS egress,
+lifetime-scoped credentials, cleanup/TTL, and secret-free logs. Any command
+that requires a gRPC/xDS server path or starts a listener is a client blocker.
+A future clean official client must be preferred when available; custom/forked
+clients remain forbidden.
 
-The future runtime PR must therefore use a separately pinned official client
-image or binary only after a fresh scan confirms the fixed gRPC version and
-zero HIGH/CRITICAL findings, or remain Draft with the admin-tool contract
-explicitly unresolved. It must never call the server image's `/usr/bin/mc`.
+The future runtime PR may carry this explicit one-shot client contract, but it
+must use a separately pinned official image and must never call the server
+image's `/usr/bin/mc`. Before production migration, re-check the official
+AIStor release feed, immutable digest, platform, grpc-go version, Trivy result,
+and basic command compatibility; use a newer clean client if one exists.
 
 The official CycloneDX SBOM was scanned as supplemental evidence. Trivy
 reported 197 HIGH/CRITICAL records: 12 CRITICAL and 185 HIGH, of which 12
@@ -387,7 +402,8 @@ The owner accepted the final security and architecture disposition on
 2. The server image's embedded gRPC finding is **PRESENT BUT NOT
    RUNTIME-REACHABLE — OWNER ACCEPTED** for the server-only workload. This
    acceptance does not permit any production execution of the embedded
-   `/usr/bin/mc`; the separate clean-client gate above remains mandatory.
+   `/usr/bin/mc`; the separate one-shot client boundary above remains
+   mandatory.
 3. Production is **BLUE/GREEN**. BLUE is preserved as the rollback environment;
    GREEN is an official AIStor Operator/ObjectStore Free single-node deployment
    on a separate PVC with separate license/credentials/configuration.
@@ -587,9 +603,11 @@ direct OSS-PVC binary replacement supported.
 The following evidence is intentionally **not claimed** by this memo:
 
 - the separate production admin client: the currently published stable
-  `mc.RELEASE.2026-07-24T01-15-12Z` is pinned and directly scanned but is not
-  eligible because it contains `grpc-go v1.81.1` (fixed `1.82.1`); a clean
-  separately pinned candidate is required before production admin use;
+  `mc.RELEASE.2026-07-24T01-15-12Z` is pinned and directly scanned; its
+  `grpc-go v1.81.1` residual (fixed `1.82.1`) is owner-accepted only for the
+  narrowly constrained one-shot administrative/migration boundary above. A
+  newer clean official candidate remains preferred and must be used if
+  available at migration time;
 - production-cluster Deployment/Service/PVC/Secret/ConfigMap/NetworkPolicy,
   TLS, cluster-admin, exact Operator/Helm chart and image digest validation;
   the disposable Kubernetes rehearsal is complete but is not production proof;
@@ -601,10 +619,10 @@ The exact candidate startup/platform smoke, licensed readiness, S3 contract,
 restart persistence, container and Kubernetes blue/green reconciliation,
 rollback contract, and disposable IAM checks are complete. No production SSH
 session was obtained, so live inventory and production preflight still require
-cluster-owner access. The owner-accepted server-image gRPC residual is not a
-reason to suppress the direct finding, and it does not waive the separate clean
-admin-client requirement. Do not merge or activate a runtime implementation
-until the production-specific gates are attached to that separate PR.
+cluster-owner access. The owner-accepted server-image and narrowly bounded
+client residuals are not reasons to suppress their direct findings. Do not
+activate a runtime implementation until the production-specific gates are
+attached to that separate PR.
 
 ## Decision status and implementation-PR gate
 
@@ -612,10 +630,11 @@ until the production-specific gates are attached to that separate PR.
   visible as **PRESENT BUT NOT RUNTIME-REACHABLE**. It is accepted only because
   the server workload does not execute `/usr/bin/mc`; the production ban on
   embedded `mc` use is part of the architecture contract.
-- **Implementation/activation gate:** the separate clean admin client,
-  production read-only preflight, exact Operator/ObjectStore chart/CRDs and
-  image digests, capacity proof, private TLS/NetworkPolicy, backup/restore, and
-  owner-approved outage/bake window.
+- **Implementation/activation gate:** the owner-accepted one-shot admin-client
+  boundary (with a newer clean client preferred), production read-only
+  preflight, exact Operator/ObjectStore chart/CRDs and image digests, capacity
+  proof, private TLS/NetworkPolicy, backup/restore, and owner-approved
+  outage/bake window.
 - **Required invariant:** `MINIO_API_AUTO_BUMP=off`, BLUE remains intact
   through bake, and rollback after writes requires freeze → reverse-sync →
   reconcile → `Service → BLUE`.
@@ -623,13 +642,13 @@ until the production-specific gates are attached to that separate PR.
   remain required before production sign-off; they are not fabricated by this
   disposable rehearsal.
 
-After the fresh independent review confirms no unresolved Blocker/Important
-finding in this ADR/evidence PR, #45 may be marked **Ready for Review**. #44
-remains **In Progress** and #45 must not be merged automatically. A separate
-runtime implementation PR may then be opened as Draft only with inert,
+After the fresh focused review confirms no unresolved Blocker/Important
+finding in this ADR/evidence PR, #45 may be merged **as a decision/ADR record
+only**; the merge must not activate runtime. #44 remains **In Progress**. A
+separate runtime implementation PR may then remain Draft only with inert,
 non-active GitOps content and the exact Operator/ObjectStore design; it must
-not contain a floating or currently ineligible `mc` pin and must not be
-applied to production.
+not contain a floating `mc` pin or embedded server-image `mc` path and must not
+be applied to production.
 
 ## Independent ADR/docs/architecture/security review — 2026-08-10
 
@@ -640,13 +659,14 @@ security dispositions, reachability claims, production execution boundaries,
 BLUE/GREEN storage separation, PVC protection, Free-tier topology, preflight
 coverage, API-bump controls, and the post-write rollback order.
 
-Verdict: **PASS for the ADR/evidence scope; no unresolved Blocker or Important
-review finding**. The owner-accepted server-image residual is explicitly
-retained, the current client failure is an explicit runtime implementation
-gate, and neither is hidden by a suppression. The separate clean-client gate,
-production read-only preflight, and operator/chart digest validation still
-block runtime merge/activation; they do not authorize changing the active
-overlay in this PR.
+Verdict: **APPROVE FOR MERGE — DECISION/ADR ONLY**. There is no unresolved
+Blocker or Important review finding in the ADR/evidence scope. The
+owner-accepted server-image residual and the owner-accepted narrowly bounded
+client residual are explicitly retained, neither is hidden by a suppression,
+and the package is not called clean. The production read-only preflight,
+operator/chart dependency digest validation, lower-environment rehearsal, and
+runtime security gates still block production activation; merging this PR does
+not authorize changing the active overlay.
 
 Validation evidence: `git diff --check` passed; only this memo changed;
 `kubectl kustomize services/repetly/prod` rendered successfully; the active
