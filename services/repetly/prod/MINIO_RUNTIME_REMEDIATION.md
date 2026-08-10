@@ -59,6 +59,7 @@ Primary sources:
 - <https://github.com/minio/minio/security/advisories/GHSA-jjjj-jwhf-8rgr>
 - <https://docs.min.io/aistor/operations/licenses/>
 - <https://docs.min.io/aistor/reference/cli/mc-license/mc-license-update/>
+- <https://dl.min.io/aistor/minio/release/notes/>
 - <https://www.min.io/pricing>
 
 ## Supported target options
@@ -90,25 +91,44 @@ preserves the S3 contract, or accepts the current IAM policy.
 A disposable linux/amd64 smoke of the exact candidate was run locally on
 2026-08-09 using tmpfs only. The image reported version
 `2026-08-07T18:34:35Z`, formatted one pool with one online drive, and returned
-live health `200`. Readiness returned `503`; `mc admin info` confirmed the
-version and drive, but bucket creation was denied with `No license is
-installed`. This proves startup/platform behavior and the license gate only;
-licensed S3/IAM/storage-contract evidence remains blocked until a valid AIStor
-license is available. Docker Scout was available but could not produce the CVE
-report without Docker registry authentication. The official release feed
-provides CycloneDX and SPDX SBOM artifacts for the candidate.
+live health `200`. Without a license, readiness returned `503` and bucket
+creation was denied with `No license is installed`. This proved startup,
+platform behavior, and the license gate only.
 
-The owner has authorized AIStor Free for disposable local/Kubernetes rehearsal
-only. The owner has not approved production architecture or migration. To
-obtain the free license, the owner must use the MinIO pricing page's Free
-"Get Started" flow, sign in to MinIO SUBNET, open Deployments, choose License
-Key, and download `minio.license` (or copy the license value). Store it only
-in a local permission-restricted file or secret manager, never Git or logs.
-For a disposable alias, apply it with `mc license update ALIAS /path/to/minio.license`
-or register with `mc license register ALIAS --license /path/to/minio.license`,
-then verify with `mc license info ALIAS`. The owner must provide the file or
-complete the interactive registration; this repository does not contain or
-invent a license.
+The owner has supplied an AIStor Free license locally and authorized it for
+disposable rehearsal only. It was mounted read-only and applied to the
+disposable alias with `mc license update`; the license file was not copied to
+the repository, Git history, logs, or a production secret. Filtered license
+metadata reported `status=success`, `plan=FREE`, no-expiry Free-tier
+semantics, `product=AIStor`, and one node. License contents, identifiers, and
+credentials remain secret material. The documented `mc license info` check
+was used after application and after restart; `mc license register` was not
+needed.
+
+### Licensed disposable evidence — 2026-08-10
+
+The exact immutable candidate was run as a separate disposable single-node
+AIStor instance with a dedicated named volume, never a production PVC. The
+licensed instance returned live and ready health `200`; `mc admin info`
+reported AIStor version `2026-08-07T18:34:35Z`, one pool, and one online drive.
+After a container restart, readiness remained `200`, the license metadata
+remained valid, and a marker object written before restart was readable. This
+is a disposable restart-persistence result, not production migration proof.
+
+The full exact-target S3 contract suite passed **17/17**. It covered bucket
+creation, object metadata and content type, HEAD/GET/range reads, matching and
+stale `If-Match`, create-only `If-None-Match`, staging overwrite and ETag
+invalidation, immutable promotion metadata, replay, a true concurrent winner,
+lost-response reconciliation, foreign-canonical collision rejection,
+presigned PUT/GET, CORS preflight, and delete/404 behavior.
+
+The disposable IAM suite passed **6/6** for both identities. The application
+policy allowed its intended object read/write/delete actions and denied bucket
+listing; the scanner policy allowed reads only under the canonical and staging
+homework prefixes and denied outside-prefix reads, writes, deletes, and bucket
+listing. Direct user enumeration was denied to the non-admin identities.
+These are synthetic disposable principals and do not authorize any production
+identity or policy change.
 
 ### Option B — AIStor Operator/ObjectStore migration
 
@@ -190,19 +210,20 @@ Before any candidate is applied to data-bearing infrastructure:
 
 The following evidence is intentionally **not claimed** by this memo:
 
-- licensed exact-target readiness and S3 service availability;
-- exact-target conditional create, ETag, replay, collision, concurrent-winner,
-  lost-response, metadata, range, CORS, signed URL, and normal S3 regression
-  results;
-- exact target IAM/policy compatibility;
-- SBOM and HIGH/CRITICAL scan of the exact container image;
+- an actionable HIGH/CRITICAL vulnerability scan verdict for the exact image;
+  the official SPDX and CycloneDX SBOMs were downloaded and parsed
+  successfully, but the pinned Grype database was unavailable in this
+  environment and Docker Scout required registry authentication;
 - disposable upgrade/rollback rehearsal;
+- direct OSS-Deployment-to-AIStor data migration compatibility;
 - live cluster image, PVC, bucket inventory, credential, console, TLS, and
   NetworkPolicy verification.
 
-The exact candidate startup/platform smoke is complete, but licensed S3
-contract evidence requires the owner-provided Free license. No production SSH
-session was obtained, so live inventory and production preflight still require
+The exact candidate startup/platform smoke, licensed readiness, S3 contract,
+restart persistence, and disposable IAM checks are complete. SBOM provenance
+is available from the official AIStor release feed, but SBOM presence is not a
+substitute for a completed vulnerability scan. No production SSH session was
+obtained, so live inventory and production preflight still require
 cluster-owner access. Do not merge an active runtime image change until the
 remaining gates are attached to the implementation PR.
 
