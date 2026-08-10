@@ -204,6 +204,51 @@ SBOM artifacts, but this candidate is **not eligible for production admin
 use** under the owner rule requiring `grpc-go >= 1.82.1` when the dependency is
 present. No newer stable Quay AIStor `mc` manifest was published at review time.
 
+### Standalone exact-client reachability analysis — 2026-08-10
+
+The reachability result was re-run independently of the server-image review.
+The exact immutable `mc` image above was executed as UID/GID `1000:1000` with a
+read-only root filesystem, an ephemeral writable `/tmp`, an ephemeral
+`MC_CONFIG_DIR`, and no published client ports. Targets were disposable
+synthetic OSS and unlicensed AIStor endpoints only; no production endpoint,
+license, credential, PVC, or Kubernetes context was used.
+
+The OSS endpoint accepted `alias set`, `ready`, `admin info`, `config export`,
+bucket creation, object put/stat/list/du/find, `mirror`, and mirror dry-run.
+The command help paths for `admin cluster iam`, `admin cluster bucket`,
+`admin config`, and `license info/register/update` also completed. The OSS
+server rejected or did not support some import/IAM/bucket-export semantics, so
+those non-zero results are not treated as client or reachability failures. The
+unlicensed AIStor endpoint accepted alias, admin-info, and config-export;
+`ready` timed out at the license gate and `license info` returned non-zero as
+expected. These endpoint-specific outcomes do not change the boundary result.
+
+Every sampled command reported `process_exited=1`; every in-flight socket probe
+reported `listener_count=0` by checking `/proc/net/tcp` and `/proc/net/tcp6`.
+The evidence supports all six approved one-shot checks:
+
+1. no gRPC server/listener was reached or opened by the tested client commands;
+2. no xDS/RBAC server path was invoked—the gRPC dependency is present in the
+   binary, but the approved command path is client-side only;
+3. the client exposed no attacker-controlled inbound HTTP/2/gRPC surface;
+4. no daemon/service mode was used;
+5. each command ended after its operation (including the expected timeout at
+   the unlicensed readiness gate); and
+6. no unexpected listening socket was observed.
+
+Therefore the exact finding is classified as:
+
+`PRESENT BUT NOT REACHABLE IN APPROVED ONE-SHOT ADMIN CLIENT USAGE`
+
+This is not a package-clean verdict and does not waive the owner rule. The
+candidate remains blocked for production because `grpc-go v1.81.1` is below the
+fixed `1.82.1`; future production use remains limited to a one-shot Job or
+command with `restartPolicy: Never`, non-root/no privilege escalation,
+read-only root filesystem where possible, no inbound Service, ingress-deny
+NetworkPolicy with only required endpoint/DNS egress, lifetime-scoped
+credentials, cleanup/TTL, and secret-free logs. Any command that requires a
+gRPC/xDS server path is a client blocker.
+
 The future runtime PR must therefore use a separately pinned official client
 image or binary only after a fresh scan confirms the fixed gRPC version and
 zero HIGH/CRITICAL findings, or remain Draft with the admin-tool contract
