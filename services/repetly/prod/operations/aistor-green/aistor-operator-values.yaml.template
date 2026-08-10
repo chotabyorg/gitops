@@ -2,8 +2,9 @@
 # Application. It is intentionally incomplete until production preflight and
 # rendered image-digest review are complete.
 
-# Keep the license outside Git. The operator expects the separately managed
-# minio-license Secret; never put the AIStor license in Helm values.
+# Keep the license outside Git. The operator mounts a separately managed
+# `minio-license` Secret from the operator release namespace; never put the
+# AIStor license in Helm values.
 license: ""
 
 global:
@@ -12,13 +13,16 @@ global:
     replicas: 1
     imagePullPolicy: IfNotPresent
   # Narrow the watch scope after the target namespace and RBAC are approved.
-  # operator:
-  #   watchedNamespaces:
-  #     - prod
+  # This is the actual chart key; an empty value keeps cluster-wide watch mode.
+  # watchedNamespaces:
+  #   - prod
 
 operators:
   adminjob:
-    disabled: false
+    # The chart's AdminJob controller injects the currently ineligible mc image
+    # into its ConfigMap. Keep this controller disabled until a separately
+    # pinned, scanned, and approved admin client exists.
+    disabled: true
   aihub:
     disabled: true
   object-store:
