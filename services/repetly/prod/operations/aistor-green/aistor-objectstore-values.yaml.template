@@ -1,0 +1,47 @@
+# DRAFT ONLY. Not referenced by the active production Kustomization or Argo.
+# Do not run helm install/upgrade from this file until every gate in README.md
+# is complete.
+
+# Root credentials are supplied by the separately sealed config.env Secret.
+secrets:
+  name: repetly-aistor-green-env
+  existingSecret: true
+
+objectStore:
+  name: repetly-aistor-green
+  image:
+    repository: quay.io/minio/aistor/minio@sha256
+    digest: e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1
+    pullPolicy: IfNotPresent
+
+  # AIStor Free topology. Capacity values are intentionally fail-closed
+  # placeholders until the production read-only preflight is complete.
+  pools:
+    - name: pool-0
+      servers: 1
+      volumesPerServer: "__SET_AFTER_PREFLIGHT__"
+      size: "__SET_AFTER_PREFLIGHT__"
+      storageClassName: "__SET_AFTER_PREFLIGHT__"
+
+  mountPath: /export
+  subPath: /data
+  pvcProtection: true
+
+  services:
+    console:
+      serviceType: ClusterIP
+    minio:
+      serviceType: ClusterIP
+
+  # Use the operator-generated internal certificates only after their DNS
+  # names and client trust path are reviewed; otherwise supply the approved
+  # private TLS Secret in a separate sealed contract.
+  certificates:
+    disableAutoCert: false
+
+  env:
+    - name: MINIO_API_AUTO_BUMP
+      value: "off"
+
+# Add explicit resources, probes, NetworkPolicy, and the reviewed endpoint
+# contract only after the production capacity/TLS/NetworkPolicy preflight.
