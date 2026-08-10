@@ -12,10 +12,10 @@ global:
   operator:
     replicas: 1
     imagePullPolicy: IfNotPresent
-  # Narrow the watch scope after the target namespace and RBAC are approved.
-  # This is the actual chart key; an empty value keeps cluster-wide watch mode.
-  # watchedNamespaces:
-  #   - prod
+    # Narrow the watch scope after the target namespace and RBAC are approved.
+    # This is the actual chart key; an empty value keeps cluster-wide watch mode.
+    # watchedNamespaces:
+    #   - prod
 
 operators:
   adminjob:

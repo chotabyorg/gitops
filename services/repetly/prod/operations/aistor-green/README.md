@@ -69,19 +69,32 @@ both services are `ClusterIP`, automatic certificates are enabled, and
 `MINIO_API_AUTO_BUMP=off` is present. The capacity and StorageClass values are
 deliberately invalid placeholders until preflight replaces them.
 
-The Operator chart's exact rendered dependency inventory is an activation
-gate, not an approval:
+The rendered chart inventory is not the active inventory. The following is the
+licensed kind observation from Deployments, StatefulSets, Pods, initContainers,
+containers, Jobs, and DaemonSets. Activation gates apply only to **A**.
 
-| Role | Rendered/default reference | Current status |
+### A — ACTIVE/RUNNING
+
+| Runtime object | Exact immutable image | Scan and current disposition |
 | --- | --- | --- |
-| ObjectStore CR server override | `quay.io/minio/aistor/minio@sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1` (`linux/amd64`) | Exact reviewed digest; direct scan `0 CRITICAL / 2 HIGH`, dispositions recorded in merged PR #45. |
-| Operator controller + webhook | manifest `quay.io/minio/aistor/operator@sha256:50bd6c34a1d2e811cc881116dc3fcce210e2f5fc2276a3933d8cacf71b39d68a`; amd64 `sha256:b88e5cf563406719f67028a52fef9dac4049e555f44e263267c30a069d1d8166`, arm64 `sha256:d49c60db8ac8e2ae0b38fb5b20a16c1c765449fa0c0aee1cea4054b31c7e35d3` | Immutable; direct Trivy `0 CRITICAL / 1 HIGH` (`libacl` and `grpc-go v1.82.0`, fixed `1.82.1`). **Activation blocker.** |
-| ObjectStore ConfigMap: minwall | manifest `quay.io/minio/aistor/minwall@sha256:cc74fc5d90115670a40df54459b7feaeb1c340af98866324b26a71ce2e77dc4d`; amd64 `sha256:0f831ea63e6269540f96b312020e1759ab2cd9218ef9c08c108756a54a4ccb99`, arm64 `sha256:b12f90900c7b5dfc532c4f48020a95d76b6c568092018fc702be963765d9b1c0` | Immutable; direct Trivy `0 CRITICAL / 18 HIGH` across `x/crypto`, `x/net`, `x/text`, and Go stdlib. **Activation blocker.** |
-| ObjectStore ConfigMap: KES | manifest `quay.io/minio/aistor/kes@sha256:115f6b2bc586a9fc88ddb1342ead4a5df546dd719757bb5f1a411862688f6f21`; amd64 `sha256:7872b91e8cdd580f6eb7ef9d3608e54d228f10199acb83e3e69994ad80ace93e`, arm64 `sha256:dccb7efb1b579cd75d526c5a18ce2d554e8436a27a34fde4e9c1223c52a147f7` | Immutable; direct Trivy `0 CRITICAL / 0 HIGH`. KES is conditional; current ObjectStore values do not enable KES configuration. |
-| ObjectStore ConfigMap: KES sidecar | manifest `quay.io/minio/aistor/kes-sidecar@sha256:e7070a20d8dbfce6608a5b7db9afc7bc43f239001680e141b423d7376fd3d473`; amd64 `sha256:fe0b7980565240ca415b8edb403b0361a17ff5f93e6e3b6774c0d1505096b57b`, arm64 `sha256:dde96b3d711cc80b9a5f9f3c6ab291c330a2a3797be5ceb8f164bf0a6cdfe621` | Immutable; direct Trivy `0 CRITICAL / 1 HIGH` (`CVE-2026-54369`, `libacl`). Conditional; **activation blocker if enabled**. |
-| ObjectStore ConfigMap: MinIO sidecar | manifest `quay.io/minio/aistor/minio-sidecar@sha256:1cf294b61514a46786d4233e7f4ea66fe179dbb996114fc7af33d3e023961ebc`; amd64 `sha256:560e204d8fbd05d095719a39af0db36e177829528d80366962d1bc22102c9b57`, arm64 `sha256:dba488d488be201923b62859ed8f6c66e9cef79d1e0f488139b4b59763ce9558` | Immutable; direct Trivy `0 CRITICAL / 1 HIGH` (`CVE-2026-54369`, `libacl`). **Activation blocker.** |
-| AdminJob client | `quay.io/minio/aistor/mc@sha256:132c8d47976ca9d60b8af26c77bb96d29ed6ae79e6428fa9464cd82803ff2010` | **Not rendered/activated**: AdminJob controller disabled. Owner-accepted only for separate one-shot use; direct Trivy `0 CRITICAL / 1 HIGH`, `grpc-go v1.81.1`. |
-| Optional AIHub/Prompt/Warp | `quay.io/minio/aistor/aihub:RELEASE.2025-12-11T18-08-15Z`, `quay.io/minio/aistor/prompt:RELEASE.2025-01-17T21-55-43Z`, `quay.io/minio/aistor/warp:v1.5.0` | Disabled here; no activation without a separate owner decision and image review. |
+| `object-store-operator` and `object-store-webhook` Deployments/Pods | `quay.io/minio/aistor/operator@sha256:50bd6c34a1d2e811cc881116dc3fcce210e2f5fc2276a3933d8cacf71b39d68a`; amd64 `sha256:b88e5cf563406719f67028a52fef9dac4049e555f44e263267c30a069d1d8166`, arm64 `sha256:d49c60db8ac8e2ae0b38fb5b20a16c1c765449fa0c0aee1cea4054b31c7e35d3` | Trivy `0 CRITICAL / 2 HIGH`: `libacl` and `grpc-go v1.82.0` fixed in `1.82.1`. `libacl`: **NOT USED BY RUNTIME BINARY**. gRPC: **PRESENT BUT VULNERABLE SERVER PATH NOT OBSERVED IN APPROVED RUNTIME**; finding remains visible and must be rechecked on an official fixed operator before activation. |
+| `aistor-green-pool-0` StatefulSet/Pod `minio` container | `quay.io/minio/aistor/minio@sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1`; amd64 `sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1`, arm64 `sha256:ff8cc4b57bc5259617b206466fa73636a2d862f80791dbed7ae44390acca7cd1` | Trivy `0 CRITICAL / 2 HIGH`: `grpc-go v1.81.1` is present in bundled `/usr/bin/mc`, not the running `minio` process; the owner-accepted one-shot boundary remains in merged PR #45. `CVE-2026-39414` is a scanner mapping mismatch: the official current release is beyond the advisory's affected range. |
+| `aistor-green-pool-0` `sidecar` container and `sidecar-init` initContainer | `quay.io/minio/aistor/minio-sidecar@sha256:1cf294b61514a46786d4233e7f4ea66fe179dbb996114fc7af33d3e023961ebc`; amd64 `sha256:560e204d8fbd05d095719a39af0db36e177829528d80366962d1bc22102c9b57`, arm64 `sha256:dba488d488be201923b62859ed8f6c66e9cef79d1e0f488139b4b59763ce9558` | Trivy `0 CRITICAL / 1 HIGH`: `CVE-2026-54369/libacl`. **NOT USED BY RUNTIME BINARY**: no `acl_*` symbols were found in the exact `/sidecar` binary; the container runs UID/GID 1000 with zero effective capabilities, no privilege escalation, and only the `/tmp/minio` emptyDir plus read-only service-account mount. This is not a current activation blocker, but the finding remains visible and the next official fixed sidecar must be repinned/scanned/rehearsed. |
+
+### B — RENDERED BUT NOT INSTANTIATED
+
+| Config-only dependency | Evidence and disposition |
+| --- | --- |
+| Minwall `quay.io/minio/aistor/minwall@sha256:cc74fc5d90115670a40df54459b7feaeb1c340af98866324b26a71ce2e77dc4d` (amd64 `sha256:0f831ea63e6269540f96b312020e1759ab2cd9218ef9c08c108756a54a4ccb99`, arm64 `sha256:b12f90900c7b5dfc532c4f48020a95d76b6c568092018fc702be963765d9b1c0`) | `object-store-operator` ConfigMap has a `minwall` data key, but there is no Minwall Deployment, StatefulSet, Pod, initContainer, sidecar, Job, or hook. Trivy `0 CRITICAL / 18 HIGH` across x/crypto, x/net, x/text, and Go stdlib: **NOT ACTIVE IN APPROVED CONFIGURATION**; 18 HIGH is not a current activation blocker. Full reachability review is required if it materializes. |
+| KES `quay.io/minio/aistor/kes@sha256:115f6b2bc586a9fc88ddb1342ead4a5df546dd719757bb5f1a411862688f6f21` and KES sidecar `quay.io/minio/aistor/kes-sidecar@sha256:e7070a20d8dbfce6608a5b7db9afc7bc43f239001680e141b423d7376fd3d473` | Both appear only as ConfigMap data keys. No KES/KES-sidecar runtime object exists and the current ObjectStore values do not enable KES. KES is `0 CRITICAL / 0 HIGH`; KES sidecar is `0 CRITICAL / 1 HIGH` (`CVE-2026-54369/libacl`). **DISABLED / NOT ACTIVE**; not a current blocker. |
+
+### C — DISABLED/CONDITIONAL
+
+`operators.adminjob.disabled: true` produces no AdminJob CRD, Deployment, Pod,
+Job, hook, or active `mc` client. AIHub, Prompt, and Warp are disabled. The
+exact owner-accepted `mc` one-shot image remains outside the active inventory:
+`quay.io/minio/aistor/mc@sha256:132c8d47976ca9d60b8af26c77bb96d29ed6ae79e6428fa9464cd82803ff2010`,
+direct Trivy `0 CRITICAL / 1 HIGH` (`grpc-go v1.81.1`).
 
 With `operators.adminjob.disabled: true`, the rendered Operator release has no
 AdminJob controller Deployment or `adminjob-operator` ConfigMap, so the
@@ -111,50 +124,159 @@ rehearsal uses `aistor-green`. The production namespace/scope remains a gate.
 
 All direct scans above used Trivy `0.72.0`, the pinned scanner image, the
 public ECR vulnerability database, HIGH/CRITICAL severity, and no
-`--ignore-unfixed`. Findings are recorded as blockers or conditional blockers;
-no generic suppression was applied.
+`--ignore-unfixed`. No generic suppression was applied. Only the A inventory
+is an activation gate; B/C findings are retained as conditional evidence.
 
-### Disposable Operator/ObjectStore rehearsal — 2026-08-10
+### Official release-feed check — 2026-08-10
 
-An isolated kind `v0.32.0` cluster was created with pinned node image
+The public official Quay tag feed and MinIO download feeds were checked before
+disposition. `latest` resolves to the same pinned child digests for Operator,
+MinIO sidecar, Minwall, AIStor Client, and server. The official server
+`RELEASE.2026-08-07T18-34-35Z` tag resolves to the current amd64 server digest
+and arm64 child `sha256:ff8cc4b57bc5259617b206466fa73636a2d862f80791dbed7ae44390acca7cd1`.
+The current AIStor Client feed ends at `RELEASE.2026-07-24T01-15-12Z`; the
+Minwall feed lists `RELEASE.2026-05-21T06-25-56Z`; and the current Operator and
+sidecar tags map to the pinned images. No newer official component with the
+required fixes was found, so no unsupported or partial automatic upgrade was
+made. Any future component-only replacement must prove chart-supported
+override, compatibility, immutable digest, scan, and licensed lower-env PASS.
+
+Checked official endpoints: <https://quay.io/repository/minio/aistor/operator?tab=tags>,
+<https://quay.io/repository/minio/aistor/minio-sidecar?tab=tags>,
+<https://quay.io/repository/minio/aistor/minwall?tab=tags>,
+<https://dl.min.io/aistor/mc/release/notes/>, and
+<https://dl.min.io/aistor/minio/release/notes/>.
+
+### Disposable licensed Operator/ObjectStore rehearsal — 2026-08-10
+
+A new isolated kind `v0.32.0` cluster was created with pinned node image
 `kindest/node:v1.35.5@sha256:ce977ae6d65918d0b58a5f8b5e940429c2ce42fa3a5619ec2bbc60b949c0ac95`.
 The exact `aistor-operator 5.11.3` and `aistor-objectstore 1.0.17` archives
-were installed with digest-pinned rendered images and `adminjob.disabled=true`.
-The node was linux/arm64 while the reviewed server image is linux/amd64, so
-the successful image start was an emulated lower-env controller-path result,
-not a production platform proof.
+were installed with digest-pinned rendered images, a separately mounted valid
+license Secret, `MINIO_API_AUTO_BUMP=off`, and `adminjob.disabled=true`. The
+license path was checked only for readability/non-empty state; license bytes
+were never read, logged, copied into Git, or printed. The node was linux/arm64
+while the reviewed server image is linux/amd64, so this is an emulated
+lower-env controller/runtime result, not production platform proof.
 
-Passed controller/resource evidence:
+Licensed PASS evidence:
 
-- ObjectStore and PolicyBinding CRDs became Established; AdminJob was not
-  rendered because the controller was disabled.
-- Operator and webhook Deployments were `1/1`, non-root UID/GID 1000 with
-  `allowPrivilegeEscalation: false`; `WATCHED_NAMESPACES=aistor-green` was
-  present. Webhook Service/MutatingWebhookConfiguration resolved to port 8443.
-- ObjectStore reconciliation created the StatefulSet, one RWO `standard` PVC,
-  `pvcProtection: true`, private ClusterIP S3/console/headless Services, auto
-  TLS Secret, and the exact server/sidecar digests.
-- Deleting the ObjectStore removed its workload/Services while the PVC stayed
-  `Bound` with `aistor.min.io/pvc-protection` and Kubernetes PVC finalizers.
-  Deleting the pod recreated it against the same PVC.
-- A lower-env NetworkPolicy model was applied: ObjectStore ingress deny with
-  DNS-only egress and webhook ingress only from the disposable kind API/node
-  path. It is not a production selector and was deleted with the cluster.
+- The ObjectStore reached `healthStatus=green`, `setup=100`, `Drives Online=1`,
+  and the pool was `1/1 Running`. `/minio/health/live`, `/minio/health/ready`,
+  and `/minio/health/cluster` each returned HTTP 200 over the generated TLS
+  Service. The controller's textual `currentState` remained
+  `Waiting for ObjectStore to be healthy` despite green/setup 100; retain this
+  as a production preflight observation rather than treating the string alone
+  as readiness.
+- S3 contract: **18/18**. Application IAM: **6/6**. Scanner IAM: **6/6**.
+  The exact pinned AIStor `mc` image was used as a disposable client with
+  synthetic test identities; no AdminJob or background client was enabled.
+- Before and after deleting `aistor-green-pool-0-0`, the same object remained
+  readable with the same ETag. The recreated Pod was `Running`, both
+  containers were ready, the PVC remained `Bound` at `1Gi`, and its
+  `aistor.min.io/pvc-protection` plus Kubernetes finalizers remained present.
+- The StatefulSet rendered the exact server image, `minio-sidecar` sidecar, and
+  `sidecar-init` image from the A inventory. Operator/webhook Deployments were
+  each `1/1`; the Operator watched only `aistor-green` in this rehearsal.
 
-The rehearsal intentionally did **not** claim S3/IAM/readiness success. The
-license file path supplied earlier remained a placeholder and no valid local
-`minio.license` file was discoverable; only a synthetic disposable Secret was
-used, so AIStor correctly reported `license: invalid JWT`, health red, and
-denied S3 operations. License material was never read or logged. A valid
-disposable license is required to repeat S3/IAM, restart-object persistence,
-and application contract checks.
+Functional lower-env NetworkPolicy evidence:
 
-The same lower-env run showed `resources: {}` for the MinIO container and no
-explicit MinIO liveness/readiness probes in the current values; only the
-sidecar readiness probe was present. This is an implementation blocker: add
-owner-reviewed initial requests/limits and probes after lower-env measurement,
-then re-run with a valid license. These values must not be treated as
-production sizing.
+- An intended `aistor-client` namespace reached the ObjectStore health path
+  through the S3 port and exited `0`.
+- An `aistor-forbidden` namespace received the same request and exited `1`.
+- ObjectStore ingress was default-deny except the intended namespace/port;
+  egress was DNS-only. The webhook allowed only the disposable kind API/node
+  path. These selectors and CIDRs are lower-env evidence, not production
+  values; the committed NetworkPolicy template remains inert until the
+  production namespace, client labels, DNS path, and API-server CIDR are
+  reviewed.
+
+Resource/probe observation and next contract:
+
+- Operator and webhook requests rendered as `200m` CPU, `256Mi` memory, and
+  `500Mi` ephemeral-storage. The webhook had HTTPS `/healthz` readiness and
+  liveness probes; the Operator controller had no probes.
+- MinIO and `minio-sidecar` rendered `resources: {}`. MinIO had no explicit
+  probes; the sidecar had only HTTP `/ready` readiness on port 4444. The
+  evidence-backed probe endpoints for the next lower-env iteration are HTTPS
+  port 9000 `/minio/health/live` for startup/liveness and
+  `/minio/health/ready` for readiness.
+- A non-production starting candidate for owner review is MinIO
+  `requests: 500m/1Gi`, `limits: 2 CPU/4Gi`, sidecar `requests: 50m/32Mi`,
+  `limits: 100m/128Mi`, startup `30 x 5s`, readiness `6 x 10s`, and liveness
+  `3 x 10s`. These numbers are a lower-env contract candidate only, were not
+  activated by this Draft, and must not be treated as production sizing.
+
+## Active HIGH reachability dispositions
+
+### Operator `grpc-go v1.82.0` — GHSA-hrxh-6v49-42gf
+
+The exact active Operator manifest scan is `0 CRITICAL / 2 HIGH`: `libacl`
+`2.3.1-4.el9` and `google.golang.org/grpc v1.82.0`, fixed in `1.82.1`. The
+official advisory covers xDS RBAC authorization bypass, HTTP/2 Rapid Reset
+resource exhaustion, and an xDS RBAC panic path; it is retained visibly at
+<https://github.com/grpc/grpc-go/security/advisories/GHSA-hrxh-6v49-42gf>.
+
+Runtime evidence separates dependency presence from a reachable vulnerable
+server path:
+
+- The controller process is `object-store -license /tmp/license/minio.license`;
+  its Service is named `http` on TCP `4221`. The webhook process is
+  `pod-mutating-webhook -v 2`; its Service is TCP `8443` and the
+  MutatingWebhookConfiguration uses HTTPS `/mutate`, `AdmissionReview v1`,
+  `CREATE pods`, and `failurePolicy: Fail` only in the watched namespace.
+- Socket tables showed the controller listener on `4221` and webhook listener
+  on `8443`, with Kubernetes API traffic on `443`; no separate gRPC Service or
+  gRPC listener was observed. The webhook `/healthz` returned HTTP/2
+  `text/plain` `200`, while a canonical gRPC health POST returned HTTP/2
+  `text/plain` `404`, not `application/grpc` or a gRPC status trailer.
+- Static strings in the exact Operator binary contain gRPC/xDS/RBAC library
+  symbols, including `grpc.Server`/`RegisterService`; that proves the
+  dependency is present but does not prove a runtime gRPC server registration.
+  No xDS endpoint/configuration was present in the rendered Pod args, active
+  Services, webhook object, or approved NetworkPolicy path.
+
+Disposition: **PRESENT BUT VULNERABLE SERVER PATH NOT OBSERVED IN APPROVED
+RUNTIME**. This is an evidence disposition, not a suppression: keep the HIGH
+visible, re-scan on every Operator change, and treat any future reachable
+gRPC/xDS server path as a blocker until the official fixed component is
+repinned and rehearsed.
+
+### `libacl` CVE-2026-54369
+
+The active Operator and required `minio-sidecar` images were checked against
+the exploit preconditions: a local attacker must control a pathname/symlink,
+the vulnerable ACL functions must be called, and a privileged caller must
+operate on that path. Both active processes run as UID/GID 1000 with zero
+effective capabilities and `allowPrivilegeEscalation: false`. The exact
+Operator `/aistor-operator` and sidecar `/sidecar` binaries contain no
+`acl_get_file`, `acl_set_file`, `acl_extended_file`, `acl_delete_def_file`, or
+related `acl_*` strings. The sidecar's writable path is only the internal
+`/tmp/minio` emptyDir; its service-account mount is read-only and it has no
+PVC/hostPath.
+
+| Active image | Package finding | Runtime outcome | Remediation |
+| --- | --- | --- | --- |
+| Operator | `libacl 2.3.1-4.el9`, fixed `2.4.0-1.el9_8` | **NOT USED BY RUNTIME BINARY**; no ACL call path or attacker-controlled pathname was observed | Keep finding visible; repin only an official compatible fixed Operator when published, then re-scan/rehearse. |
+| Required MinIO sidecar + init | `libacl 2.3.1-4.el9`, fixed `2.4.0-1.el9_8` | **NOT USED BY RUNTIME BINARY**; non-root/capability evidence also fails the privileged-caller precondition | Keep required sidecar in the approved image set; replace only with an official compatible fixed digest after scan and lower-env PASS. |
+
+This is why the sidecar's `1 HIGH` is not left as an unexplained blocker and
+is not silently ignored.
+
+### Active server image findings
+
+The exact active server scan is `0 CRITICAL / 2 HIGH`:
+
+- `GHSA-hrxh-6v49-42gf` is mapped to the bundled `/usr/bin/mc` dependency
+  (`grpc-go v1.81.1`), not the running `/usr/bin/minio` process. AdminJob and
+  all hooks are disabled, and no `mc` Pod/Job exists. The narrow one-shot
+  owner disposition remains in merged PR #45; it is not an active server
+  ingress or background process.
+- `CVE-2026-39414` is described as S3 Select CSV unbounded-memory DoS for
+  releases before `RELEASE.2025-12-20T04-58-37Z`. The active amd64 digest is
+  also the official `RELEASE.2026-08-07T18-34-35Z`/`latest` amd64 digest, so
+  this is **NOT AFFECTED — scanner mapping mismatch**, not a generic waiver.
+  The official release feed and exact digest remain recorded for re-check.
 
 ## Admin-client gate
 
@@ -173,16 +295,14 @@ BLUE `minio/mc` bootstrap hook must not be reused for GREEN.
 
 The standalone exact-client reachability evidence is intentionally narrower:
 the pinned `mc` binary was run as UID 1000 with a read-only root filesystem and
-ephemeral `/tmp` against disposable synthetic OSS and AIStor endpoints. Alias,
-ready, admin-info, config export, bucket/object operations, mirror, and help
-paths completed as one-shot processes where the endpoint supported them; each
-sample reported `process_exited=true` and `listener_count=0` while running;
-successful shell exit codes were `0`, while endpoint-specific unsupported or
-license-gated checks returned their separately recorded non-zero codes. The
-unlicensed AIStor endpoint correctly rejected readiness/license info. This
-proves the approved one-shot boundary has no observed inbound listener or
-daemon mode; it does not make the `mc` package clean. Re-check the official
-release feed and prefer a newer clean client before production migration.
+ephemeral `/tmp` against disposable synthetic OSS and a licensed AIStor
+endpoint. Alias, ready, admin-info, bucket/object operations, mirror, share,
+and help paths completed as one-shot processes; the licensed contract returned
+S3 `18/18`, application IAM `6/6`, and scanner IAM `6/6`. Each sample had
+`listener_count=0` while running. This proves the approved one-shot boundary
+has no observed inbound listener or daemon mode; it does not make the `mc`
+package clean. Re-check the official release feed and prefer a newer clean
+client before production migration.
 
 `admin-client-job.yaml.template` is an inert contract only. It encodes the
 owner boundary—immutable image, non-root, no token, read-only root, ephemeral
