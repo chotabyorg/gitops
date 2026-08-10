@@ -57,8 +57,11 @@ Primary sources:
 - <https://github.com/minio/minio/security/advisories/GHSA-h749-fxx7-pwpg>
 - <https://github.com/minio/minio/security/advisories/GHSA-3rh2-v3gr-35p9>
 - <https://github.com/minio/minio/security/advisories/GHSA-jjjj-jwhf-8rgr>
+- <https://github.com/grpc/grpc-go/security/advisories/GHSA-hrxh-6v49-42gf>
 - <https://docs.min.io/aistor/operations/licenses/>
 - <https://docs.min.io/aistor/reference/cli/mc-license/mc-license-update/>
+- <https://docs.min.io/aistor/upgrade-aistor-server/>
+- <https://trivy.dev/docs/dev/docs/configuration/db/>
 - <https://dl.min.io/aistor/minio/release/notes/>
 - <https://www.min.io/pricing>
 
@@ -130,6 +133,61 @@ listing. Direct user enumeration was denied to the non-admin identities.
 These are synthetic disposable principals and do not authorize any production
 identity or policy change.
 
+## Direct image and SBOM security scan — 2026-08-10
+
+The exact image was scanned from a locally saved immutable image archive, not
+from a floating tag. The scanner was `Trivy 0.72.0` on linux/amd64,
+`docker.io/aquasec/trivy@sha256:c6e969c5662a546ad5de4a73c2a6b7a7c627f86d916903e175aa623af5b97ada`.
+The vulnerability database came from the documented public ECR repository
+`public.ecr.aws/aquasecurity/trivy-db:2`, schema `2`, updated at
+`2026-08-10T12:59:55Z`, with next update at `2026-08-11T12:59:55Z`.
+
+The direct exact-image result is **0 CRITICAL / 2 HIGH**:
+
+| Finding | Package and installed version | Fixed version | Exact target/path | Disposition |
+| --- | --- | --- | --- | --- |
+| `GHSA-hrxh-6v49-42gf` | `google.golang.org/grpc` `v1.81.1` | `1.82.1` | embedded `/usr/bin/mc` | **IMPORTANT**: the scanned client binary is not the running `minio` server process, but the candidate image still contains the vulnerable client and its release notes claim the dependency was bumped to `1.82.1`; require vendor resolution, a newer candidate, or a separately pinned/fixed client before treating the image as clean. |
+| `CVE-2026-39414` | `github.com/minio/minio` `v0.0.2-0.20260807183435-59a3350e61d0` | none reported by Trivy | `/usr/bin/minio` | **VEX/product-mapping gate**: Trivy maps the binary to the OSS Go module and reports `affected`, while the vendor advisory states that AIStor fixed this S3 Select CSV DoS in `RELEASE.2025-12-20T04-58-37Z`; the reviewed AIStor candidate is newer, but this needs vendor-backed applicability evidence rather than silent suppression. |
+
+The direct result is therefore **SECURITY CHANGES REQUIRED**, not a clean
+`SECURITY PASS`. The `CVE-2026-39414` result is not accepted merely because
+the application does not use S3 Select; the vendor product fix and the
+Trivy-to-AIStor package mapping must be reconciled. The gRPC result must be
+resolved even though the embedded `mc` executable is not the server process.
+
+The official CycloneDX SBOM was scanned as supplemental evidence. Trivy
+reported 197 HIGH/CRITICAL records: 12 CRITICAL and 185 HIGH, of which 12
+were marked affected and 185 fixed. The report includes build, historical, and
+embedded dependency records and Trivy warned that a third-party SBOM may be
+inaccurate; it materially differs from the direct runtime scan and cannot be
+used as a clean runtime verdict. The official SPDX JSON was structurally
+downloaded and validated, but Trivy 0.72.0 could not decode it because some
+external references have a PURL with no package name. No finding was hidden
+with `--ignore-unfixed`.
+
+### Required-CVE disposition
+
+- `CVE-2026-40344`: not reported by direct Trivy; candidate is after the
+  vendor-fixed AIStor `RELEASE.2026-04-11T03-20-12Z` line. The old OSS runtime
+  remains in the affected range and still requires migration.
+- `CVE-2026-41145`: not reported by direct Trivy; candidate is after the same
+  vendor-fixed AIStor `RELEASE.2026-04-11T03-20-12Z` line. The old OSS runtime
+  remains in the affected range and still requires migration.
+- `CVE-2026-39414`: direct Trivy finding on `/usr/bin/minio`; vendor advisory
+  says fixed in AIStor `RELEASE.2025-12-20T04-58-37Z`, so the candidate is
+  product-version-fixed but the scanner mapping requires VEX/vendor
+  confirmation before release acceptance.
+- `CVE-2026-34204`: not reported by direct Trivy; candidate is after the
+  vendor-fixed AIStor `RELEASE.2026-03-26T21-24-40Z` line.
+- `CVE-2025-62506`: not reported by direct Trivy; candidate is after the
+  vendor-fixed AIStor `RELEASE.2025-10-15T17-29-55Z` line.
+
+The AIStor release feed currently lists newer-looking filenames than the
+reviewed candidate, but the corresponding `RELEASE.2026-08-07T19-14-57Z` and
+`RELEASE.2026-08-11T04-07-05Z` release-note URLs returned 404 during this run.
+No newer candidate was substituted without verifiable artifacts and a fresh
+S3/IAM regression.
+
 ### Option B — AIStor Operator/ObjectStore migration
 
 This is the vendor-documented Kubernetes migration path. It installs the
@@ -165,6 +223,12 @@ Before production work, the owner must confirm:
 This PR deliberately stops at that production gate. It does not invent an
 in-place OSS-Deployment-to-AIStor migration.
 
+Current rehearsal verdict: **BLUE/GREEN RECOMMENDED** for production data
+movement; direct OSS-binary replacement on the existing production PVC is
+**REJECTED / UNSUPPORTED** for this repository-managed topology. An
+Operator/ObjectStore adoption remains a separate architecture decision, not
+an automatic implementation of this PR.
+
 ## Preservation and migration plan after approval
 
 Before any candidate is applied to data-bearing infrastructure:
@@ -190,15 +254,54 @@ Before any candidate is applied to data-bearing infrastructure:
    Only after storage contract evidence and security sign-off may a separate
    activation change remove the rollback override or set `FILE_SCANNER_URL`.
 
+### Disposable blue/green and rollback rehearsal — 2026-08-10
+
+The current raw single-node OSS topology was modeled with the exact old
+manifest `minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e`
+and a dedicated persistent Docker volume. The new side used the exact
+licensed AIStor candidate and a different dedicated volume. Both had one
+pool, one drive, bucket `repetly-homework`, synthetic application/scanner
+users, and no production connectivity. No disposable Kubernetes cluster,
+kind/k3d runtime, or active Kubernetes context was available, so this is a
+container/volume rehearsal and not PVC/Service proof.
+
+The documented backup mechanisms were exercised: old IAM export/import and
+bucket metadata export/import, followed by `mc mirror` data transfer. Initial
+reconciliation passed with **3 objects / 162 bytes**, identical keys, sizes,
+ETags, SHA-256 content hashes, `Content-Type`, custom metadata, and private
+bucket policy on both sides. IAM checks passed on both sides: application
+GET/PUT/DELETE plus denied list, and scanner GET for canonical/staging plus
+denied outside-prefix GET, PUT, DELETE, and list.
+
+The client endpoint was cut over from OLD to NEW and the full S3 suite passed
+**17/17** on NEW after a synthetic green-only write. That write was absent on
+OLD before reverse-sync, proving that a simple endpoint rollback can lose new
+writes. A controlled reverse-sync from NEW to OLD was then performed; final
+reconciliation passed with **4 objects / 207 bytes** and identical keys, sizes,
+ETags, and content. The rollback endpoint was switched back to OLD and the
+full S3 suite passed **17/17**; the local rollback harness elapsed about one
+second, which is not a production RTO/SLO measurement.
+
+Production sequence must therefore be: write freeze or maintenance window,
+final forward sync, reconciliation, reviewed Service cutover, contract and
+IAM verification, controlled reopen, and preserve NEW/OLD until sign-off. Do
+not introduce dual-write without a separate architecture decision.
+
 ## Irreversible operations and rollback
 
 - OSS→AIStor migration is permanent according to the vendor documentation.
+- The disposable OLD volume had no `.minio.sys/api-version` file; the
+  disposable NEW AIStor volume reported `backendVersion.major=16`. This is
+  not a production compatibility claim because the rehearsal used separate
+  volumes and did not replace a live data volume.
 - From AIStor `RELEASE.2026-04-11T03-20-12Z` onward, API auto-bump is enabled by
   default and can make downgrade impossible as soon as the cluster commits the
-  new API version.
+  new API version. Neither disposable container set
+  `MINIO_API_AUTO_BUMP` or `MINIO_API_BUMP_BAKE_TIME` explicitly.
 - Before a real upgrade, set `MINIO_API_AUTO_BUMP=off` on every server, or use
-  a documented bounded `MINIO_API_BUMP_BAKE_TIME`, and require an explicit
-  approval before any manual `mc admin update --bump-api`.
+  a documented bounded `MINIO_API_BUMP_BAKE_TIME` such as `24h`, and require
+  an explicit approval before any manual `mc admin update --bump-api`. No
+  actual API bump was executed in this rehearsal.
 - A rollback is a restore/cutover to the preserved old environment or an
   export/import recovery, not an assumption that an old binary can start after
   an API bump.
@@ -210,22 +313,22 @@ Before any candidate is applied to data-bearing infrastructure:
 
 The following evidence is intentionally **not claimed** by this memo:
 
-- an actionable HIGH/CRITICAL vulnerability scan verdict for the exact image;
-  the official SPDX and CycloneDX SBOMs were downloaded and parsed
-  successfully, but the pinned Grype database was unavailable in this
-  environment and Docker Scout required registry authentication;
-- disposable upgrade/rollback rehearsal;
+- final security acceptance of the exact candidate: Trivy found two HIGH
+  findings and requires a gRPC embedded-client resolution plus
+  vendor-backed VEX/applicability evidence for `CVE-2026-39414`;
+- Kubernetes-specific Deployment/Service/PVC/Secret/ConfigMap/NetworkPolicy
+  rehearsal and cluster-admin/operator validation;
 - direct OSS-Deployment-to-AIStor data migration compatibility;
 - live cluster image, PVC, bucket inventory, credential, console, TLS, and
   NetworkPolicy verification.
 
 The exact candidate startup/platform smoke, licensed readiness, S3 contract,
-restart persistence, and disposable IAM checks are complete. SBOM provenance
-is available from the official AIStor release feed, but SBOM presence is not a
-substitute for a completed vulnerability scan. No production SSH session was
+restart persistence, container blue/green reconciliation, rollback contract,
+and disposable IAM checks are complete. No production SSH session was
 obtained, so live inventory and production preflight still require
 cluster-owner access. Do not merge an active runtime image change until the
-remaining gates are attached to the implementation PR.
+security disposition and Kubernetes-specific gates are attached to the
+implementation PR.
 
 ## Activation boundary
 
