@@ -69,23 +69,27 @@ both services are `ClusterIP`, automatic certificates are enabled, and
 `MINIO_API_AUTO_BUMP=off` is present. The capacity and StorageClass values are
 deliberately invalid placeholders until preflight replaces them.
 
-The Operator chart's exact default image inventory is an activation gate, not
-an approval:
+The Operator chart's exact rendered dependency inventory is an activation
+gate, not an approval:
 
 | Role | Rendered/default reference | Current status |
 | --- | --- | --- |
-| ObjectStore CR server override | `quay.io/minio/aistor/minio@sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1` | Exact reviewed digest; scan/evidence recorded in PR #45. |
-| Operator controller + webhook | `quay.io/minio/aistor/operator:RELEASE.2026-07-21T22-41-48Z` | Floating tag; resolve digest and scan before activation. |
-| Operator ObjectStore ConfigMap defaults | `minwall:RELEASE.2026-05-21T06-25-56Z`, `kes:RELEASE.2026-07-30T10-52-13Z`, `kes-sidecar:RELEASE.2026-07-14T22-03-37Z`, `minio:RELEASE.2026-08-07T18-34-35Z`, `minio-sidecar:RELEASE.2026-07-14T22-07-12Z` | Chart-configured tags; usage is conditional, the CR server digest overrides `minio`, and every dependency still requires digest resolution and scan. |
-| AdminJob client | `quay.io/minio/aistor/mc:RELEASE.2026-07-24T01-15-12Z` | **Blocked**: grpc-go `v1.81.1`, fixed `1.82.1`; AdminJob controller is disabled in this scaffold. |
+| ObjectStore CR server override | `quay.io/minio/aistor/minio@sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1` (`linux/amd64`) | Exact reviewed digest; direct scan `0 CRITICAL / 2 HIGH`, dispositions recorded in merged PR #45. |
+| Operator controller + webhook | manifest `quay.io/minio/aistor/operator@sha256:50bd6c34a1d2e811cc881116dc3fcce210e2f5fc2276a3933d8cacf71b39d68a`; amd64 `sha256:b88e5cf563406719f67028a52fef9dac4049e555f44e263267c30a069d1d8166`, arm64 `sha256:d49c60db8ac8e2ae0b38fb5b20a16c1c765449fa0c0aee1cea4054b31c7e35d3` | Immutable; direct Trivy `0 CRITICAL / 1 HIGH` (`libacl` and `grpc-go v1.82.0`, fixed `1.82.1`). **Activation blocker.** |
+| ObjectStore ConfigMap: minwall | manifest `quay.io/minio/aistor/minwall@sha256:cc74fc5d90115670a40df54459b7feaeb1c340af98866324b26a71ce2e77dc4d`; amd64 `sha256:0f831ea63e6269540f96b312020e1759ab2cd9218ef9c08c108756a54a4ccb99`, arm64 `sha256:b12f90900c7b5dfc532c4f48020a95d76b6c568092018fc702be963765d9b1c0` | Immutable; direct Trivy `0 CRITICAL / 18 HIGH` across `x/crypto`, `x/net`, `x/text`, and Go stdlib. **Activation blocker.** |
+| ObjectStore ConfigMap: KES | manifest `quay.io/minio/aistor/kes@sha256:115f6b2bc586a9fc88ddb1342ead4a5df546dd719757bb5f1a411862688f6f21`; amd64 `sha256:7872b91e8cdd580f6eb7ef9d3608e54d228f10199acb83e3e69994ad80ace93e`, arm64 `sha256:dccb7efb1b579cd75d526c5a18ce2d554e8436a27a34fde4e9c1223c52a147f7` | Immutable; direct Trivy `0 CRITICAL / 0 HIGH`. KES is conditional; current ObjectStore values do not enable KES configuration. |
+| ObjectStore ConfigMap: KES sidecar | manifest `quay.io/minio/aistor/kes-sidecar@sha256:e7070a20d8dbfce6608a5b7db9afc7bc43f239001680e141b423d7376fd3d473`; amd64 `sha256:fe0b7980565240ca415b8edb403b0361a17ff5f93e6e3b6774c0d1505096b57b`, arm64 `sha256:dde96b3d711cc80b9a5f9f3c6ab291c330a2a3797be5ceb8f164bf0a6cdfe621` | Immutable; direct Trivy `0 CRITICAL / 1 HIGH` (`CVE-2026-54369`, `libacl`). Conditional; **activation blocker if enabled**. |
+| ObjectStore ConfigMap: MinIO sidecar | manifest `quay.io/minio/aistor/minio-sidecar@sha256:1cf294b61514a46786d4233e7f4ea66fe179dbb996114fc7af33d3e023961ebc`; amd64 `sha256:560e204d8fbd05d095719a39af0db36e177829528d80366962d1bc22102c9b57`, arm64 `sha256:dba488d488be201923b62859ed8f6c66e9cef79d1e0f488139b4b59763ce9558` | Immutable; direct Trivy `0 CRITICAL / 1 HIGH` (`CVE-2026-54369`, `libacl`). **Activation blocker.** |
+| AdminJob client | `quay.io/minio/aistor/mc@sha256:132c8d47976ca9d60b8af26c77bb96d29ed6ae79e6428fa9464cd82803ff2010` | **Not rendered/activated**: AdminJob controller disabled. Owner-accepted only for separate one-shot use; direct Trivy `0 CRITICAL / 1 HIGH`, `grpc-go v1.81.1`. |
 | Optional AIHub/Prompt/Warp | `quay.io/minio/aistor/aihub:RELEASE.2025-12-11T18-08-15Z`, `quay.io/minio/aistor/prompt:RELEASE.2025-01-17T21-55-43Z`, `quay.io/minio/aistor/warp:v1.5.0` | Disabled here; no activation without a separate owner decision and image review. |
 
 With `operators.adminjob.disabled: true`, the rendered Operator release has no
 AdminJob controller Deployment or `adminjob-operator` ConfigMap, so the
-ineligible `mc` path is not activated. The AdminJob CRD remains chart-owned
-metadata; it must not receive an AdminJob resource until the client gate is
-closed. If AdminJob is enabled later, its `mc` image must be explicitly
-overridden to a separately pinned, scanned, eligible client.
+`mc` path is not activated. In this chart version the AdminJob CRD is also not
+rendered when the controller is disabled. Future migration/admin work should
+use a separate one-shot Job/package; do not enable the Operator AdminJob
+subsystem merely because the current `mc` has an owner-accepted narrow-use
+disposition.
 
 The chart's default Operator security context renders non-root UID/GID 1000,
 `allowPrivilegeEscalation: false`, all capabilities dropped, and
@@ -102,7 +106,55 @@ creates no license Secret, while a non-empty value would create
 The draft's out-of-band Secret contract uses that exact name/key, but its
 namespace placeholder must be resolved together with the release namespace.
 The default empty `global.operator.watchedNamespaces` means cluster-wide
-watch/RBAC mode; set an explicit approved namespace scope before activation.
+watch/RBAC mode; this Draft now shows the actual chart key and lower-env
+rehearsal uses `aistor-green`. The production namespace/scope remains a gate.
+
+All direct scans above used Trivy `0.72.0`, the pinned scanner image, the
+public ECR vulnerability database, HIGH/CRITICAL severity, and no
+`--ignore-unfixed`. Findings are recorded as blockers or conditional blockers;
+no generic suppression was applied.
+
+### Disposable Operator/ObjectStore rehearsal — 2026-08-10
+
+An isolated kind `v0.32.0` cluster was created with pinned node image
+`kindest/node:v1.35.5@sha256:ce977ae6d65918d0b58a5f8b5e940429c2ce42fa3a5619ec2bbc60b949c0ac95`.
+The exact `aistor-operator 5.11.3` and `aistor-objectstore 1.0.17` archives
+were installed with digest-pinned rendered images and `adminjob.disabled=true`.
+The node was linux/arm64 while the reviewed server image is linux/amd64, so
+the successful image start was an emulated lower-env controller-path result,
+not a production platform proof.
+
+Passed controller/resource evidence:
+
+- ObjectStore and PolicyBinding CRDs became Established; AdminJob was not
+  rendered because the controller was disabled.
+- Operator and webhook Deployments were `1/1`, non-root UID/GID 1000 with
+  `allowPrivilegeEscalation: false`; `WATCHED_NAMESPACES=aistor-green` was
+  present. Webhook Service/MutatingWebhookConfiguration resolved to port 8443.
+- ObjectStore reconciliation created the StatefulSet, one RWO `standard` PVC,
+  `pvcProtection: true`, private ClusterIP S3/console/headless Services, auto
+  TLS Secret, and the exact server/sidecar digests.
+- Deleting the ObjectStore removed its workload/Services while the PVC stayed
+  `Bound` with `aistor.min.io/pvc-protection` and Kubernetes PVC finalizers.
+  Deleting the pod recreated it against the same PVC.
+- A lower-env NetworkPolicy model was applied: ObjectStore ingress deny with
+  DNS-only egress and webhook ingress only from the disposable kind API/node
+  path. It is not a production selector and was deleted with the cluster.
+
+The rehearsal intentionally did **not** claim S3/IAM/readiness success. The
+license file path supplied earlier remained a placeholder and no valid local
+`minio.license` file was discoverable; only a synthetic disposable Secret was
+used, so AIStor correctly reported `license: invalid JWT`, health red, and
+denied S3 operations. License material was never read or logged. A valid
+disposable license is required to repeat S3/IAM, restart-object persistence,
+and application contract checks.
+
+The same lower-env run showed `resources: {}` for the MinIO container and no
+explicit MinIO liveness/readiness probes in the current values; only the
+sidecar readiness probe was present. This is an implementation blocker: add
+owner-reviewed initial requests/limits and probes after lower-env measurement,
+then re-run with a valid license. These values must not be treated as
+production sizing.
 
 ## Admin-client gate
 
@@ -110,23 +162,34 @@ The server image's `/usr/bin/mc` is forbidden for all production bootstrap,
 license, probe, lifecycle, admin, background, or troubleshooting work. The
 currently published stable AIStor Client
 `quay.io/minio/aistor/mc:RELEASE.2026-07-24T01-15-12Z` is pinned and scanned,
-but is not eligible because it contains `grpc-go v1.81.1` (fixed `1.82.1`).
+but is owner-accepted only for the narrow one-shot administrative/migration
+boundary because it contains `grpc-go v1.81.1` (fixed `1.82.1`); it is not
+package-clean. A newer clean official client remains preferred.
 
-No admin Job, lifecycle hook, or reconciliation manifest is included until an
-official client with `grpc-go >= 1.82.1` and zero HIGH/CRITICAL findings is
-available and pinned by digest. The current BLUE `minio/mc` bootstrap hook must
-not be reused for GREEN.
+No AdminJob, lifecycle hook, or reconciliation manifest is included. Future
+administrative/migration work should use a separate one-shot package under the
+owner boundary; do not enable the Operator AdminJob subsystem. The current
+BLUE `minio/mc` bootstrap hook must not be reused for GREEN.
 
 The standalone exact-client reachability evidence is intentionally narrower:
 the pinned `mc` binary was run as UID 1000 with a read-only root filesystem and
 ephemeral `/tmp` against disposable synthetic OSS and AIStor endpoints. Alias,
 ready, admin-info, config export, bucket/object operations, mirror, and help
 paths completed as one-shot processes where the endpoint supported them; each
-sample reported `process_exited=1` and `listener_count=0` while running. The
+sample reported `process_exited=true` and `listener_count=0` while running;
+successful shell exit codes were `0`, while endpoint-specific unsupported or
+license-gated checks returned their separately recorded non-zero codes. The
 unlicensed AIStor endpoint correctly rejected readiness/license info. This
 proves the approved one-shot boundary has no observed inbound listener or
-daemon mode; it does not make the `mc` package clean and does not authorize its
-production use while grpc-go remains below the fixed version.
+daemon mode; it does not make the `mc` package clean. Re-check the official
+release feed and prefer a newer clean client before production migration.
+
+`admin-client-job.yaml.template` is an inert contract only. It encodes the
+owner boundary—immutable image, non-root, no token, read-only root, ephemeral
+config/tmp, no Service, `restartPolicy: Never`, and TTL cleanup—without adding
+an AdminJob CR or activating any production resource. The template must be
+replaced or removed during the future migration review; it is not a license to
+run generic troubleshooting containers.
 
 ## Required gates before this scaffold can become active
 
@@ -135,8 +198,9 @@ production use while grpc-go remains below the fixed version.
 2. Replace both value placeholders with an owner-reviewed capacity and
    StorageClass decision. Do not reuse `repetly-minio-data`.
 3. Provide a separately sealed license Secret and object-store config Secret.
-4. Select and scan an eligible separate admin client; add only its immutable
-   image digest to the future admin Job/reconciliation package.
+4. Re-check the official client feed before migration, then use either a newer
+   clean client or this owner-accepted client only in a separate immutable
+   one-shot Job/package; never enable the Operator AdminJob subsystem.
 5. Render the exact chart versions and all dependent images; verify CRDs,
    RBAC, TLS, NetworkPolicy, probes, resources, PVC finalizers, and Service
    selectors in a disposable lower environment.

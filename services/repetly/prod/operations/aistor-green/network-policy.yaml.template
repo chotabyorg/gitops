@@ -1,0 +1,57 @@
+# DRAFT CONTRACT ONLY. This file is not referenced by any active Kustomization
+# or Argo Application. Replace every placeholder only after production
+# namespace, application/scanner namespaces, and endpoint paths are reviewed.
+# Do not infer production labels from this lower-environment rehearsal.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: repetly-aistor-green-ingress
+  namespace: "__SET_AFTER_PREFLIGHT__"
+spec:
+  podSelector:
+    matchLabels:
+      aistor.min.io/objectStore: "__SET_AFTER_RUNTIME_RENDER__"
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Add only the reviewed Repetly application/scanner/admin paths.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: "__SET_EXPECTED_CLIENT_NAMESPACE__"
+      ports:
+        - protocol: TCP
+          port: 9000
+  egress:
+    # Keep DNS and only the explicitly required external/admin endpoints.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: "__SET_DNS_NAMESPACE__"
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: repetly-aistor-webhook-ingress
+  namespace: "__SET_OPERATOR_NAMESPACE__"
+spec:
+  podSelector:
+    matchLabels:
+      aistor.min.io/name: object-store-webhook
+  policyTypes:
+    - Ingress
+  ingress:
+    # The source must be the reviewed Kubernetes API-server path; this
+    # placeholder intentionally prevents accidental production activation.
+    - from:
+        - ipBlock:
+            cidr: "__SET_API_SERVER_CIDR__"
+      ports:
+        - protocol: TCP
+          port: 8443

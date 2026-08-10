@@ -43,5 +43,38 @@ objectStore:
     - name: MINIO_API_AUTO_BUMP
       value: "off"
 
+# Resource and probe values are intentionally not guessed for production.
+# The lower-env run showed an empty MinIO resources block and only the
+# operator-generated sidecar readiness probe. After valid-license measurement,
+# replace these placeholders with owner-reviewed values and re-render:
+# resources:
+#   requests:
+#     cpu: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+#     memory: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+#   limits:
+#     cpu: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+#     memory: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+# startup:
+#   httpGet:
+#     path: /minio/health/live
+#     port: 9000
+#     scheme: HTTPS
+#   failureThreshold: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+#   periodSeconds: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+# readiness:
+#   httpGet:
+#     path: /minio/health/ready
+#     port: 9000
+#     scheme: HTTPS
+#   failureThreshold: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+#   periodSeconds: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+# liveness:
+#   httpGet:
+#     path: /minio/health/live
+#     port: 9000
+#     scheme: HTTPS
+#   failureThreshold: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+#   periodSeconds: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
+
 # Add explicit resources, probes, NetworkPolicy, and the reviewed endpoint
 # contract only after the production capacity/TLS/NetworkPolicy preflight.
