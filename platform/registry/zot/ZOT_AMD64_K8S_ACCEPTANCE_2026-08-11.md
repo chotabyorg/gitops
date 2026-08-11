@@ -1,6 +1,6 @@
 # Zot v2.1.20 amd64 Kubernetes acceptance — 2026-08-11
 
-Verdict: **PENDING — ISOLATED GITHUB-HOSTED X64 ACCEPTANCE**.
+Verdict: **PASS — GITHUB-HOSTED AMD64 KUBERNETES ACCEPTANCE**.
 
 This is an evidence record for the required production-architecture gate. No
 production cluster, BLUE MinIO, GREEN AIStor, Repetly storage, or production
@@ -44,8 +44,27 @@ semantics. kind's default CNI does not enforce NetworkPolicy, so the workflow
 reports enforcement as unavailable rather than claiming a negative network
 test; production enforcement is separately evidenced by K3s chains.
 
-The run URL, conclusion, exact imageID, and sanitized evidence are appended
-after the first GitHub-hosted run.
+## Recorded run — 2026-08-11
+
+- Workflow run: [31521568936](https://github.com/chotabyorg/gitops/actions/runs/31521568936)
+- Commit: `f070f8200de201368cd9cede9ce37b7c6a5fa2d8`
+- Runner: `ubuntu-24.04`; disposable kind node: `amd64`
+- Conclusion: `success`; sanitized artifact was uploaded by the workflow.
+- Exact Pod imageID:
+  `ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5`
+- Health probes: `/startupz=200`, `/readyz=200`, `/livez=200`.
+- Publisher create: PASS; same-tag overwrite: HTTP `403`; delete: HTTP
+  `403`; puller create: HTTP `403`; anonymous read: HTTP `401`.
+- Puller read remained successful after Pod deletion/recreation; PVC UID
+  `c74a3056-db2c-4f90-bbc2-53d8f25daa7c` remained bound and the immutable
+  manifest remained readable.
+- Security context assertions: PASS (`runAsNonRoot`, UID 1000,
+  `allowPrivilegeEscalation=false`, read-only root filesystem, dropped ALL,
+  no service-account token).
+- NetworkPolicy object: default deny semantics PASS. kind's default CNI does
+  not enforce NetworkPolicy, so the workflow records
+  `enforcement=unavailable_kind_default_cni`; production enforcement is
+  separately evidenced by K3s embedded kube-router chains.
 
 ## Required abbreviated acceptance
 

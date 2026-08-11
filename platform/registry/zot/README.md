@@ -182,6 +182,13 @@ disposable kind cluster, synthetic credentials/certificates, and no production
 access or secrets. The previous local attempt was architecture-invalid and is
 retained as negative evidence; see
 [`ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md`](./ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md).
+
+The GitHub-hosted run [31521568936](https://github.com/chotabyorg/gitops/actions/runs/31521568936)
+passed on `ubuntu-24.04` with node `amd64`, exact Zot Pod imageID
+`ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5`,
+health probes `200/200/200`, ACL negatives `403/403/403/401`, and PVC
+persistence after Pod recreation. kind default CNI did not enforce
+NetworkPolicy; that limitation is recorded explicitly.
 The local rehearsals use synthetic values and do not
 approve production selectors, storage, TLS, image-pull reachability, or
 resources.

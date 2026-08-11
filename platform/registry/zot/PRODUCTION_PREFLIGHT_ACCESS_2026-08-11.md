@@ -78,8 +78,12 @@ changed.
 
 1. Publish DNS and obtain/verify the Traefik ACME certificate; no production
    DNS or ingress mutation is authorized in this execution.
-2. Run the GitHub-hosted x64 Kubernetes acceptance and record its run,
-   sanitized evidence, exact Pod imageID, and PVC persistence.
+2. GitHub-hosted x64 Kubernetes acceptance is **PASS** in
+   [`ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md`](./ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md).
+3. Rollout-time work remains: publish DNS, obtain/verify ACME, deliver the
+   out-of-band auth/puller Secrets, mirror the reviewed content, and verify
+   node/containerd HTTPS pull. None of those production mutations is part of
+   this task.
 
 No kubeconfig, token, certificate, password, access-key value, or Secret value
 is stored in this repository or in the evidence.
