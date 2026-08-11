@@ -4,11 +4,18 @@ Status: **design placeholder — production values and RPO/RTO require owner
 approval after read-only preflight**.
 
 The registry data PVC is independent from BLUE MinIO, GREEN AIStor, and
-Repetly storage. The production plan must name the storage backend, snapshot
-mechanism, retention, encryption, restore owner, and tested RPO/RTO. A backup
-of only the Kubernetes manifests is insufficient; the OCI blobs, manifests,
-tags, ACL/auth configuration, and TLS/identity metadata required to restore
-the registry must be covered.
+Repetly storage. The 2026-08-11 read-only preflight found one amd64 production
+node and only the node-local `local-path` StorageClass. The existing BLUE PVC
+is 10Gi RWO with reclaim policy `Delete`; no registry PVC or off-node backup
+destination exists yet. The production plan must name the storage backend,
+snapshot mechanism, retention, encryption, restore owner, and tested RPO/RTO.
+A backup of only the Kubernetes manifests is insufficient; the OCI blobs,
+manifests, tags, ACL/auth configuration, and TLS/identity metadata required to
+restore the registry must be covered.
+
+Until those owner decisions and a restore rehearsal exist, backup/restore is a
+**BLOCKER** for production registry activation and for moving issue #47 to
+Ready for Review.
 
 ## Failure model
 

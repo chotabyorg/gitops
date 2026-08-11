@@ -133,24 +133,28 @@ and puller read plus publisher overwrite/delete denial remained unchanged.
 
 ## Architecture boundary and remaining gates
 
-This rehearsal is arm64. If production nodes are amd64, the final workload
-must use the scanned amd64 manifest digest
+This rehearsal is arm64. Production is amd64, so the final workload must use
+the scanned amd64 manifest digest
 `sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5`
 and repeat the abbreviated Kubernetes acceptance (probes, ACL, overwrite
-deny, persistence, and Pod imageID) before Ready for Review.
+deny, persistence, and Pod imageID) before Ready for Review. The required
+follow-up was attempted but the local arm64 host could not provide a real
+amd64 Kubernetes node; see
+[`ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md`](./ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md).
 
-Production activation still requires facts unavailable in this workspace:
+Production activation still requires these unresolved contracts:
 
-- approved read-only Kubernetes context and cluster identity;
-- node architecture/topology and kubelet/container-runtime pull path;
+- approved private-registry endpoint, TLS trust path, and image-pull Secret
+  contract;
 - independent production StorageClass/PVC sizing and registry namespace;
-- approved TLS hostname/CA/trust path and private endpoint reachability;
 - exact publisher/puller NetworkPolicy selectors and necessary DNS/egress;
 - production resource values and backup/restore owner, retention, RPO/RTO;
 - final production Pod imageID equality with the approved scanned digest.
 
-No production kubeconfig was present (`current-context` unset and no contexts
-returned), so no SSH bypass or production API call was attempted.
+The authorized production read-only preflight is recorded in
+[`PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md`](./PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md).
+It confirmed a single amd64 k3s node, one node-local `local-path` StorageClass,
+no registry endpoint/CA, and no `prod` NetworkPolicy enforcement evidence.
 
 The Docker-level acceptance remains in
 [`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md).

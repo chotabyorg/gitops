@@ -1,6 +1,6 @@
 # Dedicated Zot registry scaffold
 
-Status: **inert Draft scaffold — not a production deployment**.
+Status: **inert Draft scaffold — production activation not approved**.
 
 Tracked by GitOps issue #47, `[P0] Add immutable private OCI registry for
 AIStor runtime`. This platform dependency is intentionally separate from
@@ -34,13 +34,30 @@ replication/scanning workflows.
 
 - Registry storage must be independent of current BLUE MinIO, future GREEN
   AIStor, and every Repetly storage bucket.
-- StorageClass, PVC size, registry namespace, internal endpoint, and TLS
-  hostname remain `REPLACE_WITH_...` fail-closed placeholders until the
-  authorized production read-only preflight provides exact facts.
+- The read-only production preflight is now recorded, but it found only the
+  existing node-local `local-path` StorageClass. Registry namespace, PVC size,
+  internal/private endpoint, TLS hostname/CA, and backup contract remain
+  fail-closed placeholders because they do not exist in production today.
 - Production rollout requires a separate approval and a new review of the
   rendered manifests.
 - No active workload, Argo Application, service Kustomization, image reference,
   Secret, PVC, or Ingress is changed by this scaffold.
+
+## Production read-only preflight — 2026-08-11
+
+Production is a single-node amd64 k3s `v1.35.5+k3s1` cluster with 4 CPU and
+about 7.75Gi allocatable memory. The existing BLUE MinIO uses a separate 10Gi
+RWO `local-path` PVC; the bucket inventory is one object / 356134 bytes and the
+node filesystem has 116G free. Storage remains disabled because the Repetly
+S3 environment entries are blank. There is no existing registry namespace,
+private registry endpoint, registry CA/trust configuration, or `prod`
+NetworkPolicy enforcement evidence.
+
+These facts are documented in
+[`PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md`](./PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md).
+They narrow the design, but do not approve a node-local single-replica
+registry without an owner-approved backup/restore plan and a proven kubelet
+image-pull path.
 
 ## Identity contract
 
@@ -117,15 +134,18 @@ in [`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-
 The rendered Kubernetes rehearsal also passed locally in an arm64 kind cluster;
 evidence is in
 [`ZOT_K8S_KIND_ACCEPTANCE_2026-08-11.md`](./ZOT_K8S_KIND_ACCEPTANCE_2026-08-11.md).
-Both verdicts remain **LOCAL REGISTRY GATES PASS — PRODUCTION PREFLIGHT
-REQUIRED**. The Kubernetes rehearsal used synthetic values and does not
+The required amd64 follow-up was attempted and is explicitly blocked by the
+lack of a real amd64 disposable Kubernetes node in this arm64 workspace; see
+[`ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md`](./ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md).
+The local rehearsals use synthetic values and do not
 approve production selectors, storage, TLS, image-pull reachability, or
 resources.
 
-The multi-architecture index is documented for candidate selection only. The
-final rendered workload must use the exact platform manifest digest selected
-after node architecture preflight so that the Pod `imageID` can satisfy the
-release invariant.
+The multi-architecture index is documented for candidate selection only.
+Production is amd64, so the final workload must use the exact child digest
+`sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5`.
+The abbreviated Kubernetes acceptance and final Pod `imageID` equality still
+must be recorded in a real amd64 environment before Ready for Review.
 
 ## Required disposable/lower-environment acceptance
 
