@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zot-registry-default-deny
+  namespace: REPLACE_WITH_REGISTRY_NAMESPACE
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zot
+      app.kubernetes.io/component: registry
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress: []
+  # Fail closed until the production preflight supplies reviewed namespace
+  # selectors, DNS egress, and the node-level path used by kubelet pulls.
+  # Add only the exact approved selectors; do not use a broad namespace rule.

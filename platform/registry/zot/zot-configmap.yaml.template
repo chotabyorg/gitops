@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zot-registry-config
+  namespace: REPLACE_WITH_REGISTRY_NAMESPACE
+  labels:
+    app.kubernetes.io/name: zot
+    app.kubernetes.io/component: registry
+data:
+  config.json: |
+    REPLACE_WITH_RENDERED_AND_SCHEMA_VALIDATED_ZOT_CONFIG_JSON

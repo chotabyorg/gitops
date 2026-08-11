@@ -1,0 +1,43 @@
+{
+  "distSpecVersion": "1.1.0",
+  "storage": {
+    "rootDirectory": "/var/lib/zot"
+  },
+  "http": {
+    "address": "0.0.0.0",
+    "port": "5000",
+    "tls": {
+      "cert": "/etc/zot/tls/tls.crt",
+      "key": "/etc/zot/tls/tls.key"
+    }
+  },
+  "auth": {
+    "htpasswd": {
+      "path": "/etc/zot/auth/htpasswd"
+    }
+  },
+  "accessControl": {
+    "repositories": {
+      "REPLACE_WITH_EXACT_AISTOR_REPOSITORY_PATTERN": {
+        "anonymousPolicy": [],
+        "defaultPolicy": ["read"],
+        "actions": {
+          "REPLACE_WITH_PUBLISHER_ID": ["read", "create"],
+          "REPLACE_WITH_PULLER_ID": ["read"],
+          "REPLACE_WITH_BREAK_GLASS_ADMIN_ID": ["read", "create", "update", "delete"]
+        }
+      }
+    }
+  },
+  "log": {
+    "level": "info"
+  },
+  "extensions": {
+    "search": {
+      "enable": true
+    },
+    "metrics": {
+      "enable": true
+    }
+  }
+}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zot-registry-data
+  namespace: REPLACE_WITH_REGISTRY_NAMESPACE
+  labels:
+    app.kubernetes.io/name: zot
+    app.kubernetes.io/component: registry
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: REPLACE_WITH_APPROVED_STORAGE_CLASS
+  resources:
+    requests:
+      storage: REPLACE_WITH_APPROVED_PVC_SIZE
