@@ -1,5 +1,5 @@
 {
-  "distSpecVersion": "1.1.0",
+  "distSpecVersion": "1.1.1",
   "storage": {
     "rootDirectory": "/var/lib/zot"
   },
@@ -9,23 +9,32 @@
     "tls": {
       "cert": "/etc/zot/tls/tls.crt",
       "key": "/etc/zot/tls/tls.key"
-    }
-  },
-  "auth": {
-    "htpasswd": {
-      "path": "/etc/zot/auth/htpasswd"
-    }
-  },
-  "accessControl": {
-    "repositories": {
-      "REPLACE_WITH_EXACT_AISTOR_REPOSITORY_PATTERN": {
-        "anonymousPolicy": [],
-        "defaultPolicy": ["read"],
-        "actions": {
-          "REPLACE_WITH_PUBLISHER_ID": ["read", "create"],
-          "REPLACE_WITH_PULLER_ID": ["read"],
-          "REPLACE_WITH_BREAK_GLASS_ADMIN_ID": ["read", "create", "update", "delete"]
+    },
+    "auth": {
+      "htpasswd": {
+        "path": "/etc/zot/auth/htpasswd"
+      }
+    },
+    "accessControl": {
+      "repositories": {
+        "REPLACE_WITH_EXACT_AISTOR_REPOSITORY_PATTERN": {
+          "anonymousPolicy": [],
+          "defaultPolicy": [],
+          "policies": [
+            {
+              "users": ["REPLACE_WITH_PUBLISHER_ID"],
+              "actions": ["read", "create"]
+            },
+            {
+              "users": ["REPLACE_WITH_PULLER_ID"],
+              "actions": ["read"]
+            }
+          ]
         }
+      },
+      "adminPolicy": {
+        "users": ["REPLACE_WITH_BREAK_GLASS_ADMIN_ID"],
+        "actions": ["read", "create", "update", "delete"]
       }
     }
   },
