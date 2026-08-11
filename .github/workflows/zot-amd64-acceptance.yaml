@@ -41,7 +41,7 @@ jobs:
           API="https://127.0.0.1:5000"
           PUBLISHER_PASSWORD="synthetic-publisher-password"
           PULLER_PASSWORD="synthetic-puller-password"
-          TAG="aistor/test-content-v2120"
+          TAG="aistor-minio-test-v2120"
 
           cleanup() {
             if [[ -n "${PORT_FORWARD_PID:-}" ]]; then
