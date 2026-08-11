@@ -22,6 +22,9 @@ spec:
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -46,20 +49,28 @@ spec:
             limits:
               cpu: REPLACE_WITH_APPROVED_CPU_LIMIT
               memory: REPLACE_WITH_APPROVED_MEMORY_LIMIT
+          startupProbe:
+            httpGet:
+              scheme: HTTPS
+              path: /startupz
+              port: https
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 24
           readinessProbe:
             httpGet:
               scheme: HTTPS
-              path: /v2/
+              path: /readyz
               port: https
-            periodSeconds: 10
+            periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 6
           livenessProbe:
             httpGet:
               scheme: HTTPS
-              path: /v2/
+              path: /livez
               port: https
-            periodSeconds: 20
+            periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 6
           volumeMounts:

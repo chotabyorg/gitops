@@ -112,8 +112,15 @@ configuration adds Git/worktree functionality, this disposition is invalid
 and the finding must be re-reviewed. See
 [`ZOT_REACHABILITY_2026-08-11.md`](./ZOT_REACHABILITY_2026-08-11.md).
 
-The exact v2.1.20 disposable contract passed locally; evidence is in
-[`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md).
+The exact v2.1.20 Docker-level disposable contract passed locally; evidence is
+in [`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md).
+The rendered Kubernetes rehearsal also passed locally in an arm64 kind cluster;
+evidence is in
+[`ZOT_K8S_KIND_ACCEPTANCE_2026-08-11.md`](./ZOT_K8S_KIND_ACCEPTANCE_2026-08-11.md).
+Both verdicts remain **LOCAL REGISTRY GATES PASS — PRODUCTION PREFLIGHT
+REQUIRED**. The Kubernetes rehearsal used synthetic values and does not
+approve production selectors, storage, TLS, image-pull reachability, or
+resources.
 
 The multi-architecture index is documented for candidate selection only. The
 final rendered workload must use the exact platform manifest digest selected
