@@ -10,6 +10,10 @@ secrets:
 objectStore:
   name: repetly-aistor-green
   image:
+    # BLOCKED with Operator 5.11.3: the chart emits repository@sha256:digest
+    # for this form, but the controller's reconcile image-tag parser rejects
+    # both digest-only and tag@digest strings. Do not activate until MinIO
+    # confirms a supported immutable syntax or an official compatible chart.
     repository: quay.io/minio/aistor/minio@sha256
     digest: e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1
     pullPolicy: IfNotPresent
@@ -43,10 +47,31 @@ objectStore:
     - name: MINIO_API_AUTO_BUMP
       value: "off"
 
-# Resource and probe values are intentionally not guessed for production.
-# The lower-env run showed an empty MinIO resources block and only the
-# operator-generated sidecar readiness probe. After valid-license measurement,
-# replace these placeholders with owner-reviewed values and re-render:
+# Resource and probe values remain lower-env candidate evidence only. The
+# 2026-08-11 chart-native rehearsal rendered the following successfully, but
+# production must wait for the immutable-image blocker, target-node metrics,
+# and owner review. Do not copy these values into production as sizing:
+# resources:
+#   requests: { cpu: 500m, memory: 1Gi }
+#   limits: { cpu: 2, memory: 4Gi }
+# sideCars:
+#   resources:
+#     requests: { cpu: 50m, memory: 32Mi }
+#     limits: { cpu: 100m, memory: 128Mi }
+# startup:
+#   httpGet: { path: /minio/health/live, port: 9000, scheme: HTTPS }
+#   failureThreshold: 30
+#   periodSeconds: 5
+# readiness:
+#   httpGet: { path: /minio/health/ready, port: 9000, scheme: HTTPS }
+#   failureThreshold: 6
+#   periodSeconds: 10
+# liveness:
+#   httpGet: { path: /minio/health/live, port: 9000, scheme: HTTPS }
+#   failureThreshold: 3
+#   periodSeconds: 10
+# After the blocker is resolved, replace these with owner-reviewed values and
+# re-render. The old placeholders remain here to keep this file fail-closed:
 # resources:
 #   requests:
 #     cpu: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"

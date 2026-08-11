@@ -165,9 +165,9 @@ Licensed PASS evidence:
   and the pool was `1/1 Running`. `/minio/health/live`, `/minio/health/ready`,
   and `/minio/health/cluster` each returned HTTP 200 over the generated TLS
   Service. The controller's textual `currentState` remained
-  `Waiting for ObjectStore to be healthy` despite green/setup 100; retain this
-  as a production preflight observation rather than treating the string alone
-  as readiness.
+  `Waiting for ObjectStore to be healthy` despite green/setup 100. The
+  2026-08-11 investigation below classifies this as a **BLOCKER**, not a
+  cosmetic observation.
 - S3 contract: **18/18**. Application IAM: **6/6**. Scanner IAM: **6/6**.
   The exact pinned AIStor `mc` image was used as a disposable client with
   synthetic test identities; no AdminJob or background client was enabled.
@@ -206,6 +206,143 @@ Resource/probe observation and next contract:
   `limits: 100m/128Mi`, startup `30 x 5s`, readiness `6 x 10s`, and liveness
   `3 x 10s`. These numbers are a lower-env contract candidate only, were not
   activated by this Draft, and must not be treated as production sizing.
+
+### CurrentState/status semantics investigation — 2026-08-11
+
+The exact rendered `objectstores.aistor.min.io` CRD from Operator chart
+`5.11.3` was inspected, not inferred from printer columns:
+
+- `status.currentState`, `status.pools`, `status.revision`, `status.setup`,
+  and `status.syncVersion` are required schema fields. `status.healthStatus`
+  is a separate string field.
+- The CRD declares no `status.conditions`, no `status.observedGeneration`, and
+  no status timestamp/reason/message contract. `metadata.generation` was `1`;
+  the runtime status had no observed-generation acknowledgement to use as a
+  readiness gate.
+- The chart archive contains templates and the CRD, but no Operator source
+  code. The exact runtime binary exposed the reconcile log locations used
+  below; vendor source was not modified.
+
+The digest-only licensed run was timestamped and repeated:
+
+1. At `2026-08-11T07:46:24Z`, the CR had `generation=1`,
+   `currentState=Waiting for ObjectStore to be healthy`, `healthStatus=green`,
+   `setup=100`, `drivesOnline=1`, and pool `PoolCreated/running=1`. There were
+   no conditions, observedGeneration, reason, message, or status timestamps.
+2. Operator logs first recorded `Object store healthy`, then failed the same
+   reconcile with `Error extracting tag from current image
+   quay.io/minio/aistor/minio@sha256:...: invalid image format`; the error
+   repeated on periodic requeues.
+3. Restarting the Operator reproduced the error and left the same
+   `Waiting...` state. Deleting the ObjectStore Pod recreated it on the same
+   Bound PVC, returned `2/2 Running` and `healthStatus=green`, but left the
+   state unchanged.
+4. A disposable `tag@digest` control also failed the same image parser. A
+   clean, separate plain vendor-tag control (`RELEASE.2026-08-07T18-34-35Z`)
+   reached `currentState=Initialized`, `healthStatus=green`, `setup=100`, and
+   `PoolCreated/running=1` with no image-format error.
+
+Disposition: **BLOCKER — unsupported/convergence failure for the required
+immutable server-image form in this exact Operator/chart combination**. Do not
+work around it with a floating or tag-only production image. #46 cannot become
+Ready for Review until MinIO confirms a supported immutable image syntax or an
+official compatible Operator/chart is pinned, scanned, and re-rehearsed.
+
+Authoritative production readiness criteria are all of the following:
+
+- `status.currentState=Initialized` and no current/recent Operator reconcile
+  error for the ObjectStore;
+- `status.healthStatus=green`, `status.setup=100`, every pool is `PoolCreated`,
+  and `podStatus.running` equals the requested server count;
+- every active container is Ready with no CrashLoopBackOff/Pending/Crashing
+  state and no unexpected restart during the observation window;
+- `/minio/health/live`, `/minio/health/ready`, and `/minio/health/cluster`
+  return HTTP 200 over the reviewed internal HTTPS path;
+- the accepted S3 `18/18`, application IAM `6/6`, and scanner IAM `6/6`
+  contracts pass after the final image/probe/resource render; and
+- the exact target node architecture and child image digest are confirmed.
+
+Green health/setup alone, and the text `Waiting...` alone, are not sufficient.
+
+### Lower-env probe/resource failure rehearsal — 2026-08-11
+
+The fresh lower-env control used the chart-native probe/resource fields with a
+plain vendor tag only to isolate probe behavior from the image-parser blocker.
+The resulting StatefulSet was inspected after Operator reconciliation:
+
+| Container | Resources | Probes |
+| --- | --- | --- |
+| MinIO | requests `500m/1Gi`, limits `2 CPU/4Gi` | HTTPS `9000 /minio/health/live` startup `30 x 5s`; HTTPS `9000 /minio/health/ready` readiness `6 x 10s`; HTTPS `9000 /minio/health/live` liveness `3 x 10s` |
+| `minio-sidecar` | requests `50m/32Mi`, limits `100m/128Mi` | vendor HTTP `4444 /ready` readiness only; no arbitrary liveness |
+
+Fresh PVC startup completed `2/2 Running` with zero restarts and reached
+`Initialized/green`. From inside the MinIO container, all three HTTPS health
+paths returned `200` with test-only `-k`; normal curl validation against
+`127.0.0.1` failed only because the generated certificate SAN is not the IP.
+This is compatible with the kubelet HTTPS probe contract: Kubernetes documents
+that HTTPS probes skip certificate verification and that startup success gates
+readiness/liveness ([official probe documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/)).
+No external DNS or Ingress is used by the probes.
+
+Failure rehearsal in the disposable licensed control:
+
+- **S3 unavailable/readiness:** freezing the MinIO server PID caused `/live`
+  and `/ready` timeouts/HTTP `502`; kubelet emitted readiness failures and the
+  Pod became `0/2` during recovery.
+- **Liveness:** kubelet logged `Container minio failed liveness probe, will be
+  restarted`; after the disposable process was resumed so termination could
+  complete, MinIO restart count became `1`, the Pod returned `2/2`, and the CR
+  returned `Initialized/green`. The synthetic freeze was not applied to
+  production and did not produce a CrashLoopBackOff.
+- **Startup/PVC:** the fresh PVC run had no premature restart loop and retained
+  both `aistor.min.io/pvc-protection` and Kubernetes PVC protection finalizers.
+
+The candidate above remains lower-env evidence, not production sizing.
+`kubectl top` was unavailable in kind, so point observations were collected
+from container cgroups/processes instead: Operator RSS about `105MiB`, webhook
+RSS about `89MiB`, MinIO RSS about `205MiB` with cgroup memory about `95.5MiB`
+at idle and `99.9MiB` during the disposable `mc` S3 sample, and sidecar RSS
+about `26MiB`. Cumulative cgroup CPU samples were also captured, but are not
+normalized capacity measurements. No MinIO ephemeral-storage value is promoted
+to production; the Operator/webhook observed `500Mi` ephemeral request remains
+the only explicit current contract.
+
+The Operator has no chart-provided controller health probe; its HTTP `4221`
+Service was inspected but no supported readiness/liveness endpoint was proven.
+The webhook's vendor HTTPS `/healthz` probes remain unchanged.
+
+### NetworkPolicy recheck after probes/resources — 2026-08-11
+
+With the lower-env probe/resource render active and ObjectStore
+`Initialized/green`:
+
+- intended `aistor-client` namespace: **PASS — allowed request succeeded**;
+  disposable health GET exited `0`;
+- `aistor-forbidden` namespace: **PASS — forbidden request was blocked**; the
+  same GET exited `1` with a timeout;
+- Operator reconciliation remained healthy and the ObjectStore stayed
+  `2/2 Running`.
+
+The committed NetworkPolicy remains inert and its namespace selectors/API CIDR
+are still production placeholders. The disposable kind node was `linux/arm64`;
+production architecture is an explicit gate. If production is amd64, use the
+reviewed amd64 child digests. If production is arm64, repeat the exact scans
+and rehearsal for the reviewed arm64 children; do not transfer amd64 evidence
+by assumption.
+
+### Fresh local review verdict — 2026-08-11
+
+| Class | Finding | Disposition |
+| --- | --- | --- |
+| **BLOCKER** | Pinned Operator 5.11.3 cannot converge the exact digest-only or `tag@digest` MinIO image; it repeatedly emits `invalid image format` and leaves `currentState=Waiting...` | Keep #46 Draft. Obtain vendor-supported immutable syntax or official compatible Operator/chart; then re-render, rescan, and rerun licensed gates. |
+| IMPORTANT | Production namespace, node architecture, capacity/usage, StorageClass/reclaimPolicy, TLS trust, NetworkPolicy selectors, and Argo/Kustomize state are unknown | Explicit production-only read-only preflight; no production access was used. |
+| MINOR | Kind Metrics API is unavailable; lower-env CPU observations are cumulative cgroup samples | Do not treat lower-env samples as sizing; collect target-cluster metrics in preflight. |
+| TECH DEBT | Exact vendor source for the proprietary Operator is not present in the chart archive | Retain chart/CRD/binary log evidence and request vendor source/release confirmation; no vendor code changes. |
+
+All safe local research gates are exhausted for this cycle, but local-stage
+exit is **withheld** because the BLOCKER is unresolved. The accepted licensed
+S3/IAM/restart/PVC/TLS evidence remains valid; it does not override the
+immutable-image reconcile failure.
 
 ## Active HIGH reachability dispositions
 
@@ -314,7 +451,7 @@ run generic troubleshooting containers.
 ## Required gates before this scaffold can become active
 
 1. Complete the production read-only preflight from
-   `MINIO_RUNTIME_REMEDIATION.md`; never commit secret values.
+   `PRODUCTION_READONLY_PREFLIGHT.md`; never commit secret values.
 2. Replace both value placeholders with an owner-reviewed capacity and
    StorageClass decision. Do not reuse `repetly-minio-data`.
 3. Provide a separately sealed license Secret and object-store config Secret.
