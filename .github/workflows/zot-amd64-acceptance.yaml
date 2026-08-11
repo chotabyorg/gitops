@@ -270,7 +270,7 @@ jobs:
             [[ "${code}" =~ ^4 ]]
           }
 
-          printf 'synthetic config blob\n' > /tmp/config-blob
+          printf '{"architecture":"amd64","os":"linux"}\n' > /tmp/config-blob
           printf 'synthetic layer\n' > /tmp/layer-blob
           config_digest="sha256:$(sha256sum /tmp/config-blob | cut -d' ' -f1)"
           layer_digest="sha256:$(sha256sum /tmp/layer-blob | cut -d' ' -f1)"
@@ -306,6 +306,7 @@ jobs:
             --data-binary @/tmp/manifest.json -o /tmp/registry-body --write-out '%{http_code}' \
             "${API}/v2/aistor/minio/manifests/${TAG}")"
           echo "manifest_put_status=${code}"
+          echo "manifest_put_body=$(tr '\n' ' ' < /tmp/registry-body)"
           test "${code}" = 201
           manifest_digest="sha256:$(sha256sum /tmp/manifest.json | cut -d' ' -f1)"
           echo "manifest_digest=${manifest_digest}"
