@@ -102,6 +102,12 @@ commands are in [`ZOT_IMAGE_SCAN_2026-08-11.md`](./ZOT_IMAGE_SCAN_2026-08-11.md)
 Do not deploy v2.1.20 until a patched official image is scanned clean or the
 owner explicitly accepts the residual risk in a separate approval.
 
+The separate reachability review verdict is **NOT USED BY APPROVED REGISTRY
+RUNTIME**: the cited go-git module is indirect/module metadata only in the
+reviewed Zot source and exact amd64 binary, with no runtime Worktree path
+identified. This does not suppress the Trivy finding or clear the image gate;
+see [`ZOT_REACHABILITY_2026-08-11.md`](./ZOT_REACHABILITY_2026-08-11.md).
+
 The multi-architecture index is documented for candidate selection only. The
 final rendered workload must use the exact platform manifest digest selected
 after node architecture preflight so that the Pod `imageID` can satisfy the

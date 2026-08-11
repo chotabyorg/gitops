@@ -63,3 +63,16 @@ The registry Draft PR may document the v2.1.20 candidate, but it must remain
 inert and Draft. Production requires a patched official image with a new exact
 digest, repeat of the scan for every production node architecture, and a fresh
 disposable ACL/overwrite/delete/restart/PVC rehearsal.
+
+## Reachability disposition
+
+The exact-source and exact-binary review for the cited go-git finding is
+recorded in [`ZOT_REACHABILITY_2026-08-11.md`](./ZOT_REACHABILITY_2026-08-11.md).
+Its single runtime verdict is **NOT USED BY APPROVED REGISTRY RUNTIME**:
+go-git is present in indirect/module metadata, but the inspected Zot source
+has no runtime imports or Worktree path, the exact amd64 binary has no focused
+go-git/worktree symbols, and official `govulncheck` v1.1.4 binary mode found
+zero vulnerabilities in packages imported by the binary. The Trivy finding
+remains visible and the v2.1.20 production image gate remains **BLOCKER** until
+an official release carries the upstream `v5.19.2` fix or the owner records a
+separate risk acceptance.
