@@ -38,6 +38,11 @@ Official package URLs:
 - <https://helm.min.io/helm-releases/aistor-objectstore-1.0.17.tgz>
 - <https://helm.min.io/index.yaml>
 
+The complete official index snapshot, including every currently published
+Operator/ObjectStore version, publication timestamp, and package SHA-256, is
+recorded in [`OFFICIAL_HELM_INDEX_2026-08-11.md`](./OFFICIAL_HELM_INDEX_2026-08-11.md).
+The current latest entries are Operator `5.11.3` and ObjectStore `1.0.17`.
+
 The server candidate remains the reviewed immutable digest from PR #45:
 
 ```text
@@ -207,6 +212,59 @@ Resource/probe observation and next contract:
   `3 x 10s`. These numbers are a lower-env contract candidate only, were not
   activated by this Draft, and must not be treated as production sizing.
 
+### Official digest compatibility discovery — 2026-08-11
+
+The official AIStor Object Store Helm documentation explicitly documents the
+digest contract used by this Draft:
+
+```yaml
+image:
+  repository: quay.io/minio/aistor/minio@sha256
+  digest: <sha256>
+  pullPolicy: IfNotPresent
+```
+
+Reference: <https://docs.min.io/aistor/reference/kubernetes/object-store-helm-chart/>.
+The current `aistor-objectstore 1.0.17` chart renders that contract to the
+exact `ObjectStore.spec.image` tested below. This is therefore not classified
+as a Repetly values mistake.
+
+### Minimal immutable-image reproduction matrix — 2026-08-11
+
+Each row used a fresh disposable kind cluster, a licensed single-node
+ObjectStore, one minimal PVC, current ObjectStore chart `1.0.17`, and the same
+exact AIStor server digest. Case A is the documented digest form; B is a
+plain-tag control only; C is a negative `tag@digest` control.
+
+| Operator chart | Case A: documented digest | Case B: plain tag | Case C: tag@digest | Operator restart |
+| --- | --- | --- | --- | --- |
+| `5.11.3` | `Waiting`, green, setup 100, `PoolCreated/running=1`; `invalid image format` | `Initialized`, green, setup 100, `PoolCreated/running=1`; no parser error | `Waiting`, green, setup 100, `PoolCreated/running=1`; `invalid image format` | Same outcomes |
+| `5.11.2` | Same as `5.11.3` | Same as `5.11.3` | Same as `5.11.3` | Same outcomes |
+| `5.11.1` | Same as `5.11.3` | Same as `5.11.3` | Same as `5.11.3` | Same outcomes |
+
+The exact CR and generated StatefulSet image strings were recorded for all
+cases. Digest cases started the exact server image and reached green/setup100,
+`drivesOnline: 1`, and `PoolCreated` with `podStatus.running: 1`, but the
+Operator repeatedly logged:
+
+```text
+Error extracting tag from current image quay.io/minio/aistor/minio@sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1: invalid image format
+```
+
+The `tag@digest` case emitted the same parser error for the combined image
+string. The plain-tag control reached `Initialized` in all three chart
+releases. The plain tag is not an OCI digest pin and is not an approved
+production workaround. Full matrix evidence and the non-secret vendor payload
+are in [`VENDOR_DEFECT_REPORT.md`](./VENDOR_DEFECT_REPORT.md).
+
+All three tested 5.11.x charts declare the same Operator `appVersion`
+`v20260721224148.0.0` and default Operator release tag. The active matrix
+Operator image was pinned to
+`quay.io/minio/aistor/operator@sha256:50bd6c34a1d2e811cc881116dc3fcce210e2f5fc2276a3933d8cacf71b39d68a`;
+the sidecar and server image digests were unchanged. No tested release was a
+security-approved winner, so no downgrade was promoted and no full S3/IAM
+rehearsal was repeated for a non-winning candidate.
+
 ### CurrentState/status semantics investigation — 2026-08-11
 
 The exact rendered `objectstores.aistor.min.io` CRD from Operator chart
@@ -242,11 +300,14 @@ The digest-only licensed run was timestamped and repeated:
    reached `currentState=Initialized`, `healthStatus=green`, `setup=100`, and
    `PoolCreated/running=1` with no image-format error.
 
-Disposition: **BLOCKER — unsupported/convergence failure for the required
-immutable server-image form in this exact Operator/chart combination**. Do not
-work around it with a floating or tag-only production image. #46 cannot become
-Ready for Review until MinIO confirms a supported immutable image syntax or an
-official compatible Operator/chart is pinned, scanned, and re-rehearsed.
+Disposition: **BLOCKER — documented digest syntax is incompatible with Operator
+5.11.3 reconciliation**. The same result was reproduced with the nearest
+official 5.11.2 and 5.11.1 charts. This is classified as a **vendor
+implementation/documentation compatibility defect** pending MinIO correction.
+Do not work around it with a floating or tag-only production image. #46 remains
+Draft and production preflight remains deferred. The prepared non-secret report
+is [`VENDOR_DEFECT_REPORT.md`](./VENDOR_DEFECT_REPORT.md); it has not been
+submitted externally.
 
 Authoritative production readiness criteria are all of the following:
 
@@ -334,7 +395,7 @@ by assumption.
 
 | Class | Finding | Disposition |
 | --- | --- | --- |
-| **BLOCKER** | Pinned Operator 5.11.3 cannot converge the exact digest-only or `tag@digest` MinIO image; it repeatedly emits `invalid image format` and leaves `currentState=Waiting...` | Keep #46 Draft. Obtain vendor-supported immutable syntax or official compatible Operator/chart; then re-render, rescan, and rerun licensed gates. |
+| **BLOCKER** | The official documented digest form is rejected by Operator 5.11.3; the same parser failure was reproduced with 5.11.2 and 5.11.1, while plain tag converged only as a control | **VENDOR BLOCKER**. Keep #46 Draft, do not use a plain-tag production workaround, and submit the prepared non-secret report through the owner-approved MinIO support path. |
 | IMPORTANT | Production namespace, node architecture, capacity/usage, StorageClass/reclaimPolicy, TLS trust, NetworkPolicy selectors, and Argo/Kustomize state are unknown | Explicit production-only read-only preflight; no production access was used. |
 | MINOR | Kind Metrics API is unavailable; lower-env CPU observations are cumulative cgroup samples | Do not treat lower-env samples as sizing; collect target-cluster metrics in preflight. |
 | TECH DEBT | Exact vendor source for the proprietary Operator is not present in the chart archive | Retain chart/CRD/binary log evidence and request vendor source/release confirmation; no vendor code changes. |

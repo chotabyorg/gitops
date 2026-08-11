@@ -10,10 +10,13 @@ secrets:
 objectStore:
   name: repetly-aistor-green
   image:
-    # BLOCKED with Operator 5.11.3: the chart emits repository@sha256:digest
-    # for this form, but the controller's reconcile image-tag parser rejects
-    # both digest-only and tag@digest strings. Do not activate until MinIO
-    # confirms a supported immutable syntax or an official compatible chart.
+    # BLOCKED: this is the documented AIStor Object Store Helm digest contract,
+    # but Operator 5.11.3, 5.11.2, and 5.11.1 all reject the rendered image
+    # during reconciliation with "invalid image format". This is classified
+    # as a vendor implementation/documentation compatibility defect, not as a
+    # values-configuration error. Do not replace it with a plain tag in
+    # production; keep this fail-closed until an official compatible release
+    # is tested and passes the full licensed gates.
     repository: quay.io/minio/aistor/minio@sha256
     digest: e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1
     pullPolicy: IfNotPresent
