@@ -59,6 +59,28 @@ They narrow the design, but do not approve a node-local single-replica
 registry without an owner-approved backup/restore plan and a proven kubelet
 image-pull path.
 
+## Production design ledger
+
+| Contract | Current production-specific value | Readiness |
+| --- | --- | --- |
+| Node/platform | one `linux/amd64` k3s node | Resolved |
+| Zot image | `ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5` | Candidate; required real-amd64 Kubernetes acceptance is blocked |
+| Namespace | no registry namespace currently exists | **BLOCKER** — platform namespace/Argo ownership must be approved |
+| Registry storage | only observed class: `local-path`, node-local, reclaim `Delete` | **IMPORTANT** — durability/restore tradeoff requires approval |
+| Registry PVC size | no approved value; BLUE baseline is 10Gi and dataset is 356134 bytes | **IMPORTANT** — registry blob/headroom/retention policy is missing |
+| Resources | no production Zot workload profile exists | **IMPORTANT** — set from owner-reviewed single-node capacity budget |
+| Endpoint | no private registry DNS/Service endpoint exists; current public storage hostname is BLUE MinIO and cannot be reused | **BLOCKER** — endpoint and node pull route are missing |
+| TLS/trust | no registry TLS Secret, private CA, or containerd trust entry exists | **BLOCKER** — provision and test node/container-runtime trust |
+| NetworkPolicy | no `prod` NetworkPolicy or enforcing CNI evidence | **IMPORTANT** — render exact publisher/puller/DNS paths and prove enforcement |
+| Auth model | publisher `read/create`; puller `read`; break-glass admin separate; anonymous deny | Contract resolved; identity names and Secret delivery remain out-of-band |
+| Backup/RPO/RTO | no off-node destination, owner, retention, RPO, or RTO exists | **BLOCKER** — restore contract and rehearsal required |
+| Availability | one replica is the only viable current shape on one node | Candidate only; outage/reschedule risk requires owner acceptance |
+
+This ledger deliberately leaves unresolved values fail-closed rather than
+inventing production infrastructure. The exact evidence and owner actions are
+in [`PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md`](./PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md)
+and [`backup-restore-runbook.md`](./backup-restore-runbook.md).
+
 ## Identity contract
 
 | Identity | Allowed | Forbidden | Use |
