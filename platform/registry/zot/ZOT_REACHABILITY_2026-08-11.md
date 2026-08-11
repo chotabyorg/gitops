@@ -7,6 +7,9 @@ reachability verdict for the cited go-git CVE is:
 
 > **NOT USED BY APPROVED REGISTRY RUNTIME**
 
+Owner disposition: **PRESENT IN SCANNER/MODULE INVENTORY BUT NOT USED BY
+APPROVED REGISTRY RUNTIME**.
+
 This is a reachability disposition, not permission to suppress the Trivy
 finding. A new official release with `go-git >=5.19.2` remains preferred.
 
