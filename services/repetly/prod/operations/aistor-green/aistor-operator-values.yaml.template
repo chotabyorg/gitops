@@ -1,10 +1,9 @@
-# DRAFT ONLY. This file is not referenced by any active Kustomization or Argo
-# Application. It is intentionally incomplete until production preflight and
-# rendered image-digest review are complete.
+# DRAFT ONLY. This file is not referenced by the active production
+# Kustomization or Argo Application. Install the chart in namespace prod only
+# after the separate production rollout approvals in README.md are complete.
 
-# Keep the license outside Git. The operator mounts a separately managed
-# `minio-license` Secret from the operator release namespace; never put the
-# AIStor license in Helm values.
+# Keep the license outside Git. The Operator mounts the separately managed
+# `minio-license` Secret; no license bytes belong in Helm values.
 license: ""
 
 global:
@@ -12,21 +11,34 @@ global:
   operator:
     replicas: 1
     imagePullPolicy: IfNotPresent
-    # Narrow the watch scope after the target namespace and RBAC are approved.
-    # This is the actual chart key; an empty value keeps cluster-wide watch mode.
-    # watchedNamespaces:
-    #   - prod
+    # Namespace-scoped watch keeps this P0 from reconciling unrelated CRs.
+    # The chart's automatic certificate/RBAC behavior must be verified during
+    # the rendered install review before any activation.
+    watchedNamespaces:
+      - prod
+    imagePullSecrets:
+      - name: aistor-zot-puller
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+        ephemeral-storage: 500Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+        ephemeral-storage: 500Mi
 
 operators:
   adminjob:
-    # The chart's AdminJob controller injects the currently ineligible mc image
-    # into its ConfigMap. Keep this controller disabled until a separately
-    # pinned, scanned, and approved admin client exists.
+    # AdminJob is disabled; no unpinned mc client may materialize.
     disabled: true
   aihub:
     disabled: true
   object-store:
     disabled: false
+    webhook:
+      enabled: true
+      replicas: 1
   prompt:
     disabled: true
   warp:
@@ -37,14 +49,11 @@ repositories:
     hostname: quay.io
     pathPrefix: minio/aistor/
 
-# These are the exact linux/amd64 child digests resolved from the manifest
-# lists in the exact chart defaults on 2026-08-10. They are immutable pins,
-# not security approvals. Disabled/config-only images are retained because the
-# chart may serialize them into ConfigMaps, but must not become runtime objects
-# without a fresh scan and review.
-# direct Trivy results and disposition are recorded in README.md. The AdminJob
-# controller is disabled, so the separate mc client is intentionally not part
-# of this Operator image map.
+# Exact linux/amd64 child digests resolved from the official chart defaults.
+# The selected ObjectStore main runtime uses the owner-approved immutable Zot
+# tag because the native digest parser is vendor-limited. Operator and
+# sidecar/config images remain exact public Quay digest candidates until the
+# mirror ledger explicitly includes them.
 images:
   operator:
     repository: aistor
@@ -64,6 +73,3 @@ images:
   minio-sidecar:
     repository: aistor
     image: minio-sidecar@sha256:560e204d8fbd05d095719a39af0db36e177829528d80366962d1bc22102c9b57
-
-# The chart's rendered image set must be resolved to immutable digests before
-# activation. Do not rely on chart defaults without recording that evidence.

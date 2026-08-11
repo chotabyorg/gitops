@@ -124,14 +124,15 @@ candidate audit is in
 [`REGISTRY_ARCHITECTURE_AUDIT_2026-08-11.md`](./REGISTRY_ARCHITECTURE_AUDIT_2026-08-11.md).
 
 No fallback was activated automatically. Production activation still requires
-the selected registry design, a production read-only preflight through
-legitimate access, repeat of the mirror/scan/overwrite/imageID evidence, and
-an independent review with no important or blocking finding. The invariant is:
+the rollout-time DNS/ACME/Secret delivery, repeat of the
+mirror/scan/overwrite/imageID evidence, and an independent review with no
+important or blocking finding. The invariant is:
 
 ```text
 official source digest == private registry destination digest == production Pod imageID
 ```
 
 Any mismatch fails closed. The direct native digest path remains
-**PREFERRED — CURRENTLY VENDOR-BLOCKED** and must be restored after the vendor
+**PREFERRED — VENDOR LIMITATION — native digest path unavailable; selected
+immutable-registry fallback in use** and can be restored only after the vendor
 fix is reproduced and revalidated.

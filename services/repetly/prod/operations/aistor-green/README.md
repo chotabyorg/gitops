@@ -11,12 +11,9 @@ unchanged.
 
 - BLUE remains `repetly-minio` with the existing OSS PVC and rollback path.
 - GREEN is an official AIStor Operator `ObjectStore` on a separate PVC.
-- AIStor Free is single-node only. `servers: 1` is fixed; `volumesPerServer`
-  is resolved to `1` by the production topology. PVC `size` and
-  `storageClassName` remain unresolved because the only observed class is
-  node-local `local-path` and no owner-approved capacity/restore policy exists.
-  The template must not be deployed until those decisions are independently
-  reviewed.
+- AIStor Free is single-node only: `servers: 1`, `volumesPerServer: 1`,
+  independent `10Gi` RWO PVC, and `local-path`. The owner approved this P0
+  topology; replicated/multi-node storage is follow-up technical debt.
 - The GREEN S3 Service remains private/ClusterIP until the reviewed endpoint
   cutover. TLS, NetworkPolicy, resources, probes, PVC protection, and the
   separate license Secret are mandatory.
@@ -26,24 +23,25 @@ The production read-only facts are recorded in
 [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
 The target is one amd64 k3s node with 4 CPU and about 7.75Gi allocatable
 memory. BLUE currently uses a separate 10Gi RWO `local-path` PVC; its exact
-inventory is one object / 356134 bytes, while the node has 116G free. No
-registry endpoint/CA or `prod` NetworkPolicy enforcement path was observed.
+inventory is one object / 356134 bytes, while the node has 116G free. The
+selected AIStor image path is the owner-approved immutable Zot tag at
+`registry.chota.by`; K3s embedded NetworkPolicy enforcement is enabled.
 
 ## Production design ledger
 
 | Contract | Current production-specific value | Readiness |
 | --- | --- | --- |
-| ObjectStore/client namespace | `prod` (the existing Repetly namespace) | Candidate; Operator release namespace/watch scope still requires chart/RBAC review |
+| ObjectStore/client namespace | `prod`; Operator release/watch scope is `prod` | Resolved for P0; render/RBAC review remains before activation |
 | Node/platform | one `linux/amd64` k3s node | Resolved |
 | AIStor Free shape | `servers: 1`, `volumesPerServer: 1` | Resolved by topology/product constraint |
-| GREEN StorageClass | only observed class: `local-path` | **IMPORTANT** — node-local and reclaim `Delete`; owner durability/restore approval required |
-| GREEN PVC size | no approved value; BLUE baseline is 10Gi with 356134 bytes of objects | **IMPORTANT** — capacity policy and migration headroom are not established by point inventory alone |
-| Active server image | amd64 child `sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1` | Candidate; native digest reconciliation is the vendor **BLOCKER** |
-| Operator / sidecar images | amd64 child pins in `aistor-operator-values.yaml.template` | Resolved as exact candidates; re-render/scan still required before activation |
-| Resources/probes | lower-env candidate only; production metrics/load profile absent | **IMPORTANT** — owner review required |
-| S3/TLS endpoint | private ClusterIP plus reviewed in-cluster HTTPS trust; no external cutover yet | **IMPORTANT** — service DNS/trust and client path must be rendered and tested |
-| NetworkPolicy | no `prod` policy or proven enforcing CNI observed | **IMPORTANT** — exact client/DNS/API selectors and enforcement are unresolved |
-| License/config Secrets | `minio-license:minio.license`; `repetly-aistor-green-env` config contract | Values remain out-of-band; namespace/scope and sealed delivery require review |
+| GREEN StorageClass | `local-path`, node-local, reclaim `Delete` | Owner-approved P0; replicated storage is follow-up technical debt |
+| GREEN PVC size | `10Gi`, independent from BLUE | Resolved; matches approved single-node capacity baseline |
+| Active server image | `registry.chota.by/aistor/minio:aistor-minio-e8394b040720`; source amd64 digest `sha256:e8394b...16a1` | Approved conditional Zot path; source/destination/Pod imageID equality required |
+| Operator / sidecar images | exact linux/amd64 child pins in values | Resolved candidates; render/scan evidence remains before activation |
+| Resources/probes | MinIO `500m/768Mi` → `1 CPU/1Gi`; sidecar `50m/32Mi` → `100m/128Mi`; Operator/webhook `200m/256Mi` → `500m/256Mi` | Resolved conservative cap from current headroom and lower-env observations |
+| S3/TLS endpoint | private ClusterIP, AIStor internal auto-cert; no external GREEN cutover | Resolved P0 path; clients use reviewed in-cluster HTTPS service DNS |
+| NetworkPolicy | K3s embedded kube-router enabled; exact `prod`/scanner/operator/CoreDNS/API selectors rendered | Resolved contract; first rollout must verify route and webhook source |
+| License/config/pull Secrets | `minio-license:minio.license`, `repetly-aistor-green-env:config.env`, `aistor-zot-puller:.dockerconfigjson` | Names/keys resolved; values remain out-of-band |
 | Migration/rollback | BLUE → GREEN validation → freeze/final delta → Service cutover; BLUE remains rollback source | Architecture accepted; no migration executed |
 
 The full sanitized evidence is in
@@ -150,10 +148,8 @@ The chart license contract was verified from the template: `license: ""`
 creates no license Secret, while a non-empty value would create
 `minio-license` with key `minio.license` in the Operator release namespace.
 The draft's out-of-band Secret contract uses that exact name/key, but its
-namespace placeholder must be resolved together with the release namespace.
-The default empty `global.operator.watchedNamespaces` means cluster-wide
-watch/RBAC mode; this Draft now shows the actual chart key and lower-env
-rehearsal uses `aistor-green`. The production namespace/scope remains a gate.
+The production contract resolves the Operator release/watch scope to `prod`;
+the value remains inert until the rendered RBAC/certificate review.
 
 All direct scans above used Trivy `0.72.0`, the pinned scanner image, the
 public ECR vulnerability database, HIGH/CRITICAL severity, and no
@@ -199,8 +195,8 @@ Licensed PASS evidence:
   and `/minio/health/cluster` each returned HTTP 200 over the generated TLS
   Service. The controller's textual `currentState` remained
   `Waiting for ObjectStore to be healthy` despite green/setup 100. The
-  2026-08-11 investigation below classifies this as a **BLOCKER**, not a
-  cosmetic observation.
+  2026-08-11 investigation below records the pre-fallback parser symptom;
+  it is not a production BLOCKER once the approved Zot path is used.
 - S3 contract: **18/18**. Application IAM: **6/6**. Scanner IAM: **6/6**.
   The exact pinned AIStor `mc` image was used as a disposable client with
   synthetic test identities; no AdminJob or background client was enabled.
@@ -323,9 +319,10 @@ The owner has accepted **`OWNER-APPROVED CONDITIONAL PRODUCTION PATH`** for
 the fallback. It is not activated: the recommended architecture is
 **`DEPLOY DEDICATED REGISTRY`**, existing GHCR is not accepted without
 independent immutable-tag and identity-separation evidence, and the production
-read-only facts are now collected. Activation remains blocked by the unresolved
-private registry endpoint/CA, node-local storage durability/backup contract,
-NetworkPolicy enforcement, final values, and the native image-parser defect.
+read-only facts are now collected. Activation remains conditional on the
+rollout-time DNS/ACME/Secret contract, isolated amd64 acceptance, and final
+rendered review. The owner-approved single-node storage, PVC sizes, resources,
+selectors, and RPO/RTO are resolved for this P0; production remains inert.
 
 The release invariant is:
 
@@ -334,7 +331,10 @@ official source digest == private registry destination digest == production Pod 
 ```
 
 Any mismatch is a blocker and must fail closed. The native direct digest path
-remains **`PREFERRED — CURRENTLY VENDOR-BLOCKED`**.
+is **`PREFERRED — VENDOR LIMITATION — native digest path unavailable; selected
+immutable-registry fallback in use`**. The Zot fallback is the approved
+conditional production path; a plain mutable public RELEASE tag remains
+rejected.
 
 When the vendor fixes the parser, the migration path is: disposable fix
 rehearsal; exact Operator/sidecar/server scan; repeat S3/IAM/restart/PVC/
@@ -377,12 +377,12 @@ The digest-only licensed run was timestamped and repeated:
    reached `currentState=Initialized`, `healthStatus=green`, `setup=100`, and
    `PoolCreated/running=1` with no image-format error.
 
-Disposition: **BLOCKER — documented digest syntax is incompatible with Operator
-5.11.3 reconciliation**. The same result was reproduced with the nearest
-official 5.11.2 and 5.11.1 charts. This is classified as a **vendor
-implementation/documentation compatibility defect** pending MinIO correction.
-Do not work around it with a floating or tag-only production image. #46 remains
-Draft. The production read-only preflight is now collected, but the prepared non-secret report
+Historical pre-fallback disposition: **VENDOR LIMITATION — documented digest
+syntax is incompatible with Operator 5.11.3 reconciliation**. The same result
+was reproduced with the nearest official 5.11.2 and 5.11.1 charts. The owner
+approved the immutable Zot content-tag fallback; a floating or mutable public
+tag remains rejected. #46 remains Draft until the fallback acceptance gates
+pass. The production read-only preflight is now collected, but the prepared non-secret report
 is [`VENDOR_DEFECT_REPORT.md`](./VENDOR_DEFECT_REPORT.md); it has not been
 submitted externally.
 
@@ -461,26 +461,27 @@ With the lower-env probe/resource render active and ObjectStore
 - Operator reconciliation remained healthy and the ObjectStore stayed
   `2/2 Running`.
 
-The committed NetworkPolicy remains inert and its namespace selectors/API CIDR
-are still production placeholders. Production is `linux/amd64`, but the
-read-only preflight found no `prod` NetworkPolicy and no proven enforcing CNI;
-selectors and enforcement must be resolved before activation. The disposable
-AIStor kind node was `linux/arm64`; use the reviewed amd64 child digests for
-the production render and do not transfer arm64 evidence by assumption.
+The committed NetworkPolicy remains inert. Its selectors use the read-only
+production facts: Repetly `app: repetly`, scanner
+`app.kubernetes.io/name: repetly-file-scanner`, Operator
+`aistor.min.io/name: object-store-operator`, CoreDNS `k8s-app: kube-dns`, and
+the observed K3s API node `153.80.244.178/32`. K3s embedded kube-router
+NetworkPolicy enforcement is enabled. The disposable AIStor kind node was
+`linux/arm64`; use the reviewed amd64 child digests for production.
 
 ### Fresh local review verdict — 2026-08-11
 
 | Class | Finding | Disposition |
 | --- | --- | --- |
-| **BLOCKER** | The official documented digest form is rejected by Operator 5.11.3; the same parser failure was reproduced with 5.11.2 and 5.11.1, while plain tag converged only as a control | **VENDOR BLOCKER**. Keep #46 Draft, do not use a plain-tag production workaround, and keep the prepared non-secret report ready; external submission requires separate owner authorization. |
-| IMPORTANT | Production is a single amd64 node with only node-local `local-path`; registry/TLS pull path, GREEN PVC size/resources, NetworkPolicy enforcement/selectors, and backup/restore policy remain unresolved | Keep templates inert; resolve owner/platform contracts and repeat the final rendered review. Facts are recorded in `PRODUCTION_READONLY_FACTS_2026-08-11.md`. |
+| **VENDOR LIMITATION** | Native direct AIStor digest reconciliation is rejected by Operator 5.11.3/5.11.2/5.11.1; the ordinary immutable Zot tag path converged in the licensed rehearsal | **Not a production BLOCKER** once the Zot source/destination/Pod imageID invariant and amd64 acceptance pass. Selected disposition: `native digest path unavailable; selected immutable-registry fallback in use`. |
+| IMPORTANT | DNS/ACME issuance and out-of-band Secret delivery are rollout prerequisites; no production endpoint or Secret exists yet | Keep templates inert; execute only in a separately approved rollout. No prod mutation is part of this task. |
 | MINOR | Kind Metrics API is unavailable; lower-env CPU observations are cumulative cgroup samples | Do not treat lower-env samples as sizing; collect target-cluster metrics in preflight. |
 | TECH DEBT | Exact vendor source for the proprietary Operator is not present in the chart archive | Retain chart/CRD/binary log evidence and request vendor source/release confirmation; no vendor code changes. |
 
-All safe local research gates are exhausted for this cycle, but local-stage
-exit is **withheld** because the BLOCKER is unresolved. The accepted licensed
-S3/IAM/restart/PVC/TLS evidence remains valid; it does not override the
-immutable-image reconcile failure.
+The local design review has no native-parser BLOCKER because the owner-approved
+Zot fallback is fully specified. Ready for Review still depends on the
+GitHub-hosted x64 Zot workflow and final rendered chart/schema review; this
+branch remains inert and production was not mutated.
 
 ## Active HIGH reachability dispositions
 
@@ -591,8 +592,8 @@ run generic troubleshooting containers.
 1. Review the collected facts in
    `PRODUCTION_READONLY_FACTS_2026-08-11.md` against the procedural checklist
    in `PRODUCTION_READONLY_PREFLIGHT.md`; never commit secret values.
-2. Replace both value placeholders with an owner-reviewed capacity and
-   StorageClass decision. Do not reuse `repetly-minio-data`.
+2. Verify the resolved capacity/StorageClass values (`10Gi`, `local-path`) and
+   confirm that the GREEN PVC is independent from `repetly-minio-data`.
 3. Provide a separately sealed license Secret and object-store config Secret.
 4. Re-check the official client feed before migration, then use either a newer
    clean client or this owner-accepted client only in a separate immutable

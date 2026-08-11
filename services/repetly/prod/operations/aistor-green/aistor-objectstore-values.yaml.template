@@ -1,37 +1,60 @@
-# DRAFT ONLY. Not referenced by the active production Kustomization or Argo.
-# Do not run helm install/upgrade from this file until every gate in README.md
-# is complete.
+# DRAFT ONLY. This file is not referenced by the active production
+# Kustomization or Argo Application. Render/apply only after the separate
+# production rollout approvals in README.md are complete.
 
-# Root credentials are supplied by the separately sealed config.env Secret.
 secrets:
   name: repetly-aistor-green-env
   existingSecret: true
 
 objectStore:
   name: repetly-aistor-green
+
   image:
-    # BLOCKED: this is the documented AIStor Object Store Helm digest contract,
-    # but Operator 5.11.3, 5.11.2, and 5.11.1 all reject the rendered image
-    # during reconciliation with "invalid image format". This is classified
-    # as a vendor implementation/documentation compatibility defect, not as a
-    # values-configuration error. Do not replace it with a plain tag in
-    # production; keep this fail-closed until an official compatible release
-    # is tested and passes the full licensed gates.
-    repository: quay.io/minio/aistor/minio@sha256
-    digest: e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1
+    # PREFERRED path: the official digest form below is retained in the
+    # release ledger, but Operator 5.11.1/5.11.2/5.11.3 reject it while
+    # reconciling the CR with "invalid image format". This is a vendor
+    # limitation. The selected conditional production path is the immutable
+    # Zot content tag below; a mutable public RELEASE tag is rejected.
+    repository: registry.chota.by/aistor/minio
+    tag: aistor-minio-e8394b040720
     pullPolicy: IfNotPresent
 
-  # AIStor Free topology. Capacity values are intentionally fail-closed
-  # placeholders until the production read-only preflight is complete.
+  # Dedicated private-registry pull-only Secret in namespace prod. It must
+  # contain only a pull-scoped .dockerconfigjson for registry.chota.by.
+  imagePullSecret:
+    name: aistor-zot-puller
+
   pools:
     - name: pool-0
       servers: 1
-      # Production is a single-node amd64 AIStor Free target; one volume is
-      # the only supported shape. PVC size and StorageClass remain owner gates
-      # because the only observed class is node-local `local-path`.
       volumesPerServer: 1
-      size: "__SET_AFTER_PREFLIGHT__"
-      storageClassName: "__SET_AFTER_PREFLIGHT__"
+      size: 10Gi
+      storageClassName: local-path
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      resources:
+        requests:
+          cpu: 500m
+          memory: 768Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        runAsNonRoot: true
+      containerSecurityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
 
   mountPath: /export
   subPath: /data
@@ -43,69 +66,45 @@ objectStore:
     minio:
       serviceType: ClusterIP
 
-  # Use the operator-generated internal certificates only after their DNS
-  # names and client trust path are reviewed; otherwise supply the approved
-  # private TLS Secret in a separate sealed contract.
+  # The Operator issues internal service certificates. External registry TLS
+  # is terminated by Traefik; AIStor remains private ClusterIP during P0.
   certificates:
     disableAutoCert: false
+
+  startup:
+    httpGet:
+      path: /minio/health/live
+      port: 9000
+      scheme: HTTPS
+    failureThreshold: 30
+    periodSeconds: 5
+    timeoutSeconds: 3
+  readiness:
+    httpGet:
+      path: /minio/health/ready
+      port: 9000
+      scheme: HTTPS
+    failureThreshold: 6
+    periodSeconds: 10
+    timeoutSeconds: 3
+  liveness:
+    httpGet:
+      path: /minio/health/live
+      port: 9000
+      scheme: HTTPS
+    failureThreshold: 3
+    periodSeconds: 10
+    timeoutSeconds: 3
+
+  sideCars:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
 
   env:
     - name: MINIO_API_AUTO_BUMP
       value: "off"
-
-# Resource and probe values remain lower-env candidate evidence only. The
-# 2026-08-11 chart-native rehearsal rendered the following successfully, but
-# production must wait for the immutable-image blocker, target-node metrics,
-# and owner review. Do not copy these values into production as sizing:
-# resources:
-#   requests: { cpu: 500m, memory: 1Gi }
-#   limits: { cpu: 2, memory: 4Gi }
-# sideCars:
-#   resources:
-#     requests: { cpu: 50m, memory: 32Mi }
-#     limits: { cpu: 100m, memory: 128Mi }
-# startup:
-#   httpGet: { path: /minio/health/live, port: 9000, scheme: HTTPS }
-#   failureThreshold: 30
-#   periodSeconds: 5
-# readiness:
-#   httpGet: { path: /minio/health/ready, port: 9000, scheme: HTTPS }
-#   failureThreshold: 6
-#   periodSeconds: 10
-# liveness:
-#   httpGet: { path: /minio/health/live, port: 9000, scheme: HTTPS }
-#   failureThreshold: 3
-#   periodSeconds: 10
-# After the blocker is resolved, replace these with owner-reviewed values and
-# re-render. The old placeholders remain here to keep this file fail-closed:
-# resources:
-#   requests:
-#     cpu: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-#     memory: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-#   limits:
-#     cpu: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-#     memory: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-# startup:
-#   httpGet:
-#     path: /minio/health/live
-#     port: 9000
-#     scheme: HTTPS
-#   failureThreshold: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-#   periodSeconds: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-# readiness:
-#   httpGet:
-#     path: /minio/health/ready
-#     port: 9000
-#     scheme: HTTPS
-#   failureThreshold: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-#   periodSeconds: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-# liveness:
-#   httpGet:
-#     path: /minio/health/live
-#     port: 9000
-#     scheme: HTTPS
-#   failureThreshold: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-#   periodSeconds: "__SET_AFTER_LOWER_ENV_MEASUREMENT__"
-
-# Add explicit resources, probes, NetworkPolicy, and the reviewed endpoint
-# contract only after the production capacity/TLS/NetworkPolicy preflight.

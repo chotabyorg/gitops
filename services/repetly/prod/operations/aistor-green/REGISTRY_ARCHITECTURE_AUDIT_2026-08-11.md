@@ -103,11 +103,12 @@ OCI manifest into an approved private registry under a unique immutable tag,
 then reference that tag as the ordinary `ObjectStore.spec.image` value because
 the current Operator rejects the documented digest syntax.
 
-The path is conditional, not active. It is blocked until the dedicated
-registry design is accepted, the production read-only preflight is completed
-through legitimate production access, and the final independent review has no
-important/blocking findings. No production registry, Secret, ObjectStore,
-PVC, or image reference is created by this PR.
+The path is conditional, not active. The owner-approved P0 contract is now
+resolved as namespace `registry`, one Zot replica, independent `10Gi`
+`local-path` PVC, `registry.chota.by` behind Traefik ACME `le`, and separate
+publisher/puller Secret contracts. DNS, ACME issuance, Secret delivery, and
+the first mirror remain rollout-time prerequisites. No production registry,
+Secret, ObjectStore, PVC, or image reference is created by this PR.
 
 The disposable proof in
 [`PRIVATE_REGISTRY_FALLBACK_RESEARCH_2026-08-11.md`](./PRIVATE_REGISTRY_FALLBACK_RESEARCH_2026-08-11.md)
@@ -133,14 +134,16 @@ anonymous-denied check, overwrite-negative, destination scan, and Pod
 
 ## Current gate
 
-- PR #46 remains Draft and must not merge.
+- PR #46 remains Draft and must not merge until the isolated x64 Zot
+  acceptance and final rendered review pass.
 - Issue #44 remains In Progress; #112 remains Ready for Test.
 - Vendor report remains prepared but not submitted.
 - Production read-only preflight is **executed and recorded** in
   [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md):
-  one amd64 k3s node, only node-local `local-path`, no registry endpoint/CA,
-  and no `prod` NetworkPolicy enforcement evidence. No production state was
-  changed.
-- The next acceptance packet is the owner-approved registry design, including
-  the endpoint/CA, backup/RPO/RTO, exact selectors, and real-amd64 Kubernetes
-  acceptance before any activation review.
+  one amd64 k3s node, only node-local `local-path`, no current registry DNS,
+  and embedded kube-router NetworkPolicy enforcement enabled. No production
+  state was changed.
+- The next acceptance packet is the GitHub-hosted x64 workflow result and the
+  rollout-time DNS/ACME/Secret evidence; the native parser is recorded as
+  **VENDOR LIMITATION — native digest path unavailable; selected
+  immutable-registry fallback in use**, not as a production BLOCKER.

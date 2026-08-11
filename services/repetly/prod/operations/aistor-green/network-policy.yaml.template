@@ -1,57 +1,166 @@
-# DRAFT CONTRACT ONLY. This file is not referenced by any active Kustomization
-# or Argo Application. Replace every placeholder only after production
-# namespace, application/scanner namespaces, and endpoint paths are reviewed.
-# Do not infer production labels from this lower-environment rehearsal.
+# DRAFT CONTRACT ONLY. This file is inert and is not referenced by the active
+# production Kustomization or Argo Application. It reflects the read-only
+# production labels/controller facts collected on 2026-08-11.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: repetly-aistor-green-ingress
-  namespace: "__SET_AFTER_PREFLIGHT__"
+  name: repetly-aistor-green
+  namespace: prod
 spec:
   podSelector:
     matchLabels:
-      aistor.min.io/objectStore: "__SET_AFTER_RUNTIME_RENDER__"
+      aistor.min.io/objectStore: repetly-aistor-green
   policyTypes:
     - Ingress
     - Egress
   ingress:
-    # Add only the reviewed Repetly application/scanner/admin paths.
     - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: "__SET_EXPECTED_CLIENT_NAMESPACE__"
+              kubernetes.io/metadata.name: prod
+          podSelector:
+            matchLabels:
+              app: repetly
+      ports:
+        - protocol: TCP
+          port: 9000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: prod
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: repetly-file-scanner
+      ports:
+        - protocol: TCP
+          port: 9000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: prod
+          podSelector:
+            matchLabels:
+              aistor.min.io/name: object-store-operator
       ports:
         - protocol: TCP
           port: 9000
   egress:
-    # Keep DNS and only the explicitly required external/admin endpoints.
     - to:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: "__SET_DNS_NAMESPACE__"
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
       ports:
         - protocol: UDP
           port: 53
         - protocol: TCP
           port: 53
+    # TokenReview/API access is restricted to the observed Kubernetes service
+    # and the observed single-node API endpoint, not a broad CIDR.
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 153.80.244.178/32
+      ports:
+        - protocol: TCP
+          port: 6443
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: repetly-aistor-webhook-ingress
-  namespace: "__SET_OPERATOR_NAMESPACE__"
+  name: repetly-aistor-operator
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      aistor.min.io/name: object-store-operator
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 153.80.244.178/32
+      ports:
+        - protocol: TCP
+          port: 6443
+    - to:
+        - podSelector:
+            matchLabels:
+              aistor.min.io/objectStore: repetly-aistor-green
+      ports:
+        - protocol: TCP
+          port: 9000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: repetly-aistor-webhook
+  namespace: prod
 spec:
   podSelector:
     matchLabels:
       aistor.min.io/name: object-store-webhook
   policyTypes:
     - Ingress
+    - Egress
   ingress:
-    # The source must be the reviewed Kubernetes API-server path; this
-    # placeholder intentionally prevents accidental production activation.
+    # K3s API traffic is served by the observed node IP; no broad pod/CIDR
+    # allowance is used.
     - from:
         - ipBlock:
-            cidr: "__SET_API_SERVER_CIDR__"
+            cidr: 153.80.244.178/32
       ports:
         - protocol: TCP
           port: 8443
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 153.80.244.178/32
+      ports:
+        - protocol: TCP
+          port: 6443

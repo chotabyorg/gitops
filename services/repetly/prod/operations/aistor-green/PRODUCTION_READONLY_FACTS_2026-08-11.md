@@ -1,6 +1,6 @@
 # AIStor GREEN production read-only facts — 2026-08-11
 
-Result: **FACTS COLLECTED — GREEN ACTIVATION REMAINS BLOCKED**.
+Result: **FACTS COLLECTED — OWNER-APPROVED CONDITIONAL GREEN P0 CONTRACT**.
 
 The production k3s host was accessed through the authorized SSH path. Only
 read-only Kubernetes, filesystem, Argo, and MinIO inventory/identity checks
@@ -44,13 +44,36 @@ path, or the Repetly bucket.
   durable/replicated storage backend was observed.
 - The current storage hostname `repetly-storage.chota.by` is a public Traefik
   route to BLUE MinIO. It is not a private Zot/AIStor endpoint.
-- No production Zot/Harbor registry, registry DNS name, private CA, or
-  containerd registry trust configuration was observed.
-- No NetworkPolicy exists in `prod`; existing policies are in ArgoCD
-  namespaces. An enforcing CNI for the GREEN client/admin path was not
-  evidenced.
-- AIStor auto-generated internal TLS must not be treated as a client trust
-  contract until the service DNS names and trust distribution are reviewed.
+- No production Zot/Harbor registry, `registry` namespace, or
+  `registry.chota.by` DNS/route currently exists. The selected rollout model
+  is Traefik `websecure`/ACME `le` to a private Zot ClusterIP.
+- K3s embedded kube-router NetworkPolicy enforcement is enabled: the service
+  has no `--disable-network-policy`, and `KUBE-NWPLCY-*`/`KUBE-ROUTER-*`
+  chains with `kube-router netpol` rules are present. No registry/`prod`
+  policy objects exist yet.
+- AIStor auto-generated internal TLS is the selected private ClusterIP client
+  path; its service DNS/trust must be included in the first rendered rollout
+  review. External registry TLS is Traefik ACME, not a Zot Pod Secret.
+
+## Resolved P0 values
+
+- GREEN is `servers: 1`, `volumesPerServer: 1`, one independent `10Gi`
+  `local-path` RWO PVC. BLUE is untouched; replicated storage is follow-up
+  technical debt.
+- Main runtime image is `registry.chota.by/aistor/minio:aistor-minio-e8394b040720`
+  with source amd64 digest `sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1`.
+  `prod/aistor-zot-puller` key `.dockerconfigjson` is the dedicated pull-only
+  contract.
+- Conservative resources are MinIO requests `500m/768Mi`, limits `1 CPU/1Gi`;
+  sidecar `50m/32Mi` → `100m/128Mi`; Operator/webhook requests
+  `200m/256Mi/500Mi ephemeral`, limits `500m/256Mi/500Mi ephemeral`.
+- Current point-in-time headroom is 312m CPU (7%) and 5671Mi memory (71%) of
+  4 CPU/8127796Ki allocatable; scheduled requests/limits are 300m/1 CPU and
+  396Mi/1194Mi. The proposed cap leaves a small memory margin and requires
+  post-rollout observation.
+- No existing Velero/restic/off-host backup path was found. P0 DR is
+  deterministic rehydration from the exact digest ledger, target RPO 24h/RTO
+  2h; off-host snapshots are follow-up work.
 
 ## Read-only IAM observations
 
@@ -61,9 +84,10 @@ path, or the Repetly bucket.
 
 ## Readiness decision
 
-The facts resolve the production architecture boundary to `amd64`, a single
-server, and `volumesPerServer: 1` for the AIStor Free design. They do not
-resolve the GREEN PVC size, owner-approved use of node-local storage,
-production resource values, private registry pull path, exact NetworkPolicy
-selectors/enforcement, backup/restore owner/RPO/RTO, or the vendor image-parser
-blocker. PR #46 therefore remains Draft and issue #44 remains In Progress.
+The facts resolve the production architecture boundary to `amd64`, the
+owner-approved single-node/local-path shape, GREEN `10Gi`, resources,
+NetworkPolicy controller/selectors, Zot pull model, and RPO/RTO. The native
+image parser is a vendor limitation, not a production BLOCKER while the
+immutable Zot fallback passes its acceptance invariant. PR #46 remains inert
+until the separate x64 Zot acceptance and final rendered review pass; issue
+#44 remains In Progress and production was not mutated.
