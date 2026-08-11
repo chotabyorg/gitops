@@ -83,7 +83,7 @@ The template files in this directory are design inputs only. Before activation,
 the exact Zot version must be validated against the rendered config schema and
 the selected Kubernetes security context.
 
-### Current image security gate
+### Scanner status and exploitability disposition
 
 The pinned Trivy v0.72.0 image was used against both v2.1.20 platform
 manifests on 2026-08-11. Both scans returned Debian 13.6 with zero HIGH or
@@ -95,18 +95,25 @@ fixed version: 5.19.2
 CRITICAL: 0
 ```
 
-This remains a **BLOCKER** for production activation because a fixed version
-is available. The v2.1.18 image used by the disposable proof had five HIGH
-findings and is not the production candidate. The exact scan evidence and
-commands are in [`ZOT_IMAGE_SCAN_2026-08-11.md`](./ZOT_IMAGE_SCAN_2026-08-11.md).
-Do not deploy v2.1.20 until a patched official image is scanned clean or the
-owner explicitly accepts the residual risk in a separate approval.
+Scanner status: **Trivy 0 Critical / 1 High**. The finding remains visible and
+is not suppressed. Per the owner security disposition, it is **not a
+production activation blocker while the approved runtime/security contract is
+unchanged**. The v2.1.18 image used by the historical disposable proof had
+five HIGH findings and is not substituted for this v2.1.20 acceptance. The
+exact scan evidence and commands are in
+[`ZOT_IMAGE_SCAN_2026-08-11.md`](./ZOT_IMAGE_SCAN_2026-08-11.md).
 
 The separate reachability review verdict is **NOT USED BY APPROVED REGISTRY
 RUNTIME**: the cited go-git module is indirect/module metadata only in the
 reviewed Zot source and exact amd64 binary, with no runtime Worktree path
-identified. This does not suppress the Trivy finding or clear the image gate;
-see [`ZOT_REACHABILITY_2026-08-11.md`](./ZOT_REACHABILITY_2026-08-11.md).
+identified. This does not suppress the Trivy finding. A new official Zot
+release carrying `go-git >=5.19.2` is preferred when available; if future
+configuration adds Git/worktree functionality, this disposition is invalid
+and the finding must be re-reviewed. See
+[`ZOT_REACHABILITY_2026-08-11.md`](./ZOT_REACHABILITY_2026-08-11.md).
+
+The exact v2.1.20 disposable contract passed locally; evidence is in
+[`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md).
 
 The multi-architecture index is documented for candidate selection only. The
 final rendered workload must use the exact platform manifest digest selected

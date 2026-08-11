@@ -1,13 +1,14 @@
 # Zot v2.1.20 go-git reachability evidence — 2026-08-11
 
-Status: the Trivy image finding remains visible and keeps the v2.1.20 image
-gate at **BLOCKER**. The separate runtime reachability verdict for the cited
-go-git CVE is:
+Status: the Trivy image finding remains visible. Per the owner security
+disposition, it is not a production activation blocker while the approved
+runtime/security contract remains unchanged. The separate runtime
+reachability verdict for the cited go-git CVE is:
 
 > **NOT USED BY APPROVED REGISTRY RUNTIME**
 
-This is a reachability disposition, not an image approval and not permission
-to suppress the Trivy finding.
+This is a reachability disposition, not permission to suppress the Trivy
+finding. A new official release with `go-git >=5.19.2` remains preferred.
 
 ## Finding and candidate
 
@@ -59,12 +60,18 @@ on 2026-08-08 and changes go-git from `v5.19.1` to `v5.19.2`. The official
 latest-release check on 2026-08-11 still returned Zot `v2.1.20`; its image
 therefore remains the vulnerable-by-version candidate recorded by Trivy.
 
-Decision: wait for the next official Zot release containing the upstream
-dependency fix. Do not use `main`, a custom patched image, or a private
-rebuild as a substitute. Before the next gate, re-check official release
-metadata and image tags, then repeat multi-architecture digest inspection,
-platform Trivy, official govulncheck, dependency verification, `zot verify`,
-and the full disposable acceptance contract.
+Decision: use exact v2.1.20 for the accepted local/disposable contract and
+production planning under the unchanged runtime/security contract; prefer the
+next official Zot release containing the upstream dependency fix when it is
+available. Do not use `main`, a custom patched image, or a private rebuild as a
+substitute. Before any release change, re-check official release metadata and
+image tags, then repeat multi-architecture digest inspection, platform Trivy,
+official govulncheck, dependency verification, `zot verify`, and the full
+disposable acceptance contract. If future configuration adds Git/worktree
+functionality, invalidate this disposition and reopen the finding.
+
+The exact v2.1.20 disposable results are recorded in
+[`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md).
 
 ## References
 

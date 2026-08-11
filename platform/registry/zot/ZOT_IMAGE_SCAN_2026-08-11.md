@@ -1,6 +1,8 @@
 # Zot image scan evidence — 2026-08-11
 
-Status: **security gate BLOCKER — no production image approved**.
+Status: **Trivy scanner finding present — 0 Critical / 1 High; runtime
+exploitability disposition accepted by owner; no activation blocker while the
+approved runtime/security contract is unchanged**.
 
 ## Candidate identity
 
@@ -25,8 +27,8 @@ result:
 
 | Platform | OS | Go binary | Critical | Result |
 | --- | --- | ---: | ---: | --- |
-| linux/amd64 | Debian 13.6: 0 HIGH/CRITICAL | 1 HIGH | 0 | **BLOCKER** |
-| linux/arm64/v8 | Debian 13.6: 0 HIGH/CRITICAL | 1 HIGH | 0 | **BLOCKER** |
+| linux/amd64 | Debian 13.6: 0 HIGH/CRITICAL | 1 HIGH | 0 | **SCANNER FINDING** |
+| linux/arm64/v8 | Debian 13.6: 0 HIGH/CRITICAL | 1 HIGH | 0 | **SCANNER FINDING** |
 
 Finding:
 
@@ -38,10 +40,12 @@ fixed: 5.19.2
 severity: HIGH
 ```
 
-The fixed version is available, so the candidate is not approved for
-production deployment. Re-scan the next official Zot image that contains the
-fix. Do not rebuild or privately patch the registry image for this P0 path
-without a separate supply-chain review.
+The fixed version is available, so a new official Zot release containing
+`go-git >=5.19.2` remains preferred. Under the unchanged approved registry
+runtime/security contract, the owner disposition removes this finding as a
+production activation blocker. Do not rebuild or privately patch the registry
+image; if future configuration adds Git/worktree functionality, reopen the
+disposition and repeat the security review.
 
 ## Previous disposable proof image
 
@@ -52,17 +56,19 @@ The successful disposable ACL/immutability/restart/PVC rehearsal used Zot
 ghcr.io/project-zot/zot@sha256:96913b282b93ee7bc415555c14887e81ece9078631f3189c2e8c1fbb5f888af6
 ```
 
-That image scan returned five HIGH and zero CRITICAL findings, so it is also
-rejected for production. Its registry behavior remains protocol evidence only;
-the ACL and persistence tests must be repeated with the first security-cleared
-Zot image.
+That image scan returned five HIGH and zero CRITICAL findings and is not a
+substitute for this v2.1.20 test. Its registry behavior is historical protocol
+evidence only.
 
 ## Acceptance gate
 
 The registry Draft PR may document the v2.1.20 candidate, but it must remain
-inert and Draft. Production requires a patched official image with a new exact
-digest, repeat of the scan for every production node architecture, and a fresh
-disposable ACL/overwrite/delete/restart/PVC rehearsal.
+inert and Draft until production-specific preflight facts and rendered
+Kubernetes review are complete. The exact v2.1.20 ACL, immutability,
+restart/PVC, TLS, backup/restore, and security-context rehearsal is recorded
+in [`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md).
+A new official release with the upstream fix is preferred when available and
+must repeat the multi-architecture scan and acceptance gates.
 
 ## Reachability disposition
 
@@ -73,6 +79,5 @@ go-git is present in indirect/module metadata, but the inspected Zot source
 has no runtime imports or Worktree path, the exact amd64 binary has no focused
 go-git/worktree symbols, and official `govulncheck` v1.1.4 binary mode found
 zero vulnerabilities in packages imported by the binary. The Trivy finding
-remains visible and the v2.1.20 production image gate remains **BLOCKER** until
-an official release carries the upstream `v5.19.2` fix or the owner records a
-separate risk acceptance.
+remains visible, but the owner disposition makes it **not an activation
+blocker while the approved runtime/security contract is unchanged**.
