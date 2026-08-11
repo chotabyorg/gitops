@@ -265,6 +265,35 @@ the sidecar and server image digests were unchanged. No tested release was a
 security-approved winner, so no downgrade was promoted and no full S3/IAM
 rehearsal was repeated for a non-winning candidate.
 
+### Private-registry immutable-tag fallback research — 2026-08-11
+
+The only fallback investigated was an exact OCI mirror into a disposable
+registry with TLS, private authentication, restricted push identity, and
+registry-enforced `read/create` authorization without `update/delete`. A
+Docker-native push was rejected as an integrity path because it converted the
+OCI manifest and changed the digest. Pinned Skopeo `--preserve-digests` copied
+the reviewed `sha256:e839...` manifest; the destination returned the same
+digest, anonymous read returned `401`, and overwrite was denied.
+
+Using the resulting private tag as an ordinary ObjectStore tag, a fresh
+licensed Operator `5.11.3` / ObjectStore `1.0.17` rehearsal reached
+`Initialized`, green, setup `100`, `1/1 Running`, and Kubelet imageID exactly
+equal to the reviewed `sha256:e839...` after Operator and StatefulSet restart.
+HTTPS health probes, PVC/object recovery, synthetic S3 CRUD, synthetic
+application/scanner IAM, and disposable NetworkPolicy positive/negative tests
+passed. The previously accepted full lower-env contract remains S3 `18/18`,
+application IAM `6/6`, and scanner IAM `6/6` for the same exact server bytes;
+the new tag-specific checks are recorded without claiming a new historical
+harness count. Minwall and KES did not materialize in the actual runtime
+inventory.
+
+Full research evidence, the Docker-format negative control, Trivy result, and
+owner gate are in
+[`PRIVATE_REGISTRY_FALLBACK_RESEARCH_2026-08-11.md`](./PRIVATE_REGISTRY_FALLBACK_RESEARCH_2026-08-11.md).
+This is not a production implementation. The recommended owner decision
+remains **WAIT FOR VENDOR FIX**; accepting the registry fallback would require
+an explicit approval of the additional registry trust/control-plane boundary.
+
 ### CurrentState/status semantics investigation — 2026-08-11
 
 The exact rendered `objectstores.aistor.min.io` CRD from Operator chart

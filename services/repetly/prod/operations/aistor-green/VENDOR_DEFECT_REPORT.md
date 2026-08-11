@@ -146,5 +146,20 @@ SLA and does not include `mc support` commands.
 
 If the Free account cannot open a product issue, use the official MinIO contact
 page's technical-support/SUBNET route: <https://www.min.io/contact-us>.
-Confirm owner approval and the account's disclosure entitlement before sending
-any attachments. Do not send production logs or license material.
+
+### Final disclosure/channel audit — 2026-08-11
+
+- The public SUBNET entry point exposed only Email/Password login. No product
+  issue, deployment issue, or technical-ticket form was reachable without an
+  authenticated account session.
+- Therefore no additional account/deployment metadata was requested or
+  disclosed, and no SUBNET or Contact Us submission was made.
+- This report itself is the ready-to-send non-secret payload: suggested subject,
+  Environment, Documented configuration, Minimal reproduction, Expected
+  result, Impact, Requested vendor action, and Safe attachments above.
+- The payload excludes production endpoint/namespace/credentials, license
+  bytes or ID, S3 keys, object names/data, SSH details, and unnecessary
+  internal infrastructure identifiers.
+- If the owner confirms the account's disclosure entitlement, send this exact
+  report through the official MinIO support route. Do not add production logs,
+  license material, or unrelated deployment/account metadata.
