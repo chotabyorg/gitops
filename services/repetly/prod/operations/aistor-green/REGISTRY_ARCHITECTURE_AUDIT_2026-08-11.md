@@ -136,9 +136,11 @@ anonymous-denied check, overwrite-negative, destination scan, and Pod
 - PR #46 remains Draft and must not merge.
 - Issue #44 remains In Progress; #112 remains Ready for Test.
 - Vendor report remains prepared but not submitted.
-- Production read-only preflight is **not yet executed** in this workspace:
-  no verified production read-only session was used, and no production state
-  was changed.
-- The next acceptance packet is the dedicated-registry design plus the
-  owner-authorized read-only production facts listed in
-  [`PRODUCTION_READONLY_PREFLIGHT.md`](./PRODUCTION_READONLY_PREFLIGHT.md).
+- Production read-only preflight is **executed and recorded** in
+  [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md):
+  one amd64 k3s node, only node-local `local-path`, no registry endpoint/CA,
+  and no `prod` NetworkPolicy enforcement evidence. No production state was
+  changed.
+- The next acceptance packet is the owner-approved registry design, including
+  the endpoint/CA, backup/RPO/RTO, exact selectors, and real-amd64 Kubernetes
+  acceptance before any activation review.

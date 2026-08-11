@@ -26,7 +26,10 @@ objectStore:
   pools:
     - name: pool-0
       servers: 1
-      volumesPerServer: "__SET_AFTER_PREFLIGHT__"
+      # Production is a single-node amd64 AIStor Free target; one volume is
+      # the only supported shape. PVC size and StorageClass remain owner gates
+      # because the only observed class is node-local `local-path`.
+      volumesPerServer: 1
       size: "__SET_AFTER_PREFLIGHT__"
       storageClassName: "__SET_AFTER_PREFLIGHT__"
 

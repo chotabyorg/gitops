@@ -12,14 +12,22 @@ unchanged.
 - BLUE remains `repetly-minio` with the existing OSS PVC and rollback path.
 - GREEN is an official AIStor Operator `ObjectStore` on a separate PVC.
 - AIStor Free is single-node only. `servers: 1` is fixed; `volumesPerServer`
-  and PVC `size` are deliberately unresolved until the read-only production
-  preflight proves dataset size, filesystem usage, StorageClass behavior, and
-  headroom. The template values must not be deployed until those placeholders
-  are replaced and independently reviewed.
+  is resolved to `1` by the production topology. PVC `size` and
+  `storageClassName` remain unresolved because the only observed class is
+  node-local `local-path` and no owner-approved capacity/restore policy exists.
+  The template must not be deployed until those decisions are independently
+  reviewed.
 - The GREEN S3 Service remains private/ClusterIP until the reviewed endpoint
   cutover. TLS, NetworkPolicy, resources, probes, PVC protection, and the
   separate license Secret are mandatory.
 - `MINIO_API_AUTO_BUMP=off` is mandatory at first GREEN start.
+
+The production read-only facts are recorded in
+[`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
+The target is one amd64 k3s node with 4 CPU and about 7.75Gi allocatable
+memory. BLUE currently uses a separate 10Gi RWO `local-path` PVC; its exact
+inventory is one object / 356134 bytes, while the node has 116G free. No
+registry endpoint/CA or `prod` NetworkPolicy enforcement path was observed.
 
 ## Pinned vendor chart inputs
 
@@ -295,7 +303,9 @@ The owner has accepted **`OWNER-APPROVED CONDITIONAL PRODUCTION PATH`** for
 the fallback. It is not activated: the recommended architecture is
 **`DEPLOY DEDICATED REGISTRY`**, existing GHCR is not accepted without
 independent immutable-tag and identity-separation evidence, and the production
-preflight remains pending legitimate production read-only access.
+read-only facts are now collected. Activation remains blocked by the unresolved
+private registry endpoint/CA, node-local storage durability/backup contract,
+NetworkPolicy enforcement, final values, and the native image-parser defect.
 
 The release invariant is:
 
@@ -352,7 +362,7 @@ Disposition: **BLOCKER — documented digest syntax is incompatible with Operato
 official 5.11.2 and 5.11.1 charts. This is classified as a **vendor
 implementation/documentation compatibility defect** pending MinIO correction.
 Do not work around it with a floating or tag-only production image. #46 remains
-Draft and production preflight remains deferred. The prepared non-secret report
+Draft. The production read-only preflight is now collected, but the prepared non-secret report
 is [`VENDOR_DEFECT_REPORT.md`](./VENDOR_DEFECT_REPORT.md); it has not been
 submitted externally.
 
@@ -432,18 +442,18 @@ With the lower-env probe/resource render active and ObjectStore
   `2/2 Running`.
 
 The committed NetworkPolicy remains inert and its namespace selectors/API CIDR
-are still production placeholders. The disposable kind node was `linux/arm64`;
-production architecture is an explicit gate. If production is amd64, use the
-reviewed amd64 child digests. If production is arm64, repeat the exact scans
-and rehearsal for the reviewed arm64 children; do not transfer amd64 evidence
-by assumption.
+are still production placeholders. Production is `linux/amd64`, but the
+read-only preflight found no `prod` NetworkPolicy and no proven enforcing CNI;
+selectors and enforcement must be resolved before activation. The disposable
+AIStor kind node was `linux/arm64`; use the reviewed amd64 child digests for
+the production render and do not transfer arm64 evidence by assumption.
 
 ### Fresh local review verdict — 2026-08-11
 
 | Class | Finding | Disposition |
 | --- | --- | --- |
 | **BLOCKER** | The official documented digest form is rejected by Operator 5.11.3; the same parser failure was reproduced with 5.11.2 and 5.11.1, while plain tag converged only as a control | **VENDOR BLOCKER**. Keep #46 Draft, do not use a plain-tag production workaround, and keep the prepared non-secret report ready; external submission requires separate owner authorization. |
-| IMPORTANT | Production namespace, node architecture, capacity/usage, StorageClass/reclaimPolicy, TLS trust, NetworkPolicy selectors, and Argo/Kustomize state are unknown | Explicit production-only read-only preflight; no production access was used. |
+| IMPORTANT | Production is a single amd64 node with only node-local `local-path`; registry/TLS pull path, GREEN PVC size/resources, NetworkPolicy enforcement/selectors, and backup/restore policy remain unresolved | Keep templates inert; resolve owner/platform contracts and repeat the final rendered review. Facts are recorded in `PRODUCTION_READONLY_FACTS_2026-08-11.md`. |
 | MINOR | Kind Metrics API is unavailable; lower-env CPU observations are cumulative cgroup samples | Do not treat lower-env samples as sizing; collect target-cluster metrics in preflight. |
 | TECH DEBT | Exact vendor source for the proprietary Operator is not present in the chart archive | Retain chart/CRD/binary log evidence and request vendor source/release confirmation; no vendor code changes. |
 
@@ -558,8 +568,9 @@ run generic troubleshooting containers.
 
 ## Required gates before this scaffold can become active
 
-1. Complete the production read-only preflight from
-   `PRODUCTION_READONLY_PREFLIGHT.md`; never commit secret values.
+1. Review the collected facts in
+   `PRODUCTION_READONLY_FACTS_2026-08-11.md` against the procedural checklist
+   in `PRODUCTION_READONLY_PREFLIGHT.md`; never commit secret values.
 2. Replace both value placeholders with an owner-reviewed capacity and
    StorageClass decision. Do not reuse `repetly-minio-data`.
 3. Provide a separately sealed license Secret and object-store config Secret.
