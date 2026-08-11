@@ -324,7 +324,7 @@ jobs:
           test "$(status -u "aistor-puller:${PULLER_PASSWORD}" -H 'Accept: application/vnd.oci.image.manifest.v1+json' "${API}/v2/aistor/minio/manifests/${TAG}")" = 200
           pvc_uid="$(kubectl -n "${NAMESPACE}" get pvc zot-registry-data -o jsonpath='{.metadata.uid}')"
           echo "pvc_uid=${pvc_uid}"
-          kubectl -n "${NAMESPACE}" get networkpolicy zot-default-deny -o json | jq -e '.spec.ingress == [] and .spec.egress == []'
+          kubectl -n "${NAMESPACE}" get networkpolicy zot-default-deny -o json | jq -e '(.spec.ingress // []) == [] and (.spec.egress // []) == []'
           echo "networkpolicy_enforcement=unavailable_kind_default_cni"
           echo "acceptance=PASS"
 
