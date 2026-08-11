@@ -265,7 +265,7 @@ the sidecar and server image digests were unchanged. No tested release was a
 security-approved winner, so no downgrade was promoted and no full S3/IAM
 rehearsal was repeated for a non-winning candidate.
 
-### Private-registry immutable-tag fallback research — 2026-08-11
+### Private-registry immutable-tag fallback — owner-approved conditional path — 2026-08-11
 
 The only fallback investigated was an exact OCI mirror into a disposable
 registry with TLS, private authentication, restricted push identity, and
@@ -287,12 +287,30 @@ the new tag-specific checks are recorded without claiming a new historical
 harness count. Minwall and KES did not materialize in the actual runtime
 inventory.
 
-Full research evidence, the Docker-format negative control, Trivy result, and
-owner gate are in
+Full evidence, the Docker-format negative control, Trivy result, and current
+registry architecture audit are in
 [`PRIVATE_REGISTRY_FALLBACK_RESEARCH_2026-08-11.md`](./PRIVATE_REGISTRY_FALLBACK_RESEARCH_2026-08-11.md).
-This is not a production implementation. The recommended owner decision
-remains **WAIT FOR VENDOR FIX**; accepting the registry fallback would require
-an explicit approval of the additional registry trust/control-plane boundary.
+[`REGISTRY_ARCHITECTURE_AUDIT_2026-08-11.md`](./REGISTRY_ARCHITECTURE_AUDIT_2026-08-11.md).
+The owner has accepted **`OWNER-APPROVED CONDITIONAL PRODUCTION PATH`** for
+the fallback. It is not activated: the recommended architecture is
+**`DEPLOY DEDICATED REGISTRY`**, existing GHCR is not accepted without
+independent immutable-tag and identity-separation evidence, and the production
+preflight remains pending legitimate production read-only access.
+
+The release invariant is:
+
+```text
+official source digest == private registry destination digest == production Pod imageID
+```
+
+Any mismatch is a blocker and must fail closed. The native direct digest path
+remains **`PREFERRED — CURRENTLY VENDOR-BLOCKED`**.
+
+When the vendor fixes the parser, the migration path is: disposable fix
+rehearsal; exact Operator/sidecar/server scan; repeat S3/IAM/restart/PVC/
+health/NetworkPolicy checks; switch ObjectStore back to the direct vendor
+digest; verify Pod `imageID`; then retire the fallback tag through the approved
+registry retention/delete process while preserving the evidence.
 
 ### CurrentState/status semantics investigation — 2026-08-11
 
@@ -424,7 +442,7 @@ by assumption.
 
 | Class | Finding | Disposition |
 | --- | --- | --- |
-| **BLOCKER** | The official documented digest form is rejected by Operator 5.11.3; the same parser failure was reproduced with 5.11.2 and 5.11.1, while plain tag converged only as a control | **VENDOR BLOCKER**. Keep #46 Draft, do not use a plain-tag production workaround, and submit the prepared non-secret report through the owner-approved MinIO support path. |
+| **BLOCKER** | The official documented digest form is rejected by Operator 5.11.3; the same parser failure was reproduced with 5.11.2 and 5.11.1, while plain tag converged only as a control | **VENDOR BLOCKER**. Keep #46 Draft, do not use a plain-tag production workaround, and keep the prepared non-secret report ready; external submission requires separate owner authorization. |
 | IMPORTANT | Production namespace, node architecture, capacity/usage, StorageClass/reclaimPolicy, TLS trust, NetworkPolicy selectors, and Argo/Kustomize state are unknown | Explicit production-only read-only preflight; no production access was used. |
 | MINOR | Kind Metrics API is unavailable; lower-env CPU observations are cumulative cgroup samples | Do not treat lower-env samples as sizing; collect target-cluster metrics in preflight. |
 | TECH DEBT | Exact vendor source for the proprietary Operator is not present in the chart archive | Retain chart/CRD/binary log evidence and request vendor source/release confirmation; no vendor code changes. |

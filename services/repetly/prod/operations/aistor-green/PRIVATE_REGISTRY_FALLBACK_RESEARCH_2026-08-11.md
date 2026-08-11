@@ -1,10 +1,10 @@
-# Private-registry immutable-tag fallback — research only
+# Private-registry immutable-tag fallback — conditional production path
 
-Status: **validated in disposable infrastructure; not selected or enabled for
-production**.
+Status: **owner-approved conditional production path; validated only in
+disposable infrastructure; not enabled for production**.
 
-This document records the only fallback tested after the supported digest path
-was classified as a vendor blocker. It contains no production endpoint,
+This document records the fallback tested after the supported digest path was
+classified as a vendor blocker. It contains no production endpoint,
 production namespace, credentials, license material, S3 keys, object data, or
 production logs.
 
@@ -109,19 +109,29 @@ not materialize in Deployments, StatefulSets, Pods, initContainers, or Jobs.
 | Reference | Security | Operational result | Disposition |
 | --- | --- | --- | --- |
 | Native OCI digest | Best: Git/Kubernetes directly names the manifest digest | Broken by current Operator parser | Vendor blocker |
-| Registry-enforced immutable tag | Exact source digest verified; overwrite denied; trust additionally moves to registry policy/control plane | Operator-compatible in rehearsal | Research candidate; owner approval required |
+| Registry-enforced immutable tag | Exact source digest verified; overwrite denied; trust additionally moves to registry policy/control plane | Operator-compatible in rehearsal | **Owner-approved conditional production path; dedicated-registry design and preflight required** |
 | Plain public `RELEASE` tag | Mutable public reference | Operator-compatible control only | Rejected |
 | Mutation/admission workaround | Hides or rewrites the documented contract | Not vendor-supported | Deferred/rejected |
 
-## Owner decision gate
+## Owner decision and activation gate
 
-No fallback was activated automatically. The owner must choose one of:
+The owner accepted `ACCEPT PRIVATE-REGISTRY IMMUTABLE-TAG FALLBACK` as a
+**conditional** path. The selected architecture is
+`DEPLOY DEDICATED REGISTRY`; existing GHCR is not accepted as the AIStor
+fallback without independently proven immutable-tag enforcement, publisher /
+puller separation, delete controls, and retained audit evidence. The detailed
+candidate audit is in
+[`REGISTRY_ARCHITECTURE_AUDIT_2026-08-11.md`](./REGISTRY_ARCHITECTURE_AUDIT_2026-08-11.md).
 
-- `WAIT FOR VENDOR FIX` — recommended default;
-- `ACCEPT PRIVATE-REGISTRY IMMUTABLE-TAG FALLBACK` — only after approving the
-  registry control plane, trust shift, retention/delete controls, audit path,
-  TLS/authentication, and exact mirror workflow;
-- `ARCHITECTURE CHANGE REQUIRED`.
+No fallback was activated automatically. Production activation still requires
+the selected registry design, a production read-only preflight through
+legitimate access, repeat of the mirror/scan/overwrite/imageID evidence, and
+an independent review with no important or blocking finding. The invariant is:
 
-Production preflight remains deferred until that decision and the vendor
-digest-path outcome are resolved.
+```text
+official source digest == private registry destination digest == production Pod imageID
+```
+
+Any mismatch fails closed. The direct native digest path remains
+**PREFERRED — CURRENTLY VENDOR-BLOCKED** and must be restored after the vendor
+fix is reproduced and revalidated.
