@@ -37,30 +37,33 @@ repositories:
     hostname: quay.io
     pathPrefix: minio/aistor/
 
-# These are registry manifest-list digests resolved from the exact chart
-# defaults on 2026-08-10. They are immutable pins, not security approvals:
+# These are the exact linux/amd64 child digests resolved from the manifest
+# lists in the exact chart defaults on 2026-08-10. They are immutable pins,
+# not security approvals. Disabled/config-only images are retained because the
+# chart may serialize them into ConfigMaps, but must not become runtime objects
+# without a fresh scan and review.
 # direct Trivy results and disposition are recorded in README.md. The AdminJob
 # controller is disabled, so the separate mc client is intentionally not part
 # of this Operator image map.
 images:
   operator:
     repository: aistor
-    image: operator@sha256:50bd6c34a1d2e811cc881116dc3fcce210e2f5fc2276a3933d8cacf71b39d68a
+    image: operator@sha256:b88e5cf563406719f67028a52fef9dac4049e555f44e263267c30a069d1d8166
   minwall:
     repository: aistor
-    image: minwall@sha256:cc74fc5d90115670a40df54459b7feaeb1c340af98866324b26a71ce2e77dc4d
+    image: minwall@sha256:0f831ea63e6269540f96b312020e1759ab2cd9218ef9c08c108756a54a4ccb99
   kes:
     repository: aistor
-    image: kes@sha256:115f6b2bc586a9fc88ddb1342ead4a5df546dd719757bb5f1a411862688f6f21
+    image: kes@sha256:7872b91e8cdd580f6eb7ef9d3608e54d228f10199acb83e3e69994ad80ace93e
   kes-sidecar:
     repository: aistor
-    image: kes-sidecar@sha256:e7070a20d8dbfce6608a5b7db9afc7bc43f239001680e141b423d7376fd3d473
+    image: kes-sidecar@sha256:fe0b7980565240ca415b8edb403b0361a17ff5f93e6e3b6774c0d1505096b57b
   minio:
     repository: aistor
     image: minio@sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1
   minio-sidecar:
     repository: aistor
-    image: minio-sidecar@sha256:1cf294b61514a46786d4233e7f4ea66fe179dbb996114fc7af33d3e023961ebc
+    image: minio-sidecar@sha256:560e204d8fbd05d095719a39af0db36e177829528d80366962d1bc22102c9b57
 
 # The chart's rendered image set must be resolved to immutable digests before
 # activation. Do not rely on chart defaults without recording that evidence.

@@ -29,6 +29,26 @@ memory. BLUE currently uses a separate 10Gi RWO `local-path` PVC; its exact
 inventory is one object / 356134 bytes, while the node has 116G free. No
 registry endpoint/CA or `prod` NetworkPolicy enforcement path was observed.
 
+## Production design ledger
+
+| Contract | Current production-specific value | Readiness |
+| --- | --- | --- |
+| ObjectStore/client namespace | `prod` (the existing Repetly namespace) | Candidate; Operator release namespace/watch scope still requires chart/RBAC review |
+| Node/platform | one `linux/amd64` k3s node | Resolved |
+| AIStor Free shape | `servers: 1`, `volumesPerServer: 1` | Resolved by topology/product constraint |
+| GREEN StorageClass | only observed class: `local-path` | **IMPORTANT** — node-local and reclaim `Delete`; owner durability/restore approval required |
+| GREEN PVC size | no approved value; BLUE baseline is 10Gi with 356134 bytes of objects | **IMPORTANT** — capacity policy and migration headroom are not established by point inventory alone |
+| Active server image | amd64 child `sha256:e8394b0407206d967208d86040a0c82e87c2b912068e2fdd2e876777bf2d16a1` | Candidate; native digest reconciliation is the vendor **BLOCKER** |
+| Operator / sidecar images | amd64 child pins in `aistor-operator-values.yaml.template` | Resolved as exact candidates; re-render/scan still required before activation |
+| Resources/probes | lower-env candidate only; production metrics/load profile absent | **IMPORTANT** — owner review required |
+| S3/TLS endpoint | private ClusterIP plus reviewed in-cluster HTTPS trust; no external cutover yet | **IMPORTANT** — service DNS/trust and client path must be rendered and tested |
+| NetworkPolicy | no `prod` policy or proven enforcing CNI observed | **IMPORTANT** — exact client/DNS/API selectors and enforcement are unresolved |
+| License/config Secrets | `minio-license:minio.license`; `repetly-aistor-green-env` config contract | Values remain out-of-band; namespace/scope and sealed delivery require review |
+| Migration/rollback | BLUE → GREEN validation → freeze/final delta → Service cutover; BLUE remains rollback source | Architecture accepted; no migration executed |
+
+The full sanitized evidence is in
+[`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
+
 ## Pinned vendor chart inputs
 
 These are the exact public Helm packages inspected for this Draft on
