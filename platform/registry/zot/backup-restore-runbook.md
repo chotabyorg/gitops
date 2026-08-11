@@ -1,36 +1,49 @@
 # Zot backup and restore contract
 
-Status: **design placeholder — production values and RPO/RTO require owner
-approval after read-only preflight**.
+Status: **owner-approved P0 design — deterministic rehydration primary; no
+production restore was executed**.
 
-The registry data PVC is independent from BLUE MinIO, GREEN AIStor, and
-Repetly storage. The 2026-08-11 read-only preflight found one amd64 production
-node and only the node-local `local-path` StorageClass. The existing BLUE PVC
-is 10Gi RWO with reclaim policy `Delete`; no registry PVC or off-node backup
-destination exists yet. The production plan must name the storage backend,
-snapshot mechanism, retention, encryption, restore owner, and tested RPO/RTO.
-A backup of only the Kubernetes manifests is insufficient; the OCI blobs,
-manifests, tags, ACL/auth configuration, and TLS/identity metadata required to
-restore the registry must be covered.
+## Scope and targets
 
-Until those owner decisions and a restore rehearsal exist, backup/restore is a
-**BLOCKER** for production registry activation and for moving issue #47 to
-Ready for Review.
+The Zot PVC is independent from BLUE MinIO, GREEN AIStor, and every Repetly
+storage bucket. The selected P0 shape is one `10Gi` `local-path` RWO PVC on the
+single production node. This is a documented single-failure-domain tradeoff;
+replicated/multi-node storage and off-host snapshots are follow-up technical
+debt, not a reason to introduce Ceph or Longhorn in this P0.
 
-## Failure model
+Target recovery objectives:
 
-- Existing Pods with cached layers may continue while Zot is unavailable.
-- A new Pod, reschedule, or node without the cached image may fail to pull.
-- A failed PVC or corrupted registry store is a release blocker until restore
-  is proven.
-- HA is not selected in this P0 scaffold. Decide it only after preflight
-  reveals node topology, storage behavior, and the acceptable single-replica
-  window.
+- RPO: **24 hours** for the registry mirror ledger and content set.
+- RTO: **2 hours** to restore the registry endpoint and make the approved
+  immutable tag pullable.
 
-## Required restore test
+No existing Velero, restic, snapshot, or off-host registry backup path was
+found during the read-only production inspection. The P0 recovery source is
+therefore deterministic rehydration:
 
-1. Restore to disposable infrastructure using the approved backup artifact.
-2. Verify the unique immutable tag, exact manifest digest, ACLs, and TLS path.
-3. Repeat puller/anonymous/publisher negative tests.
-4. Pull the image and verify the resulting Pod `imageID`.
-5. Record elapsed restore time and evidence before any production approval.
+1. Recreate the inert manifests with the exact Zot amd64 digest.
+2. Recreate the `registry` namespace, PVC, auth contract, and Traefik route.
+3. Re-mirror the exact approved OCI artifacts from their public source using
+   digest-preserving tooling.
+4. Recreate the content-identifying immutable tags from the release ledger.
+5. Verify digest equality, ACL negatives, health probes, and an AIStor pull.
+
+The release ledger must retain source digest, destination digest, source image,
+content tag, scan evidence, mirror timestamp, and publisher identity. A
+manifest-only backup is insufficient.
+
+## Restore acceptance
+
+Restore succeeds only when, within the RTO:
+
+- `registry.chota.by` resolves and Traefik presents a publicly trusted ACME
+  certificate;
+- `/startupz`, `/readyz`, and `/livez` are healthy;
+- publisher can create a new content tag but cannot overwrite or delete it;
+- puller can read the approved tag but cannot create/update/delete;
+- anonymous access is denied;
+- destination manifest digest equals the official source digest; and
+- a disposable amd64 Pod pulls the tag and reports the expected imageID.
+
+Add an off-host snapshot/backup destination, retention, encryption, and a
+periodic restore drill before expanding beyond this single-node topology.

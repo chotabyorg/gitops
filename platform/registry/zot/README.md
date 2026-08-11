@@ -1,6 +1,6 @@
 # Dedicated Zot registry scaffold
 
-Status: **inert Draft scaffold — production activation not approved**.
+Status: **owner-approved conditional production path — inert Draft scaffold**.
 
 Tracked by GitOps issue #47, `[P0] Add immutable private OCI registry for
 AIStor runtime`. This platform dependency is intentionally separate from
@@ -30,14 +30,33 @@ the alternative if the platform requires an organization-wide registry
 service, richer governance/UI, central audit/search, or broader
 replication/scanning workflows.
 
+## Owner-approved P0 shape
+
+- Namespace: `registry`; Zot: one replica, independent RWO PVC, `local-path`,
+  `10Gi`.
+- Endpoint: `registry.chota.by` through Traefik `websecure` and ACME resolver
+  `le`; Traefik terminates the public certificate and forwards HTTP to the
+  private Zot ClusterIP Service.
+- Publisher: `zot-publisher`, read/create only. Puller: `aistor-puller`, read
+  only. Break-glass: `zot-break-glass`, out-of-band and never a workload
+  credential. Auth Secret: `registry/zot-registry-auth`, key `htpasswd`.
+- AIStor puller Secret: `prod/aistor-zot-puller`, key `.dockerconfigjson`,
+  separate from publisher auth.
+- Node/containerd path: HTTPS `registry.chota.by` → Traefik → Zot Service
+  `registry/zot-registry:5000`. Zot bootstraps from the exact public GHCR
+  amd64 digest, avoiding circular image-pull dependency.
+
+DNS, ACME issuance, Secret delivery, and the first mirror remain rollout
+prerequisites. This PR creates none of them.
+
 ## Hard boundaries
 
 - Registry storage must be independent of current BLUE MinIO, future GREEN
   AIStor, and every Repetly storage bucket.
-- The read-only production preflight is now recorded, but it found only the
-  existing node-local `local-path` StorageClass. Registry namespace, PVC size,
-  internal/private endpoint, TLS hostname/CA, and backup contract remain
-  fail-closed placeholders because they do not exist in production today.
+- The read-only production preflight is now recorded. It found only the
+  existing node-local `local-path` StorageClass and no current registry DNS or
+  route. The owner explicitly approved this single-node P0 shape with
+  deterministic rehydration; replicated/multi-node storage is follow-up debt.
 - Production rollout requires a separate approval and a new review of the
   rendered manifests.
 - No active workload, Argo Application, service Kustomization, image reference,
@@ -49,9 +68,10 @@ Production is a single-node amd64 k3s `v1.35.5+k3s1` cluster with 4 CPU and
 about 7.75Gi allocatable memory. The existing BLUE MinIO uses a separate 10Gi
 RWO `local-path` PVC; the bucket inventory is one object / 356134 bytes and the
 node filesystem has 116G free. Storage remains disabled because the Repetly
-S3 environment entries are blank. There is no existing registry namespace,
-private registry endpoint, registry CA/trust configuration, or `prod`
-NetworkPolicy enforcement evidence.
+S3 environment entries are blank. There is no existing registry namespace or
+`registry.chota.by` DNS/route. K3s embedded NetworkPolicy enforcement is
+enabled; no registry or `prod` policy objects exist yet. Traefik already runs
+ACME HTTP-challenge with `certResolver: le` on `websecure` routes.
 
 These facts are documented in
 [`PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md`](./PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md).
@@ -64,17 +84,17 @@ image-pull path.
 | Contract | Current production-specific value | Readiness |
 | --- | --- | --- |
 | Node/platform | one `linux/amd64` k3s node | Resolved |
-| Zot image | `ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5` | Candidate; required real-amd64 Kubernetes acceptance is blocked |
-| Namespace | no registry namespace currently exists | **BLOCKER** — platform namespace/Argo ownership must be approved |
-| Registry storage | only observed class: `local-path`, node-local, reclaim `Delete` | **IMPORTANT** — durability/restore tradeoff requires approval |
-| Registry PVC size | no approved value; BLUE baseline is 10Gi and dataset is 356134 bytes | **IMPORTANT** — registry blob/headroom/retention policy is missing |
-| Resources | no production Zot workload profile exists | **IMPORTANT** — set from owner-reviewed single-node capacity budget |
-| Endpoint | no private registry DNS/Service endpoint exists; current public storage hostname is BLUE MinIO and cannot be reused | **BLOCKER** — endpoint and node pull route are missing |
-| TLS/trust | no registry TLS Secret, private CA, or containerd trust entry exists | **BLOCKER** — provision and test node/container-runtime trust |
-| NetworkPolicy | no `prod` NetworkPolicy or enforcing CNI evidence | **IMPORTANT** — render exact publisher/puller/DNS paths and prove enforcement |
+| Zot image | `ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5` | Exact amd64 candidate; GitHub x64 acceptance remains |
+| Namespace | `registry` | Resolved in inert templates; creation is rollout-time |
+| Registry storage | `local-path`, node-local, reclaim `Delete` | Owner-approved P0; replicated storage is follow-up debt |
+| Registry PVC size | `10Gi` | Resolved; exact active footprint is 145455137 compressed bytes |
+| Resources | requests `100m/256Mi`, limits `250m/384Mi` | Resolved conservative single-node budget |
+| Endpoint | `registry.chota.by` → Traefik `websecure` → `registry/zot-registry:5000` | Resolved rollout contract; DNS/ACME prerequisite |
+| TLS/trust | Traefik ACME `certResolver: le`; Zot backend is ClusterIP HTTP | Resolved preferred model; no containerd CA file when public trust works |
+| NetworkPolicy | embedded kube-router enabled; Traefik ingress and CoreDNS egress selectors rendered | Resolved selectors; route rollout must verify enforcement |
 | Auth model | publisher `read/create`; puller `read`; break-glass admin separate; anonymous deny | Contract resolved; identity names and Secret delivery remain out-of-band |
-| Backup/RPO/RTO | no off-node destination, owner, retention, RPO, or RTO exists | **BLOCKER** — restore contract and rehearsal required |
-| Availability | one replica is the only viable current shape on one node | Candidate only; outage/reschedule risk requires owner acceptance |
+| Backup/RPO/RTO | deterministic rehydration from exact digest ledger; target RPO 24h/RTO 2h | Resolved P0; off-host snapshot is follow-up debt |
+| Availability | one replica is the only viable current shape on one node | Owner-approved conditional P0; cached pulls may continue during outage |
 
 This ledger deliberately leaves unresolved values fail-closed rather than
 inventing production infrastructure. The exact evidence and owner actions are
@@ -156,8 +176,11 @@ in [`ZOT_DISPOSABLE_ACCEPTANCE_2026-08-11.md`](./ZOT_DISPOSABLE_ACCEPTANCE_2026-
 The rendered Kubernetes rehearsal also passed locally in an arm64 kind cluster;
 evidence is in
 [`ZOT_K8S_KIND_ACCEPTANCE_2026-08-11.md`](./ZOT_K8S_KIND_ACCEPTANCE_2026-08-11.md).
-The required amd64 follow-up was attempted and is explicitly blocked by the
-lack of a real amd64 disposable Kubernetes node in this arm64 workspace; see
+The required amd64 follow-up is isolated in
+`.github/workflows/zot-amd64-acceptance.yaml` on `ubuntu-24.04`, with a
+disposable kind cluster, synthetic credentials/certificates, and no production
+access or secrets. The previous local attempt was architecture-invalid and is
+retained as negative evidence; see
 [`ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md`](./ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md).
 The local rehearsals use synthetic values and do not
 approve production selectors, storage, TLS, image-pull reachability, or
@@ -166,8 +189,8 @@ resources.
 The multi-architecture index is documented for candidate selection only.
 Production is amd64, so the final workload must use the exact child digest
 `sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5`.
-The abbreviated Kubernetes acceptance and final Pod `imageID` equality still
-must be recorded in a real amd64 environment before Ready for Review.
+The abbreviated Kubernetes acceptance and final Pod `imageID` equality are
+recorded by that workflow before Ready for Review.
 
 ## Required disposable/lower-environment acceptance
 
@@ -183,9 +206,22 @@ must be recorded in a real amd64 environment before Ready for Review.
 9. TLS, NetworkPolicy, probes, resource limits, and security context are
    observed in the rendered workload.
 
-All failures are **BLOCKER**. Use pinned Skopeo or an equivalent
+All acceptance failures are **BLOCKER**. Use pinned Skopeo or an equivalent
 digest-preserving tool; reject a Docker rebuild/push that changes the manifest
 digest.
+
+## Production rollout sequence
+
+1. Create `registry` and the out-of-band `zot-registry-auth` Secret; never
+   store credentials in Git.
+2. Publish DNS `registry.chota.by` to `153.80.244.178`, wait for public DNS,
+   and let Traefik ACME `le` obtain the certificate.
+3. Verify node/containerd HTTPS pull through Traefik. If public trust is not
+   available, stop and add an explicit `registries.yaml`/CA contract.
+4. Mirror the exact AIStor amd64 OCI artifacts with digest preservation and
+   create `aistor-minio-e8394b040720`.
+5. Create `prod/aistor-zot-puller` and only then render the inert AIStor
+   template under its separate approval.
 
 ## References
 

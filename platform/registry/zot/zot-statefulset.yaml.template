@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: zot-registry
-  namespace: REPLACE_WITH_REGISTRY_NAMESPACE
+  namespace: registry
   labels:
     app.kubernetes.io/name: zot
     app.kubernetes.io/component: registry
@@ -29,13 +29,13 @@ spec:
           type: RuntimeDefault
       containers:
         - name: zot
-          image: REPLACE_WITH_APPROVED_ZOT_PLATFORM_IMAGE_DIGEST
+          image: ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5
           imagePullPolicy: IfNotPresent
           args:
             - serve
             - /etc/zot/config/config.json
           ports:
-            - name: https
+            - name: http
               containerPort: 5000
           securityContext:
             allowPrivilegeEscalation: false
@@ -44,32 +44,32 @@ spec:
               drop: ["ALL"]
           resources:
             requests:
-              cpu: REPLACE_WITH_APPROVED_CPU_REQUEST
-              memory: REPLACE_WITH_APPROVED_MEMORY_REQUEST
+              cpu: 100m
+              memory: 256Mi
             limits:
-              cpu: REPLACE_WITH_APPROVED_CPU_LIMIT
-              memory: REPLACE_WITH_APPROVED_MEMORY_LIMIT
+              cpu: 250m
+              memory: 384Mi
           startupProbe:
             httpGet:
-              scheme: HTTPS
+              scheme: HTTP
               path: /startupz
-              port: https
+              port: http
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 24
           readinessProbe:
             httpGet:
-              scheme: HTTPS
+              scheme: HTTP
               path: /readyz
-              port: https
+              port: http
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 6
           livenessProbe:
             httpGet:
-              scheme: HTTPS
+              scheme: HTTP
               path: /livez
-              port: https
+              port: http
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 6
@@ -82,9 +82,6 @@ spec:
             - name: auth
               mountPath: /etc/zot/auth
               readOnly: true
-            - name: tls
-              mountPath: /etc/zot/tls
-              readOnly: true
             - name: tmp
               mountPath: /tmp
       volumes:
@@ -96,9 +93,9 @@ spec:
             name: zot-registry-config
         - name: auth
           secret:
-            secretName: REPLACE_WITH_ZOT_HTPASSWD_SECRET
-        - name: tls
-          secret:
-            secretName: REPLACE_WITH_ZOT_TLS_SECRET
+            secretName: zot-registry-auth
+            items:
+              - key: htpasswd
+                path: htpasswd
         - name: tmp
           emptyDir: {}

@@ -1,7 +1,6 @@
 # Zot v2.1.20 amd64 Kubernetes acceptance — 2026-08-11
 
-Verdict: **BLOCKED — NO REAL AMD64 DISPOSABLE KUBERNETES NODE AVAILABLE IN
-THIS ARM64 WORKSPACE**.
+Verdict: **PENDING — ISOLATED GITHUB-HOSTED X64 ACCEPTANCE**.
 
 This is an evidence record for the required production-architecture gate. No
 production cluster, BLUE MinIO, GREEN AIStor, Repetly storage, or production
@@ -16,7 +15,7 @@ credential was used.
   and is the value that must be compared with the eventual production Pod
   `imageID`.
 
-## Attempts
+## Previous local attempt (not acceptance evidence)
 
 1. Local `kind v0.32.0` with `kindest/node:v1.35.5` and `DOCKER_DEFAULT_PLATFORM=linux/amd64` could not bootstrap the node under Docker
    Desktop emulation; the node image did not reach the expected systemd
@@ -31,7 +30,24 @@ The Docker runtime itself can execute the Zot amd64 image under emulation, but
 that is not equivalent to an amd64 Kubernetes node and is not accepted as the
 required architecture gate.
 
-## Required abbreviated acceptance when a real amd64 environment is available
+## GitHub-hosted acceptance contract
+
+Workflow: `.github/workflows/zot-amd64-acceptance.yaml`.
+
+It runs only on `ubuntu-24.04`, creates a disposable kind cluster, uses the
+exact amd64 Zot image and synthetic credentials/certificates, and never reads
+production configuration or secrets. It checks node architecture, Pod
+`imageID`, `/startupz`, `/readyz`, `/livez`, publisher create and
+overwrite/delete denial, puller read/create denial, anonymous denial, PVC
+persistence after Pod recreation, securityContext, and NetworkPolicy object
+semantics. kind's default CNI does not enforce NetworkPolicy, so the workflow
+reports enforcement as unavailable rather than claiming a negative network
+test; production enforcement is separately evidenced by K3s chains.
+
+The run URL, conclusion, exact imageID, and sanitized evidence are appended
+after the first GitHub-hosted run.
+
+## Required abbreviated acceptance
 
 Use the exact child digest above and record all results for the rendered
 StatefulSet:
@@ -47,5 +63,5 @@ StatefulSet:
 | PVC persistence | tag and digest survive Pod/PVC recreation |
 | Pod imageID | exact equality with `sha256:95a837...e6d4fd5` |
 
-Until this is run on a real amd64 disposable node or an approved amd64 lower
-environment, PR #48 must remain Draft and issue #47 must remain In Progress.
+Until this passes on the GitHub-hosted amd64 node, PR #48 must remain Draft and
+issue #47 must remain In Progress.

@@ -1,0 +1,329 @@
+name: Zot amd64 Kubernetes acceptance
+
+on:
+  pull_request:
+    paths:
+      - "platform/registry/zot/**"
+      - ".github/workflows/zot-amd64-acceptance.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zot-amd64-acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Install pinned kind
+        shell: bash
+        run: |
+          set -euo pipefail
+          KIND_VERSION=v0.32.0
+          curl --fail --silent --show-error --location \
+            "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" \
+            --output /tmp/kind
+          sudo install -m 0755 /tmp/kind /usr/local/bin/kind
+          kind version
+
+      - name: Run disposable amd64 acceptance
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          exec > >(tee zot-amd64-acceptance.txt) 2>&1
+
+          ZOT_DIGEST="sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5"
+          KIND_CLUSTER="zot-amd64-acceptance"
+          NAMESPACE="zot-disposable"
+          API="https://127.0.0.1:5000"
+          PUBLISHER_PASSWORD="synthetic-publisher-password"
+          PULLER_PASSWORD="synthetic-puller-password"
+          TAG="aistor/test-content-v2120"
+
+          cleanup() {
+            if [[ -n "${PORT_FORWARD_PID:-}" ]]; then
+              kill "${PORT_FORWARD_PID}" 2>/dev/null || true
+            fi
+            kind delete cluster --name "${KIND_CLUSTER}" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          kind create cluster --name "${KIND_CLUSTER}" \
+            --image kindest/node:v1.35.5 --wait 120s
+          kubectl config use-context "kind-${KIND_CLUSTER}"
+          kubectl wait --for=condition=Ready node --all --timeout=120s
+
+          NODE_ARCH="$(kubectl get node -o jsonpath='{.items[0].status.nodeInfo.architecture}')"
+          echo "node_arch=${NODE_ARCH}"
+          test "${NODE_ARCH}" = amd64
+
+          kubectl create namespace "${NAMESPACE}"
+          mkdir -p /tmp/zot-tls
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout /tmp/zot-tls/tls.key -out /tmp/zot-tls/tls.crt \
+            -subj "/CN=zot-disposable" \
+            -addext "subjectAltName=DNS:zot-registry.zot-disposable.svc,DNS:localhost,IP:127.0.0.1"
+          htpasswd -nbB zot-publisher "${PUBLISHER_PASSWORD}" > /tmp/htpasswd
+          htpasswd -nbB aistor-puller "${PULLER_PASSWORD}" >> /tmp/htpasswd
+          htpasswd -nbB zot-break-glass synthetic-break-glass >> /tmp/htpasswd
+
+          cat > /tmp/config.json <<'JSON'
+          {
+            "distSpecVersion": "1.1.1",
+            "storage": { "rootDirectory": "/var/lib/zot" },
+            "http": {
+              "address": "0.0.0.0",
+              "port": "5000",
+              "tls": {
+                "cert": "/etc/zot/tls/tls.crt",
+                "key": "/etc/zot/tls/tls.key"
+              },
+              "auth": { "htpasswd": { "path": "/etc/zot/auth/htpasswd" } },
+              "accessControl": {
+                "repositories": {
+                  "aistor/**": {
+                    "anonymousPolicy": [],
+                    "defaultPolicy": [],
+                    "policies": [
+                      { "users": ["zot-publisher"], "actions": ["read", "create"] },
+                      { "users": ["aistor-puller"], "actions": ["read"] }
+                    ]
+                  }
+                },
+                "adminPolicy": {
+                  "users": ["zot-break-glass"],
+                  "actions": ["read", "create", "update", "delete"]
+                }
+              }
+            },
+            "log": { "level": "info" },
+            "extensions": { "search": { "enable": true }, "metrics": { "enable": true } }
+          }
+          JSON
+
+          kubectl -n "${NAMESPACE}" create configmap zot-registry-config \
+            --from-file=config.json=/tmp/config.json
+          kubectl -n "${NAMESPACE}" create secret generic zot-registry-auth \
+            --from-file=htpasswd=/tmp/htpasswd
+          kubectl -n "${NAMESPACE}" create secret tls zot-registry-tls \
+            --cert=/tmp/zot-tls/tls.crt --key=/tmp/zot-tls/tls.key
+
+          cat <<YAML | kubectl apply -f -
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            name: zot-registry-data
+            namespace: ${NAMESPACE}
+          spec:
+            accessModes: [ReadWriteOnce]
+            storageClassName: standard
+            resources:
+              requests:
+                storage: 1Gi
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: zot-registry
+            namespace: ${NAMESPACE}
+          spec:
+            selector:
+              app.kubernetes.io/name: zot
+              app.kubernetes.io/component: registry
+            ports:
+              - name: https
+                port: 5000
+                targetPort: https
+          ---
+          apiVersion: apps/v1
+          kind: StatefulSet
+          metadata:
+            name: zot-registry
+            namespace: ${NAMESPACE}
+          spec:
+            serviceName: zot-registry
+            replicas: 1
+            selector:
+              matchLabels:
+                app.kubernetes.io/name: zot
+                app.kubernetes.io/component: registry
+            template:
+              metadata:
+                labels:
+                  app.kubernetes.io/name: zot
+                  app.kubernetes.io/component: registry
+              spec:
+                automountServiceAccountToken: false
+                securityContext:
+                  runAsNonRoot: true
+                  runAsUser: 1000
+                  runAsGroup: 1000
+                  fsGroup: 1000
+                  seccompProfile:
+                    type: RuntimeDefault
+                containers:
+                  - name: zot
+                    image: ghcr.io/project-zot/zot@${ZOT_DIGEST}
+                    imagePullPolicy: IfNotPresent
+                    args: [serve, /etc/zot/config/config.json]
+                    ports:
+                      - name: https
+                        containerPort: 5000
+                    securityContext:
+                      allowPrivilegeEscalation: false
+                      readOnlyRootFilesystem: true
+                      capabilities:
+                        drop: [ALL]
+                    resources:
+                      requests: {cpu: 100m, memory: 256Mi}
+                      limits: {cpu: 250m, memory: 384Mi}
+                    startupProbe:
+                      httpGet: {scheme: HTTPS, path: /startupz, port: https}
+                      periodSeconds: 5
+                      timeoutSeconds: 3
+                      failureThreshold: 24
+                    readinessProbe:
+                      httpGet: {scheme: HTTPS, path: /readyz, port: https}
+                      periodSeconds: 5
+                      timeoutSeconds: 3
+                      failureThreshold: 6
+                    livenessProbe:
+                      httpGet: {scheme: HTTPS, path: /livez, port: https}
+                      periodSeconds: 10
+                      timeoutSeconds: 3
+                      failureThreshold: 6
+                    volumeMounts:
+                      - {name: data, mountPath: /var/lib/zot}
+                      - {name: config, mountPath: /etc/zot/config, readOnly: true}
+                      - {name: auth, mountPath: /etc/zot/auth, readOnly: true}
+                      - {name: tls, mountPath: /etc/zot/tls, readOnly: true}
+                      - {name: tmp, mountPath: /tmp}
+                volumes:
+                  - name: data
+                    persistentVolumeClaim: {claimName: zot-registry-data}
+                  - name: config
+                    configMap: {name: zot-registry-config}
+                  - name: auth
+                    secret:
+                      secretName: zot-registry-auth
+                      items: [{key: htpasswd, path: htpasswd}]
+                  - name: tls
+                    secret: {secretName: zot-registry-tls}
+                  - name: tmp
+                    emptyDir: {}
+          ---
+          apiVersion: networking.k8s.io/v1
+          kind: NetworkPolicy
+          metadata:
+            name: zot-default-deny
+            namespace: ${NAMESPACE}
+          spec:
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/name: zot
+            policyTypes: [Ingress, Egress]
+            ingress: []
+            egress: []
+          YAML
+
+          kubectl -n "${NAMESPACE}" rollout status statefulset/zot-registry --timeout=180s
+          POD="$(kubectl -n "${NAMESPACE}" get pod -l app.kubernetes.io/name=zot -o jsonpath='{.items[0].metadata.name}')"
+          IMAGE_ID="$(kubectl -n "${NAMESPACE}" get pod "${POD}" -o jsonpath='{.status.containerStatuses[?(@.name=="zot")].imageID}')"
+          echo "pod=${POD}"
+          echo "imageID=${IMAGE_ID}"
+          [[ "${IMAGE_ID}" == *"${ZOT_DIGEST}"* ]]
+          jq -e '.spec.securityContext.runAsNonRoot == true and .spec.securityContext.runAsUser == 1000 and .spec.containers[0].securityContext.allowPrivilegeEscalation == false and .spec.containers[0].securityContext.readOnlyRootFilesystem == true and (.spec.containers[0].securityContext.capabilities.drop | index("ALL")) != null and .spec.automountServiceAccountToken == false' \
+            < <(kubectl -n "${NAMESPACE}" get pod "${POD}" -o json)
+
+          start_port_forward() {
+            kubectl -n "${NAMESPACE}" port-forward svc/zot-registry 5000:5000 >/tmp/zot-port-forward.log 2>&1 &
+            PORT_FORWARD_PID=$!
+            for _ in {1..30}; do
+              if curl --silent --show-error --insecure "${API}/startupz" >/dev/null 2>&1; then return; fi
+              sleep 1
+            done
+            cat /tmp/zot-port-forward.log
+            return 1
+          }
+          start_port_forward
+
+          for endpoint in startupz readyz livez; do
+            code="$(curl --silent --show-error --insecure --output /tmp/health "${API}/${endpoint}" --write-out '%{http_code}')"
+            echo "${endpoint}=${code}"
+            test "${code}" = 200
+          done
+
+          status() {
+            curl --silent --show-error --insecure --output /tmp/registry-body \
+              --write-out '%{http_code}' "$@" || true
+          }
+          expect_denied() {
+            local code="$1"
+            echo "denied_status=${code}"
+            [[ "${code}" =~ ^4 ]]
+          }
+
+          printf 'synthetic config blob\n' > /tmp/config-blob
+          printf 'synthetic layer\n' > /tmp/layer-blob
+          config_digest="sha256:$(sha256sum /tmp/config-blob | cut -d' ' -f1)"
+          layer_digest="sha256:$(sha256sum /tmp/layer-blob | cut -d' ' -f1)"
+          config_size="$(wc -c < /tmp/config-blob)"
+          layer_size="$(wc -c < /tmp/layer-blob)"
+          upload_blob() {
+            local user="$1" password="$2" file="$3" digest="$4"
+            local headers location sep code
+            headers="$(mktemp)"
+            code="$(curl --silent --show-error --insecure -u "${user}:${password}" \
+              -X POST -D "${headers}" -o /dev/null --write-out '%{http_code}' \
+              "${API}/v2/aistor/minio/blobs/uploads/")"
+            test "${code}" = 202
+            location="$(awk 'tolower($1)=="location:" {print $2}' "${headers}" | tr -d '\r')"
+            case "${location}" in /*) location="${API}${location}";; esac
+            sep='?'; [[ "${location}" == *\?* ]] && sep='&'
+            code="$(curl --silent --show-error --insecure -u "${user}:${password}" \
+              -X PUT --data-binary "@${file}" -o /dev/null --write-out '%{http_code}' \
+              "${location}${sep}digest=${digest}")"
+            test "${code}" = 201
+            rm -f "${headers}"
+          }
+          upload_blob zot-publisher "${PUBLISHER_PASSWORD}" /tmp/config-blob "${config_digest}"
+          upload_blob zot-publisher "${PUBLISHER_PASSWORD}" /tmp/layer-blob "${layer_digest}"
+          jq -n --arg cd "${config_digest#sha256:}" --arg ld "${layer_digest#sha256:}" \
+            --argjson cs "${config_size}" --argjson ls "${layer_size}" \
+            '{schemaVersion:2,mediaType:"application/vnd.oci.image.manifest.v1+json",config:{mediaType:"application/vnd.oci.image.config.v1+json",size:$cs,digest:("sha256:"+$cd)},layers:[{mediaType:"application/vnd.oci.image.layer.v1.tar+gzip",size:$ls,digest:("sha256:"+$ld)}]}' \
+            > /tmp/manifest.json
+          code="$(curl --silent --show-error --insecure -u "zot-publisher:${PUBLISHER_PASSWORD}" \
+            -X PUT -H 'Content-Type: application/vnd.oci.image.manifest.v1+json' \
+            --data-binary @/tmp/manifest.json -o /tmp/registry-body --write-out '%{http_code}' \
+            "${API}/v2/aistor/minio/manifests/${TAG}")"
+          test "${code}" = 201
+          manifest_digest="sha256:$(sha256sum /tmp/manifest.json | cut -d' ' -f1)"
+          echo "manifest_digest=${manifest_digest}"
+          test "$(status -u "aistor-puller:${PULLER_PASSWORD}" -H 'Accept: application/vnd.oci.image.manifest.v1+json' "${API}/v2/aistor/minio/manifests/${TAG}")" = 200
+          expect_denied "$(status -u "zot-publisher:${PUBLISHER_PASSWORD}" -X PUT -H 'Content-Type: application/vnd.oci.image.manifest.v1+json' --data-binary @/tmp/manifest.json "${API}/v2/aistor/minio/manifests/${TAG}")"
+          expect_denied "$(status -u "zot-publisher:${PUBLISHER_PASSWORD}" -X DELETE "${API}/v2/aistor/minio/manifests/${manifest_digest}")"
+          expect_denied "$(status -u "aistor-puller:${PULLER_PASSWORD}" -X PUT -H 'Content-Type: application/vnd.oci.image.manifest.v1+json' --data-binary @/tmp/manifest.json "${API}/v2/aistor/minio/manifests/puller-write-denied")"
+          expect_denied "$(status "${API}/v2/aistor/minio/manifests/${TAG}")"
+
+          kubectl -n "${NAMESPACE}" delete pod "${POD}" --wait=true --timeout=120s
+          kubectl -n "${NAMESPACE}" rollout status statefulset/zot-registry --timeout=180s
+          kill "${PORT_FORWARD_PID}" 2>/dev/null || true
+          PORT_FORWARD_PID=""
+          start_port_forward
+          test "$(status -u "aistor-puller:${PULLER_PASSWORD}" -H 'Accept: application/vnd.oci.image.manifest.v1+json' "${API}/v2/aistor/minio/manifests/${TAG}")" = 200
+          pvc_uid="$(kubectl -n "${NAMESPACE}" get pvc zot-registry-data -o jsonpath='{.metadata.uid}')"
+          echo "pvc_uid=${pvc_uid}"
+          kubectl -n "${NAMESPACE}" get networkpolicy zot-default-deny -o json | jq -e '.spec.ingress == [] and .spec.egress == []'
+          echo "networkpolicy_enforcement=unavailable_kind_default_cni"
+          echo "acceptance=PASS"
+
+      - name: Upload sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: zot-amd64-acceptance-evidence
+          path: zot-amd64-acceptance.txt
+          if-no-files-found: warn

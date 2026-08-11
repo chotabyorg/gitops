@@ -1,7 +1,6 @@
 # Production read-only preflight result — 2026-08-11
 
-Result: **FACTS COLLECTED — ACTIVATION BLOCKED BY UNRESOLVED PLATFORM
-CONTRACTS**.
+Result: **FACTS COLLECTED — OWNER-APPROVED CONDITIONAL P0 CONTRACT RECORDED**.
 
 The authorized SSH path reached the production k3s host and only read-only
 commands were run. No Kubernetes or MinIO mutation, Argo sync, Helm action,
@@ -40,17 +39,18 @@ the BLUE PVC, BLUE MinIO path, GREEN bucket, or Repetly bucket.
 
 ## Registry and network path
 
-- No production Zot/Harbor registry, registry namespace, private registry DNS
-  name, TLS Secret, private CA, or containerd registry trust configuration was
-  observed.
-- `prod` has no NetworkPolicy. Existing policies are limited to ArgoCD
-  namespaces; an enforcing CNI for the production path was not evidenced.
+- No production Zot/Harbor registry, `registry` namespace, or
+  `registry.chota.by` DNS/route currently exists.
+- K3s runs embedded kube-router NetworkPolicy enforcement: `k3s` has no
+  `--disable-network-policy`, and `iptables-save`/`nft` contain
+  `KUBE-NWPLCY-*` and `KUBE-ROUTER-*` chains with `kube-router netpol` rules.
+  The controller is **ENABLED**. No registry/`prod` policy objects exist yet.
 - The current storage API is public through Traefik at
   `repetly-storage.chota.by` and routes to BLUE MinIO. This is not an approved
   private registry endpoint.
-- The only production StorageClass is node-local `local-path`; selecting it
-  for a registry PVC requires explicit owner approval for durability and
-  restore risk.
+- The only production StorageClass is node-local `local-path`; the owner
+  approved it for this P0 with one independent `10Gi` PVC per workload.
+  Replicated/multi-node durability is follow-up technical debt.
 
 ## Argo and safety boundary
 
@@ -60,18 +60,26 @@ the inert AIStor or Zot templates. No production registry, ObjectStore, PVC,
 Secret, Service, image reference, IAM value, or NetworkPolicy was created or
 changed.
 
-## Remaining blockers before Ready for Review
+## Resolved rollout contracts
 
-1. Provide an approved private registry endpoint, DNS, TLS/CA trust path, and
-   publisher/puller Secret contracts for kubelet image pulls.
-2. Approve the dedicated registry namespace, `local-path` durability tradeoff,
-   PVC sizes/resources, and the backup/restore owner, retention, RPO, and RTO.
-3. Render exact production NetworkPolicy selectors and prove enforcement and
-   the node/container-runtime image-pull path.
-4. Run the required amd64 Kubernetes acceptance. The local host is arm64;
-   amd64 kind/k3s emulation could not provide a real amd64 node, so the exact
-   acceptance remains an explicit blocker. See
-   [`ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md`](./ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md).
+- Zot: namespace `registry`, one replica, independent `10Gi` `local-path` RWO
+  PVC, exact amd64 image digest, requests `100m/256Mi`, limits `250m/384Mi`.
+- Hostname/TLS: `registry.chota.by` → Traefik `websecure`/ACME `le` → Zot
+  ClusterIP `registry/zot-registry:5000`; Zot auth denies anonymous access.
+  DNS and certificate issuance are rollout prerequisites only.
+- Pull path: node containerd uses HTTPS to the public hostname; Zot itself is
+  pulled from exact public GHCR digest. AIStor main image uses
+  `prod/aistor-zot-puller` (`.dockerconfigjson`); publisher is separate.
+- Backup: no existing backup controller/path was found. P0 RPO is 24h and RTO
+  is 2h via deterministic rehydration from the reviewed digest ledger;
+  off-host snapshots remain follow-up work.
+
+## Remaining gates before Ready for Review
+
+1. Publish DNS and obtain/verify the Traefik ACME certificate; no production
+   DNS or ingress mutation is authorized in this execution.
+2. Run the GitHub-hosted x64 Kubernetes acceptance and record its run,
+   sanitized evidence, exact Pod imageID, and PVC persistence.
 
 No kubeconfig, token, certificate, password, access-key value, or Secret value
 is stored in this repository or in the evidence.

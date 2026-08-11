@@ -6,10 +6,6 @@
   "http": {
     "address": "0.0.0.0",
     "port": "5000",
-    "tls": {
-      "cert": "/etc/zot/tls/tls.crt",
-      "key": "/etc/zot/tls/tls.key"
-    },
     "auth": {
       "htpasswd": {
         "path": "/etc/zot/auth/htpasswd"
@@ -17,23 +13,23 @@
     },
     "accessControl": {
       "repositories": {
-        "REPLACE_WITH_EXACT_AISTOR_REPOSITORY_PATTERN": {
+        "aistor/**": {
           "anonymousPolicy": [],
           "defaultPolicy": [],
           "policies": [
             {
-              "users": ["REPLACE_WITH_PUBLISHER_ID"],
+              "users": ["zot-publisher"],
               "actions": ["read", "create"]
             },
             {
-              "users": ["REPLACE_WITH_PULLER_ID"],
+              "users": ["aistor-puller"],
               "actions": ["read"]
             }
           ]
         }
       },
       "adminPolicy": {
-        "users": ["REPLACE_WITH_BREAK_GLASS_ADMIN_ID"],
+        "users": ["zot-break-glass"],
         "actions": ["read", "create", "update", "delete"]
       }
     }
