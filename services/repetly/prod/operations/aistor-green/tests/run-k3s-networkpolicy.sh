@@ -22,12 +22,12 @@ docker run --privileged --detach --name "${CONTAINER}" \
   --write-kubeconfig-mode=644 >/dev/null
 
 for _ in {1..90}; do
-  if docker exec "${CONTAINER}" kubectl get nodes >/dev/null 2>&1; then
+  if docker exec "${CONTAINER}" kubectl get nodes --no-headers 2>/dev/null | grep -q .; then
     break
   fi
   sleep 2
 done
-docker exec "${CONTAINER}" kubectl get nodes >/dev/null
+docker exec "${CONTAINER}" kubectl get nodes --no-headers | grep -q .
 docker cp "${CONTAINER}:/etc/rancher/k3s/k3s.yaml" "${KUBECONFIG_FILE}"
 sed -i 's#https://127.0.0.1:6443#https://127.0.0.1:6445#' "${KUBECONFIG_FILE}"
 export KUBECONFIG="${KUBECONFIG_FILE}"
@@ -35,11 +35,12 @@ export KUBECONFIG="${KUBECONFIG_FILE}"
 kubectl wait --for=condition=Ready node --all --timeout=120s
 kubectl get nodes -o wide
 for _ in {1..60}; do
-  if kubectl -n kube-system get deployment coredns >/dev/null 2>&1; then
+  if kubectl -n kube-system get deployment coredns --no-headers 2>/dev/null | grep -q .; then
     break
   fi
   sleep 2
 done
+kubectl -n kube-system get deployment coredns --no-headers | grep -q .
 kubectl -n kube-system rollout status deployment/coredns --timeout=120s
 kubectl -n kube-system get pods -l k8s-app=kube-dns
 
