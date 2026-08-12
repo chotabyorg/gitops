@@ -22,12 +22,12 @@ docker run --privileged --detach --name "${CONTAINER}" \
   --write-kubeconfig-mode=644 >/dev/null
 
 for _ in {1..90}; do
-  if docker exec "${CONTAINER}" k3s kubectl get nodes >/dev/null 2>&1; then
+  if docker exec "${CONTAINER}" kubectl get nodes >/dev/null 2>&1; then
     break
   fi
   sleep 2
 done
-docker exec "${CONTAINER}" k3s kubectl get nodes >/dev/null
+docker exec "${CONTAINER}" kubectl get nodes >/dev/null
 docker cp "${CONTAINER}:/etc/rancher/k3s/k3s.yaml" "${KUBECONFIG_FILE}"
 sed -i 's#https://127.0.0.1:6443#https://127.0.0.1:6446#' "${KUBECONFIG_FILE}"
 export KUBECONFIG="${KUBECONFIG_FILE}"
