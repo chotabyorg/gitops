@@ -17,7 +17,9 @@ they are not silently relabeled as a fresh recheck.
 - allocatable and scheduled CPU, memory, and ephemeral-storage requests/limits;
 - exact GREEN Service name/port and generated certificate SANs after a licensed
   disposable reconciliation;
-- OIDC discovery URL, JWKS URL, DNS/routing result, and CA trust result.
 
 Until these facts are collected, the NetworkPolicy and Traefik backend TLS
 contracts remain reviewed templates only. Production mutation is forbidden.
+
+OIDC/JWKS is intentionally not listed as a P0 recheck gate. The owner accepted
+TokenReview; OIDC remains future RBAC hardening technical debt.

@@ -44,12 +44,13 @@ render. CI fails if an effective binding returns.
 
 ## TokenReview/OIDC decision
 
-Production OIDC discovery, JWKS routing, DNS, and CA trust could not be
-rechecked on 2026-08-12 because the authorized SSH endpoint timed out. The
-values therefore keep `tokenValidation: TokenReview` explicitly. Before
-activation, the owner must either prove supported OIDC behavior in a licensed
-disposable/production read-only check and rerender with `OIDC`, or retain this
-exact TokenReview exception and its rendered rules.
+The owner accepts `tokenValidation: TokenReview` as the production P0
+contract: it is the vendor-supported default and the exact remaining
+cluster-wide exception is rendered above. OIDC/JWKS discovery is optional
+future hardening, not a Ready-for-Review blocker. Technical debt:
+`Evaluate OIDC token validation to remove the remaining TokenReview
+cluster-wide RBAC exception.`
 
 The admission webhook remains enabled. It is not disabled to make the RBAC
-inventory look smaller; its TLS and resource contract are tested separately.
+inventory look smaller; its exact TLS and admission request contract is
+recorded in `ADMISSION_WEBHOOK_TLS_EVIDENCE_2026-08-12.md`.

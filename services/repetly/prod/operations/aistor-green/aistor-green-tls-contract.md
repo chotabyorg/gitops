@@ -14,8 +14,10 @@ Kustomization.
 
 The admission webhook is a fourth, distinct Kubernetes control-plane endpoint:
 its serving Secret is `object-store-webhook-tls`, and its issuing CA is supplied
-to the chart as `caBundle` only during the final out-of-band render. The
-placeholder in values is intentionally not deployable.
+to the chart as `caBundle` only during the final out-of-band render. The exact
+chart/image/runtime proof is recorded in
+`ADMISSION_WEBHOOK_TLS_EVIDENCE_2026-08-12.md`; the placeholder in values is
+intentionally not deployable.
 
 ## SAN and rotation contract
 
@@ -25,9 +27,11 @@ placeholder in values is intentionally not deployable.
 - `object-store-webhook-tls` must cover `object-store-webhook`,
   `object-store-webhook.prod.svc`, and
   `object-store-webhook.prod.svc.cluster.local`.
-- `repetly-aistor-green-tls` must cover the generated API Service DNS names;
-  the proposed Traefik `ServersTransport` uses
-  `repetly-aistor-green.prod.svc.cluster.local` as `serverName`.
+- `repetly-aistor-green-tls` must cover the generated API and headless Service
+  DNS names plus any StatefulSet peer names required by the exact licensed
+  reconciliation. The proposed Traefik `ServersTransport` uses
+  `repetly-aistor-green.prod.svc.cluster.local` as `serverName` only as an
+  inert candidate; it is not promoted to a verified final SNI.
 - The external certificate for `repetly-storage.chota.by` remains Traefik
   ACME/publicly trusted. No `insecureSkipVerify` or process-wide TLS bypass is
   permitted.
@@ -36,6 +40,7 @@ placeholder in values is intentionally not deployable.
   S3 health path and a presigned browser URL before cutover.
 
 The exact Traefik version, CRD support for `ServersTransport.rootCAsSecrets`,
-generated Service name/port, and production Pod labels still require a fresh
-read-only cluster check. SSH to the supplied host timed out on 2026-08-12;
+generated Service name/port, licensed server SANs, and production Pod labels
+still require a fresh read-only/owned disposable check. SSH to the supplied
+host timed out on 2026-08-12 and no current owner license was available;
 this contract therefore does not clear the production activation gate.
