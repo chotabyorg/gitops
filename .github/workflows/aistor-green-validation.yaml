@@ -37,8 +37,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          OUTPUT_DIR="${RUNNER_TEMP}/aistor-green" \
-            services/repetly/prod/operations/aistor-green/tests/validate-render.sh
+          OUTPUT_DIR="${RUNNER_TEMP}/aistor-green"
+          export OUTPUT_DIR
+          services/repetly/prod/operations/aistor-green/tests/validate-render.sh
           cat "${OUTPUT_DIR}/render-summary.md" >> "${GITHUB_STEP_SUMMARY}"
 
   networkpolicy-k3s:
