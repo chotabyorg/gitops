@@ -66,10 +66,17 @@ objectStore:
     minio:
       serviceType: ClusterIP
 
-  # The Operator issues internal service certificates. External registry TLS
-  # is terminated by Traefik; AIStor remains private ClusterIP during P0.
+  # AIStor server TLS is separate from Operator autocert and public Traefik
+  # TLS. The server certificate Secret is supplied out of band and must cover
+  # the generated Service DNS names documented in the TLS contract.
   certificates:
-    disableAutoCert: false
+    disableAutoCert: true
+    server:
+      - name: repetly-aistor-green-tls
+        type: kubernetes.io/tls
+    trustedCAs:
+      - name: aistor-operator-ca
+        type: opaque
 
   startup:
     httpGet:

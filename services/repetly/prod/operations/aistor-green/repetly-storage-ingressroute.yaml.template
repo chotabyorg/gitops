@@ -1,0 +1,21 @@
+# DRAFT CONTRACT ONLY. This preserves the existing public S3 hostname for
+# server-side calls and browser presigned URLs. BLUE owns this route before
+# cutover; GREEN owns it only after the reviewed Service cutover.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: repetly-storage
+  namespace: prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`repetly-storage.chota.by`)
+      kind: Rule
+      services:
+        - name: repetly-aistor-green
+          port: 9000
+          scheme: https
+          serversTransport: repetly-aistor-green@kubernetescrd
+  tls:
+    certResolver: le

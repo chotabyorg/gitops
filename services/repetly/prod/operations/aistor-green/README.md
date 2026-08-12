@@ -14,13 +14,19 @@ unchanged.
 - AIStor Free is single-node only: `servers: 1`, `volumesPerServer: 1`,
   independent `10Gi` RWO PVC, and `local-path`. The owner approved this P0
   topology; replicated/multi-node storage is follow-up technical debt.
-- The GREEN S3 Service remains private/ClusterIP until the reviewed endpoint
-  cutover. TLS, NetworkPolicy, resources, probes, PVC protection, and the
-  separate license Secret are mandatory.
+- The GREEN S3 Service remains ClusterIP behind the existing public
+  `repetly-storage.chota.by` route. BLUE owns that route before cutover and
+  GREEN owns it only after the reviewed BLUE/GREEN cutover. This is required
+  because one `S3_ENDPOINT` is used for server-side calls and browser
+  presigned URLs.
+- TLS, NetworkPolicy, resources, probes, PVC protection, and the separate
+  license Secret are mandatory.
 - `MINIO_API_AUTO_BUMP=off` is mandatory at first GREEN start.
 
 The production read-only facts are recorded in
 [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
+The attempted current recheck and its external SSH blocker are recorded in
+[`PRODUCTION_READONLY_RECHECK_2026-08-12.md`](./PRODUCTION_READONLY_RECHECK_2026-08-12.md).
 The target is one amd64 k3s node with 4 CPU and about 7.75Gi allocatable
 memory. BLUE currently uses a separate 10Gi RWO `local-path` PVC; its exact
 inventory is one object / 356134 bytes, while the node has 116G free. The
@@ -38,14 +44,41 @@ selected AIStor image path is the owner-approved immutable Zot tag at
 | GREEN PVC size | `10Gi`, independent from BLUE | Resolved; matches approved single-node capacity baseline |
 | Active server image | `registry.chota.by/aistor/minio:aistor-minio-e8394b040720`; source amd64 digest `sha256:e8394b...16a1` | Approved conditional Zot path; source/destination/Pod imageID equality required |
 | Operator / sidecar images | exact linux/amd64 child pins in values | Resolved candidates; render/scan evidence remains before activation |
-| Resources/probes | MinIO `500m/768Mi` → `1 CPU/1Gi`; sidecar `50m/32Mi` → `100m/128Mi`; Operator/webhook `200m/256Mi` → `500m/256Mi` | Resolved conservative cap from current headroom and lower-env observations |
-| S3/TLS endpoint | private ClusterIP, AIStor internal auto-cert; no external GREEN cutover | Resolved P0 path; clients use reviewed in-cluster HTTPS service DNS |
-| NetworkPolicy | K3s embedded kube-router enabled; exact `prod`/scanner/operator/CoreDNS/API selectors rendered | Resolved contract; first rollout must verify route and webhook source |
-| License/config/pull Secrets | `minio-license:minio.license`, `repetly-aistor-green-env:config.env`, `aistor-zot-puller:.dockerconfigjson` | Names/keys resolved; values remain out-of-band |
+| Resources/probes | MinIO `500m/768Mi` → `1 CPU/1Gi`; sidecar `50m/32Mi` → `100m/128Mi`; Operator/webhook `200m/256Mi/500Mi ephemeral` → `500m/256Mi/500Mi ephemeral` | Candidate scheduler budget is rendered; fresh node requests/ephemeral inventory remains required |
+| Operator RBAC/TLS | `watchedNamespaces: [prod]`, `optOutAutomaticCertificates: true`, explicit TokenReview, OOB Operator/admission TLS | Rendered contract PASS; OIDC and production Secret/CA availability remain external gates |
+| AIStor server TLS | `disableAutoCert: true`, OOB `repetly-aistor-green-tls`, Traefik `ServersTransport` with OOB CA | Template contract; exact Traefik CRD/version/SAN check remains required |
+| S3/TLS endpoint | `https://repetly-storage.chota.by` → Traefik `websecure` → GREEN Service HTTPS | Public hostname preserved for Repetly and browser presigned URLs; BLUE owns route before cutover |
+| NetworkPolicy | Traefik→GREEN public path, Operator→GREEN internal path, CoreDNS/API egress | Exact Traefik Pod labels and real CNI enforcement still require verification |
+| License/config/pull/TLS Secrets | `minio-license:minio.license`, `repetly-aistor-green-env:config.env`, `aistor-zot-puller:.dockerconfigjson`, four OOB TLS/CA contracts | Names/keys resolved; values remain out-of-band |
 | Migration/rollback | BLUE → GREEN validation → freeze/final delta → Service cutover; BLUE remains rollback source | Architecture accepted; no migration executed |
 
 The full sanitized evidence is in
 [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
+
+Fix C rendered/resource evidence is in
+[`RESOURCE_AND_ROLLOUT_CONTRACT_2026-08-12.md`](./RESOURCE_AND_ROLLOUT_CONTRACT_2026-08-12.md)
+and the TLS separation is in
+[`aistor-green-tls-contract.md`](./aistor-green-tls-contract.md).
+
+## Fix C current gate
+
+- `optOutAutomaticCertificates: true` removes the effective
+  `aistor-object-store-certificate-management` ClusterRoleBinding. The chart
+  still renders the auditable ClusterRole, but no service account receives it.
+- TokenReview remains explicit because production OIDC discovery/JWKS and CA
+  trust could not be rechecked. The exact remaining cluster-wide exception is
+  the vendor `aistor-object-store-cluster` binding (`nodes/get`, CRD `get`,
+  and TokenReview binding management) plus the webhook cluster binding
+  (`nodes/list`, mutating webhook configuration update).
+- The admission webhook remains enabled. It is not disabled to hide RBAC; its
+  custom serving Secret and out-of-band CA bundle are a separate contract.
+- The exact chart render and before/after RBAC inventory are generated by
+  `tests/validate-render.sh`. It downloads both chart packages and verifies
+  their SHA-256 values before rendering.
+- The final public S3 path is represented by
+  `repetly-storage-ingressroute.yaml.template` and
+  `aistor-servers-transport.yaml.template`; no insecure backend TLS bypass is
+  permitted.
 
 ## Pinned vendor chart inputs
 
@@ -220,7 +253,7 @@ Functional lower-env NetworkPolicy evidence:
   production namespace, client labels, DNS path, and API-server CIDR are
   reviewed.
 
-Resource/probe observation and next contract:
+Historical resource/probe observation and next contract (2026-08-11):
 
 - Operator and webhook requests rendered as `200m` CPU, `256Mi` memory, and
   `500Mi` ephemeral-storage. The webhook had HTTPS `/healthz` readiness and
@@ -461,15 +494,14 @@ With the lower-env probe/resource render active and ObjectStore
 - Operator reconciliation remained healthy and the ObjectStore stayed
   `2/2 Running`.
 
-The committed NetworkPolicy remains inert. Its selectors use the read-only
-production facts: Repetly `app: repetly`, scanner
-`app.kubernetes.io/name: repetly-file-scanner`, Operator
-`aistor.min.io/name: object-store-operator`, CoreDNS `k8s-app: kube-dns`, and
-the observed K3s API node `153.80.244.178/32`. K3s embedded kube-router
-NetworkPolicy enforcement is enabled. The disposable AIStor kind node was
-`linux/arm64`; use the reviewed amd64 child digests for production.
+The committed NetworkPolicy at that historical point used direct Repetly and
+scanner selectors. Fix C replaces those selectors with the final public
+Traefik path; the exact production Traefik label still requires a fresh
+read-only check. K3s embedded kube-router enforcement was recorded as enabled
+on 2026-08-11. The disposable AIStor kind node was `linux/arm64`; use the
+reviewed amd64 child digests for production.
 
-### Fresh local review verdict — 2026-08-11
+### Historical local review verdict — 2026-08-11
 
 | Class | Finding | Disposition |
 | --- | --- | --- |
@@ -478,10 +510,10 @@ NetworkPolicy enforcement is enabled. The disposable AIStor kind node was
 | MINOR | Kind Metrics API is unavailable; lower-env CPU observations are cumulative cgroup samples | Do not treat lower-env samples as sizing; collect target-cluster metrics in preflight. |
 | TECH DEBT | Exact vendor source for the proprietary Operator is not present in the chart archive | Retain chart/CRD/binary log evidence and request vendor source/release confirmation; no vendor code changes. |
 
-The local design review has no native-parser BLOCKER because the owner-approved
-Zot fallback is fully specified. Ready for Review still depends on the
-GitHub-hosted x64 Zot workflow and final rendered chart/schema review; this
-branch remains inert and production was not mutated.
+That verdict predates Fix C and is retained as historical evidence. The current
+gate additionally requires rendered RBAC/TLS, public S3/Traefik trust, current
+resource inventory, production labels, real-CNI NetworkPolicy CI, and the
+current-head validation workflows.
 
 ## Active HIGH reachability dispositions
 
@@ -592,16 +624,21 @@ run generic troubleshooting containers.
 1. Review the collected facts in
    `PRODUCTION_READONLY_FACTS_2026-08-11.md` against the procedural checklist
    in `PRODUCTION_READONLY_PREFLIGHT.md`; never commit secret values.
-2. Verify the resolved capacity/StorageClass values (`10Gi`, `local-path`) and
+2. Verify the current read-only recheck in
+   `PRODUCTION_READONLY_RECHECK_2026-08-12.md`, including exact Traefik labels,
+   Traefik version/ServersTransport support, OIDC discovery/JWKS, and fresh
+   requests/limits/ephemeral-storage data.
+3. Verify the resolved capacity/StorageClass values (`10Gi`, `local-path`) and
    confirm that the GREEN PVC is independent from `repetly-minio-data`.
-3. Provide a separately sealed license Secret and object-store config Secret.
-4. Re-check the official client feed before migration, then use either a newer
+4. Provide separately sealed license, object-store config, Operator TLS,
+   admission webhook TLS/CA, AIStor server TLS, and Traefik root CA Secrets.
+5. Re-check the official client feed before migration, then use either a newer
    clean client or this owner-accepted client only in a separate immutable
    one-shot Job/package; never enable the Operator AdminJob subsystem.
-5. Render the exact chart versions and all dependent images; verify CRDs,
+6. Render the exact chart versions and all dependent images; verify CRDs,
    RBAC, TLS, NetworkPolicy, probes, resources, PVC finalizers, and Service
    selectors in a disposable lower environment.
-6. Keep this directory absent from the active production Kustomization until a
+7. Keep this directory absent from the active production Kustomization until a
    separate owner-approved activation PR. Migration remains BLUE/GREEN:
    preflight → GREEN provision → initial reconcile → write freeze/final delta →
    Service to GREEN → bake. Rollback after GREEN writes is freeze →

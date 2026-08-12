@@ -1,0 +1,12 @@
+# DRAFT CONTRACT ONLY. Inert until the GREEN Service name/selector and CA
+# Secret are verified from the exact ObjectStore reconciliation output.
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: repetly-aistor-green
+  namespace: prod
+spec:
+  # The ObjectStore controller generates the API Service from objectStore.name.
+  serverName: repetly-aistor-green.prod.svc.cluster.local
+  rootCAsSecrets:
+    - repetly-aistor-green-ca

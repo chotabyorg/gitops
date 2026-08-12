@@ -12,10 +12,19 @@ global:
     replicas: 1
     imagePullPolicy: IfNotPresent
     # Namespace-scoped watch keeps this P0 from reconciling unrelated CRs.
-    # The chart's automatic certificate/RBAC behavior must be verified during
-    # the rendered install review before any activation.
     watchedNamespaces:
       - prod
+    # Do not grant the Operator's CSR signer/approval ClusterRole to the
+    # prod-scoped service accounts. Operator and webhook TLS are supplied by
+    # the out-of-band Secret contracts documented beside this file.
+    optOutAutomaticCertificates: true
+    # The upgrade webhook is distinct from the admission webhook below.
+    # Secret values and CA material remain out of Git.
+    extraEnv:
+      - name: OPERATOR_AUTO_CERT_DISABLED
+        value: "on"
+      - name: OPERATOR_CUSTOM_TLS_SECRET_NAME
+        value: object-store-operator-tls
     imagePullSecrets:
       - name: aistor-zot-puller
     resources:
@@ -36,9 +45,20 @@ operators:
     disabled: true
   object-store:
     disabled: false
+    # Production k3s OIDC discovery/JWKS reachability and CA trust have not
+    # been re-verified in this read-only session. Keep the vendor-supported
+    # TokenReview path and document its exact bounded cluster-wide exception.
+    tokenValidation: TokenReview
     webhook:
       enabled: true
       replicas: 1
+      # Admission webhook TLS is separate from the Operator upgrade webhook.
+      # The CA bundle is injected at the final out-of-band render; this
+      # fail-closed placeholder must never be applied as-is.
+      caBundle: "__BASE64_CA_BUNDLE_SET_AT_ACTIVATION__"
+      extraEnv:
+        - name: WEBHOOK_CUSTOM_TLS_SECRET_NAME
+          value: object-store-webhook-tls
   prompt:
     disabled: true
   warp:

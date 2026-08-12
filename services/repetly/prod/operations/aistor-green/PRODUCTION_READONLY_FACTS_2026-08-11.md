@@ -67,10 +67,11 @@ path, or the Repetly bucket.
 - Conservative resources are MinIO requests `500m/768Mi`, limits `1 CPU/1Gi`;
   sidecar `50m/32Mi` → `100m/128Mi`; Operator/webhook requests
   `200m/256Mi/500Mi ephemeral`, limits `500m/256Mi/500Mi ephemeral`.
-- Current point-in-time headroom is 312m CPU (7%) and 5671Mi memory (71%) of
-  4 CPU/8127796Ki allocatable; scheduled requests/limits are 300m/1 CPU and
-  396Mi/1194Mi. The proposed cap leaves a small memory margin and requires
-  post-rollout observation.
+- Current point-in-time **observed usage** was 312m CPU (7%) and 5671Mi memory
+  (71%) of 4 CPU/8127796Ki allocatable; this is not scheduler headroom.
+  Separately recorded scheduled requests/limits are 300m/1 CPU and
+  396Mi/1194Mi. The proposed candidate budget and rollout floor are defined in
+  `RESOURCE_AND_ROLLOUT_CONTRACT_2026-08-12.md`.
 - No existing Velero/restic/off-host backup path was found. P0 DR is
   deterministic rehydration from the exact digest ledger, target RPO 24h/RTO
   2h; off-host snapshots are follow-up work.
