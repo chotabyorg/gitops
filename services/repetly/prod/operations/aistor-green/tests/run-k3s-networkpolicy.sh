@@ -34,6 +34,13 @@ export KUBECONFIG="${KUBECONFIG_FILE}"
 
 kubectl wait --for=condition=Ready node --all --timeout=120s
 kubectl get nodes -o wide
+for _ in {1..60}; do
+  if kubectl -n kube-system get deployment coredns >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
+kubectl -n kube-system rollout status deployment/coredns --timeout=120s
 kubectl -n kube-system get pods -l k8s-app=kube-dns
 
 kubectl create namespace registry --dry-run=client -o yaml | kubectl apply -f -
