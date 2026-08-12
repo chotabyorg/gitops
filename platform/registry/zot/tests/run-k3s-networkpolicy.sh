@@ -33,6 +33,13 @@ sed -i 's#https://127.0.0.1:6443#https://127.0.0.1:6446#' "${KUBECONFIG_FILE}"
 export KUBECONFIG="${KUBECONFIG_FILE}"
 
 kubectl wait --for=condition=Ready node --all --timeout=120s
+for _ in {1..60}; do
+  if kubectl -n kube-system get deployment coredns >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
+kubectl -n kube-system rollout status deployment/coredns --timeout=120s
 kubectl -n kube-system get pods -l k8s-app=kube-dns
 kubectl create namespace registry --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace np-forbidden --dry-run=client -o yaml | kubectl apply -f -
