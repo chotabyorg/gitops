@@ -85,6 +85,27 @@ kubectl -n prod create secret tls object-store-webhook-tls \
   --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl apply -f "${RENDERED_OPERATOR}"
+cat <<'YAML' | kubectl apply -f - >/dev/null
+apiVersion: aistor.min.io/v1
+kind: ObjectStore
+metadata:
+  name: repetly-aistor-green
+  namespace: prod
+spec:
+  pools:
+    - name: pool-0
+      servers: 1
+      volumesPerServer: 1
+      volumeClaimTemplate:
+        metadata:
+          name: data
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          storageClassName: local-path
+          resources:
+            requests:
+              storage: 1Gi
+YAML
 CA_BUNDLE="$(base64 -w0 < "${WORK_DIR}/ca.crt")"
 kubectl patch mutatingwebhookconfiguration object-store-operator-webhook \
   --type=json \
