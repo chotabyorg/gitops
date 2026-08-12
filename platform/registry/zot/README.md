@@ -84,21 +84,22 @@ image-pull path.
 | Contract | Current production-specific value | Readiness |
 | --- | --- | --- |
 | Node/platform | one `linux/amd64` k3s node | Resolved |
-| Zot image | `ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5` | Exact amd64 candidate; GitHub x64 acceptance remains |
+| Zot image | `ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5` | Exact amd64 candidate; current-head acceptance required after Fix C |
 | Namespace | `registry` | Resolved in inert templates; creation is rollout-time |
 | Registry storage | `local-path`, node-local, reclaim `Delete` | Owner-approved P0; replicated storage is follow-up debt |
 | Registry PVC size | `10Gi` | Resolved; exact active footprint is 145455137 compressed bytes |
 | Resources | requests `100m/256Mi`, limits `250m/384Mi` | Resolved conservative single-node budget |
 | Endpoint | `registry.chota.by` → Traefik `websecure` → `registry/zot-registry:5000` | Resolved rollout contract; DNS/ACME prerequisite |
-| TLS/trust | Traefik ACME `certResolver: le`; Zot backend is ClusterIP HTTP | Resolved preferred model; no containerd CA file when public trust works |
-| NetworkPolicy | embedded kube-router enabled; Traefik ingress and CoreDNS egress selectors rendered | Resolved selectors; route rollout must verify enforcement |
+| TLS/trust | Traefik ACME `certResolver: le`; Zot backend is ClusterIP HTTP | Preferred model; exact Traefik version/labels and containerd public trust remain rollout gates |
+| NetworkPolicy | embedded kube-router enabled; Traefik ingress and CoreDNS egress selectors rendered | Synthetic real-k3s enforcement workflow added; production Traefik labels still require fresh read-only verification |
 | Auth model | publisher `read/create`; puller `read`; break-glass admin separate; anonymous deny | Contract resolved; identity names and Secret delivery remain out-of-band |
 | Backup/RPO/RTO | deterministic rehydration from exact digest ledger; target RPO 24h/RTO 2h | Resolved P0; off-host snapshot is follow-up debt |
 | Availability | one replica is the only viable current shape on one node | Owner-approved conditional P0; cached pulls may continue during outage |
 
 This ledger deliberately leaves unresolved values fail-closed rather than
 inventing production infrastructure. The exact evidence and owner actions are
-in [`PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md`](./PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md)
+in [`PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md`](./PRODUCTION_PREFLIGHT_ACCESS_2026-08-11.md),
+[`PRODUCTION_READONLY_RECHECK_2026-08-12.md`](./PRODUCTION_READONLY_RECHECK_2026-08-12.md),
 and [`backup-restore-runbook.md`](./backup-restore-runbook.md).
 
 ## Identity contract
@@ -183,21 +184,27 @@ access or secrets. The previous local attempt was architecture-invalid and is
 retained as negative evidence; see
 [`ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md`](./ZOT_AMD64_K8S_ACCEPTANCE_2026-08-11.md).
 
-The GitHub-hosted run [31521568936](https://github.com/chotabyorg/gitops/actions/runs/31521568936)
+The historical pre-Fix-C run [31521568936](https://github.com/chotabyorg/gitops/actions/runs/31521568936)
 passed on `ubuntu-24.04` with node `amd64`, exact Zot Pod imageID
 `ghcr.io/project-zot/zot@sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5`,
 health probes `200/200/200`, ACL negatives `403/403/403/401`, and PVC
 persistence after Pod recreation. kind default CNI did not enforce
 NetworkPolicy; that limitation is recorded explicitly.
-The local rehearsals use synthetic values and do not
-approve production selectors, storage, TLS, image-pull reachability, or
-resources.
+The local rehearsals use synthetic values and do not approve production
+selectors, storage, TLS, image-pull reachability, or resources. Fix C adds a
+separate `zot-k3s-networkpolicy.yaml` workflow using production-major/minor
+k3s and embedded kube-router semantics. A fresh current-head amd64 acceptance
+and this real-CNI workflow must pass before the PR can leave Draft.
 
 The multi-architecture index is documented for candidate selection only.
 Production is amd64, so the final workload must use the exact child digest
 `sha256:95a837a0afacf5b7edc0c92493f04beee6891989b8d2fd50a00cf65a1e6d4fd5`.
 The abbreviated Kubernetes acceptance and final Pod `imageID` equality are
-recorded by that workflow before Ready for Review.
+recorded by the current-head workflow before Ready for Review. The kind binary
+is now verified against SHA-256
+`50030de23cf40a18505f20426f6a8506bedf13c6e509244bd1fa9463721b0f54`, and the
+node image is pinned to
+`kindest/node:v1.35.5@sha256:ce977ae6d65918d0b58a5f8b5e940429c2ce42fa3a5619ec2bbc60b949c0ac95`.
 
 ## Required disposable/lower-environment acceptance
 

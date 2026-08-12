@@ -23,9 +23,10 @@ jobs:
         run: |
           set -euo pipefail
           KIND_VERSION=v0.32.0
-          curl --fail --silent --show-error --location \
-            "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" \
-            --output /tmp/kind
+          KIND_SHA256=50030de23cf40a18505f20426f6a8506bedf13c6e509244bd1fa9463721b0f54
+          KIND_URL="https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
+          curl --fail --silent --show-error --location "${KIND_URL}" --output /tmp/kind
+          printf '%s  %s\n' "${KIND_SHA256}" /tmp/kind | sha256sum --check --status
           sudo install -m 0755 /tmp/kind /usr/local/bin/kind
           kind version
 
@@ -52,7 +53,8 @@ jobs:
           trap cleanup EXIT
 
           kind create cluster --name "${KIND_CLUSTER}" \
-            --image kindest/node:v1.35.5 --wait 120s
+            --image kindest/node:v1.35.5@sha256:ce977ae6d65918d0b58a5f8b5e940429c2ce42fa3a5619ec2bbc60b949c0ac95 \
+            --wait 120s
           kubectl config use-context "kind-${KIND_CLUSTER}"
           kubectl wait --for=condition=Ready node --all --timeout=120s
 

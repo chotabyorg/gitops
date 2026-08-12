@@ -44,7 +44,7 @@ semantics. kind's default CNI does not enforce NetworkPolicy, so the workflow
 reports enforcement as unavailable rather than claiming a negative network
 test; production enforcement is separately evidenced by K3s chains.
 
-## Recorded run — 2026-08-11
+## Historical recorded run — 2026-08-11 (pre-Fix C)
 
 - Workflow run: [31521568936](https://github.com/chotabyorg/gitops/actions/runs/31521568936)
 - Commit: `f070f8200de201368cd9cede9ce37b7c6a5fa2d8`
@@ -82,5 +82,7 @@ StatefulSet:
 | PVC persistence | tag and digest survive Pod/PVC recreation |
 | Pod imageID | exact equality with `sha256:95a837...e6d4fd5` |
 
-Until this passes on the GitHub-hosted amd64 node, PR #48 must remain Draft and
-issue #47 must remain In Progress.
+That run passed the pre-Fix-C amd64 contract. After Fix C, the same workflow
+must pass again on the current head, together with the real-k3s embedded
+kube-router NetworkPolicy workflow, before PR #48 can leave Draft and issue #47
+can leave In Progress.
