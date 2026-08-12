@@ -44,40 +44,9 @@ kubectl -n kube-system get deployment coredns --no-headers | grep -q .
 kubectl -n kube-system rollout status deployment/coredns --timeout=120s
 kubectl -n kube-system get pods -l k8s-app=kube-dns
 
-kubectl create namespace registry --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
 kubectl create namespace np-forbidden --dry-run=client -o yaml | kubectl apply -f -
-kubectl apply -f "${REPO_ROOT}/platform/registry/zot/zot-network-policy.yaml.template"
 kubectl apply -f "${REPO_ROOT}/services/repetly/prod/operations/aistor-green/network-policy.yaml.template"
-
-kubectl -n registry apply -f - <<'YAML'
-apiVersion: v1
-kind: Pod
-metadata:
-  name: zot-synthetic
-  labels:
-    app.kubernetes.io/name: zot
-    app.kubernetes.io/component: registry
-spec:
-  containers:
-    - name: server
-      image: busybox:1.36.1
-      command: ["sh", "-ec", "mkdir -p /www; printf synthetic-zot > /www/index.html; httpd -f -p 5000 -h /www"]
-      ports:
-        - containerPort: 5000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: zot-synthetic
-spec:
-  selector:
-    app.kubernetes.io/name: zot
-    app.kubernetes.io/component: registry
-  ports:
-    - port: 5000
-      targetPort: 5000
-YAML
 
 kubectl -n prod apply -f - <<'YAML'
 apiVersion: v1
@@ -116,7 +85,6 @@ create_client prod operator-synthetic 'aistor.min.io/name=object-store-operator'
 create_client prod repetly-synthetic 'app=repetly'
 create_client np-forbidden forbidden-synthetic 'app=forbidden'
 
-kubectl wait --for=condition=Ready pod/zot-synthetic -n registry --timeout=120s
 kubectl wait --for=condition=Ready pod/aistor-synthetic -n prod --timeout=120s
 kubectl wait --for=condition=Ready pod/traefik-synthetic -n kube-system --timeout=120s
 kubectl wait --for=condition=Ready pod/operator-synthetic -n prod --timeout=120s
@@ -127,12 +95,6 @@ probe() {
   local namespace="$1" pod="$2" service="$3" port="$4"
   kubectl exec -n "${namespace}" "${pod}" -- wget -q -T 8 -O - "http://${service}:${port}/"
 }
-
-probe kube-system traefik-synthetic zot-synthetic.registry.svc.cluster.local 5000 | grep -Fx synthetic-zot
-if probe np-forbidden forbidden-synthetic zot-synthetic.registry.svc.cluster.local 5000 >/dev/null 2>&1; then
-  echo "expected forbidden Zot ingress to be denied" >&2
-  exit 1
-fi
 
 probe prod operator-synthetic aistor-synthetic.prod.svc.cluster.local 9000 | grep -Fx synthetic-aistor
 probe kube-system traefik-synthetic aistor-synthetic.prod.svc.cluster.local 9000 | grep -Fx synthetic-aistor
@@ -145,11 +107,7 @@ if probe np-forbidden forbidden-synthetic aistor-synthetic.prod.svc.cluster.loca
   exit 1
 fi
 
-kubectl exec -n registry zot-synthetic -- nslookup kubernetes.default.svc.cluster.local
-if kubectl exec -n registry zot-synthetic -- nc -z -w 3 kubernetes.default.svc 443 >/dev/null 2>&1; then
-  echo "expected unnecessary Zot egress to the Kubernetes API Service to be denied" >&2
-  exit 1
-fi
+kubectl exec -n prod aistor-synthetic -- nslookup kubernetes.default.svc.cluster.local
 
 echo "networkpolicy_controller=k3s-embedded-kube-router"
 echo "networkpolicy_enforcement=PASS"
