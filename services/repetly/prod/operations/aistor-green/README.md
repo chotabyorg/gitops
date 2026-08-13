@@ -29,9 +29,12 @@ The fresh owner-authorized recheck is recorded in
 [`PRODUCTION_READONLY_RECHECK_2026-08-13.md`](./PRODUCTION_READONLY_RECHECK_2026-08-13.md);
 the 2026-08-12 SSH-timeout file is retained as historical evidence.
 The target is one amd64 k3s node with 4 CPU and about 7.75Gi allocatable
-memory. BLUE currently uses a separate 10Gi RWO `local-path` PVC; its exact
-inventory is one object / 356134 bytes, while the node has 116G free. The
-selected AIStor image path is the owner-approved immutable Zot tag at
+memory. A historical BLUE inventory recorded one object / 356134 bytes; those
+values are evidence of the old snapshot only, not future migration expectations.
+The rollout operator must collect a fresh BLUE baseline immediately before
+initial copy and again after the write freeze. BLUE uses a separate 10Gi RWO
+`local-path` PVC. The selected AIStor image path is the owner-approved
+immutable Zot tag at
 `registry.chota.by`; K3s embedded NetworkPolicy enforcement is enabled.
 
 ## Production design ledger
@@ -51,7 +54,149 @@ selected AIStor image path is the owner-approved immutable Zot tag at
 | S3/TLS endpoint | `https://repetly-storage.chota.by` → Traefik `websecure` → GREEN Service HTTPS | Public hostname preserved for Repetly and browser presigned URLs; BLUE owns route before cutover |
 | NetworkPolicy | Traefik→GREEN public path, Operator→GREEN internal path, CoreDNS/API egress | Live Traefik/CoreDNS labels and kube-router enforcement revalidated read-only |
 | License/config/pull/TLS Secrets | `minio-license:minio.license`, `repetly-aistor-green-env:config.env`, `aistor-zot-puller:.dockerconfigjson`, four OOB TLS/CA contracts | Names/keys resolved; values remain out-of-band |
-| Migration/rollback | BLUE → GREEN validation → freeze/final delta → Service cutover; BLUE remains rollback source | Architecture accepted; no migration executed |
+| Migration/rollback | Explicit baseline/copy/reconciliation, write freeze/final delta, health gate, and reverse-sync rollback contract below | Inert; no migration or cutover executed |
+
+## Migration verification and cutover acceptance contract
+
+This is a fail-closed rollout contract. It is documentation only: this Draft
+does not copy objects, freeze writes, change the public route, enable storage,
+or activate the scanner.
+
+### Pre-migration BLUE baseline
+
+Immediately before the initial copy, the rollout operator must capture a
+sanitized BLUE acceptance snapshot containing:
+
+- bucket name;
+- exact object count;
+- exact total logical bytes;
+- the exact set of object keys;
+- each object's logical size;
+- each object's content-integrity value.
+
+The historical `1` object / `356134` bytes snapshot above must not be used as
+the expected rollout value. The current baseline is always collected from BLUE
+at the time of the approved migration.
+
+### Content-integrity and reconciliation method
+
+The approved one-shot migration/verification client or process must stream
+each BLUE and GREEN object body into a cryptographic SHA-256 calculation. It
+must not log object content or persist object bodies merely for verification.
+Sanitized evidence may retain only a key-safe identifier, logical size, and
+digest. ETag may be recorded as supplemental evidence, but it is never the
+sole universal integrity gate because multipart and server-side encryption
+semantics can make ETag differ from content MD5.
+
+For every BLUE object, GREEN must contain the same key, logical size, and
+SHA-256 content digest. Every reconciliation must report:
+
+- key-set mismatch count;
+- size mismatch count;
+- integrity mismatch count;
+- missing object count;
+- unexpected GREEN object count.
+
+Any non-zero mismatch, missing object, or unexpected GREEN object is
+`STOP / NO CUTOVER`.
+
+### Initial copy sequence
+
+The approved sequence is:
+
+1. Collect the fresh BLUE pre-copy baseline above.
+2. Provision GREEN and prove its runtime health.
+3. Perform the initial BLUE → GREEN copy without changing BLUE.
+4. Reconcile the complete key set, object count, total logical bytes, per-object
+   sizes, and per-object SHA-256 integrity.
+5. Stop without route change if any reconciliation result is non-zero.
+
+### Write freeze and final delta
+
+Before final migration, the rollout operator must establish the application
+and storage write freeze and prove that no new writes are admitted. Then:
+
+1. Collect a fresh frozen BLUE baseline.
+2. Perform the final BLUE → GREEN delta.
+3. Repeat the complete key-set, count, byte, per-object size, and SHA-256
+   reconciliation.
+
+Final acceptance requires all of the following:
+
+```text
+BLUE object count                 == GREEN object count
+BLUE total logical bytes          == GREEN total logical bytes
+BLUE key set                      == GREEN key set
+per-object integrity mismatches  == 0
+missing objects                   == 0
+unexpected GREEN objects         == 0
+```
+
+Any failed equality or non-zero count is `NO ROUTE CUTOVER`.
+
+### GREEN pre-cutover health gate
+
+The migration reconciliation must pass together with these GREEN gates before
+the public Traefik backend is changed:
+
+- ObjectStore `status.currentState=Initialized`;
+- ObjectStore `status.healthStatus=green`;
+- ObjectStore `status.setup=100`;
+- every pool reports `PoolCreated` and the expected running server count;
+- every expected container is Ready, with no Pending or CrashLoopBackOff and
+  no unexpected restart during the reviewed observation window;
+- `/minio/health/live`, `/minio/health/ready`, and
+  `/minio/health/cluster` each return HTTP 200 over the reviewed verified TLS
+  path;
+- the production Pod imageID matches the approved official-source digest →
+  Zot digest → production imageID invariant;
+- the separately approved S3 contract, application IAM contract, and scanner
+  IAM contract all pass.
+
+Only after every gate passes may the separately approved rollout switch
+`repetly-storage.chota.by` from BLUE to GREEN.
+
+### Sanitized cutover acceptance record
+
+Before cutover, capture a sanitized record containing:
+
+- timestamp;
+- BLUE and GREEN object counts;
+- BLUE and GREEN total logical bytes;
+- key-set, size, integrity, missing-object, and unexpected-object mismatch
+  counts;
+- GREEN health/status summary;
+- exact production GREEN imageID;
+- source/Zot digest reconciliation result;
+- operator identity performing the gate;
+- explicit `PASS`/`FAIL` decision.
+
+The record must contain no Secret values, object contents, credentials,
+license bytes, or signed URLs. Cutover requires an explicit `PASS`.
+
+### Storage and scanner activation boundary
+
+Changing the public route to GREEN does not authorize removal of the
+storage-disabled rollback patch, application S3 credential activation,
+scanner activation, `FILE_SCANNER_URL` activation, or closing #112. After a
+GREEN route cutover, storage QA must be performed separately with synthetic QA
+data: verify public/presigned S3 flows, expected TLS behavior, and object
+read/write behavior; verify scanner integration separately; then obtain an
+explicit QA/sign-off. Only a separate activation change may enable production
+storage or scanner behavior. #112 remains Ready for Test until that QA/sign-off.
+
+### Rollback and reverse-sync contract
+
+If cutover fails before any accepted GREEN-only production writes, route back
+to BLUE, verify BLUE health and data, and reopen writes only after that
+verification.
+
+If GREEN accepted writes after cutover, first freeze writes. Reverse-sync
+GREEN → BLUE, then repeat the same key-set, count, byte, per-object size, and
+per-object SHA-256 integrity reconciliation. Require zero mismatches, missing
+objects, and unexpected objects; switch the route to BLUE; verify BLUE health
+and the public path; only then reopen writes. Never route to stale BLUE and
+reopen writes without successful reconciliation.
 
 The historical sanitized evidence is in
 [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
@@ -637,7 +782,7 @@ run generic troubleshooting containers.
    `PRODUCTION_READONLY_FACTS_2026-08-11.md` against the procedural checklist
    in `PRODUCTION_READONLY_PREFLIGHT.md`; never commit secret values.
 2. Verify the current read-only recheck in
-   `PRODUCTION_READONLY_RECHECK_2026-08-12.md`, including exact Traefik labels,
+   `PRODUCTION_READONLY_RECHECK_2026-08-13.md`, including exact Traefik labels,
    Traefik version/ServersTransport support, and fresh
    requests/limits/ephemeral-storage data. OIDC/JWKS is future hardening, not
    a P0 Ready gate.
@@ -651,15 +796,16 @@ run generic troubleshooting containers.
 6. Render the exact chart versions and all dependent images; verify CRDs,
    RBAC, TLS, NetworkPolicy, probes, resources, PVC finalizers, and Service
    selectors in a disposable lower environment.
-7. Repeat the full licensed ObjectStore TLS rehearsal when the owner-provided
-   license is available through the approved secure path; do not promote
-   generated Service names, SANs, or Traefik SNI from an unlicensed run.
+7. Before production cutover, repeat the full licensed ObjectStore/TLS
+   reconciliation on native `linux/amd64`, or obtain equivalent
+   production-platform proof during the separately approved rollout rehearsal.
+   The fresh 2026-08-13 licensed rehearsal passed on native `linux/arm64`;
+   its Service/SAN/SNI evidence is not incorrectly promoted as amd64 proof.
 8. Keep this directory absent from the active production Kustomization until a
-   separate owner-approved activation PR. Migration remains BLUE/GREEN:
-   preflight → GREEN provision → initial reconcile → write freeze/final delta →
-   Service to GREEN → bake. Rollback after GREEN writes is freeze →
-   reverse-sync GREEN → BLUE → reconcile → `Service → BLUE` before writes
-   reopen.
+   separate owner-approved activation PR. Follow the complete
+   [migration verification and cutover acceptance contract](#migration-verification-and-cutover-acceptance-contract),
+   including per-object SHA-256 reconciliation, explicit GREEN health gates,
+   storage/scanner separation, and reverse-sync rollback.
 
 No production cluster, PVC, license, Service, IAM, or storage data is touched
 by this Draft.
