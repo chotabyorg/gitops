@@ -337,9 +337,10 @@ controller.
 The chart license contract was verified from the template: `license: ""`
 creates no license Secret, while a non-empty value would create
 `minio-license` with key `minio.license` in the Operator release namespace.
-The draft's out-of-band Secret contract uses that exact name/key, but its
-The production contract resolves the Operator release/watch scope to `prod`;
-the value remains inert until the rendered RBAC/certificate review.
+The out-of-band Secret contract uses that exact name/key and remains out of
+band; no license value is committed. The production Operator release/watch
+scope is resolved to `prod`. Rendered RBAC/TLS validation has passed, while
+production activation remains gated by a separate approved rollout.
 
 All direct scans above used Trivy `0.72.0`, the pinned scanner image, the
 public ECR vulnerability database, HIGH/CRITICAL severity, and no
