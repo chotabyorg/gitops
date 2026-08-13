@@ -17,3 +17,5 @@ spec:
           port: 5000
   tls:
     certResolver: le
+    domains:
+      - main: registry.chota.by
