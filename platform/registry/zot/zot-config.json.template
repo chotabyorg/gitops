@@ -1,0 +1,48 @@
+{
+  "distSpecVersion": "1.1.1",
+  "storage": {
+    "rootDirectory": "/var/lib/zot"
+  },
+  "http": {
+    "address": "0.0.0.0",
+    "port": "5000",
+    "auth": {
+      "htpasswd": {
+        "path": "/etc/zot/auth/htpasswd"
+      }
+    },
+    "accessControl": {
+      "repositories": {
+        "aistor/**": {
+          "anonymousPolicy": [],
+          "defaultPolicy": [],
+          "policies": [
+            {
+              "users": ["zot-publisher"],
+              "actions": ["read", "create"]
+            },
+            {
+              "users": ["aistor-puller"],
+              "actions": ["read"]
+            }
+          ]
+        }
+      },
+      "adminPolicy": {
+        "users": ["zot-break-glass"],
+        "actions": ["read", "create", "update", "delete"]
+      }
+    }
+  },
+  "log": {
+    "level": "info"
+  },
+  "extensions": {
+    "search": {
+      "enable": true
+    },
+    "metrics": {
+      "enable": true
+    }
+  }
+}

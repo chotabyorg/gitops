@@ -1,0 +1,23 @@
+name: Zot NetworkPolicy enforcement
+
+on:
+  pull_request:
+    paths:
+      - "platform/registry/zot/**"
+      - ".github/workflows/zot-k3s-networkpolicy.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  k3s-networkpolicy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Exercise exact Zot NetworkPolicy with embedded k3s kube-router
+        shell: bash
+        run: platform/registry/zot/tests/run-k3s-networkpolicy.sh

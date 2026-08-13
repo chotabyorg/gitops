@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: registry
+
+# This file is intentionally a template and is not included by any active
+# ArgoCD Application. Render only after production preflight replaces every
+# fail-closed placeholder and an independent review approves the result.
+resources:
+  - zot-namespace.yaml
+  - zot-pvc.yaml
+  - zot-configmap.yaml
+  - zot-statefulset.yaml
+  - zot-service.yaml
+  - zot-network-policy.yaml
+  - zot-ingressroute.yaml
