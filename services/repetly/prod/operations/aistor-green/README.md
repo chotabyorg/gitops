@@ -23,10 +23,11 @@ unchanged.
   license Secret are mandatory.
 - `MINIO_API_AUTO_BUMP=off` is mandatory at first GREEN start.
 
-The production read-only facts are recorded in
+The historical production read-only facts are recorded in
 [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
-The attempted current recheck and its external SSH blocker are recorded in
-[`PRODUCTION_READONLY_RECHECK_2026-08-12.md`](./PRODUCTION_READONLY_RECHECK_2026-08-12.md).
+The fresh owner-authorized recheck is recorded in
+[`PRODUCTION_READONLY_RECHECK_2026-08-13.md`](./PRODUCTION_READONLY_RECHECK_2026-08-13.md);
+the 2026-08-12 SSH-timeout file is retained as historical evidence.
 The target is one amd64 k3s node with 4 CPU and about 7.75Gi allocatable
 memory. BLUE currently uses a separate 10Gi RWO `local-path` PVC; its exact
 inventory is one object / 356134 bytes, while the node has 116G free. The
@@ -44,25 +45,28 @@ selected AIStor image path is the owner-approved immutable Zot tag at
 | GREEN PVC size | `10Gi`, independent from BLUE | Resolved; matches approved single-node capacity baseline |
 | Active server image | `registry.chota.by/aistor/minio:aistor-minio-e8394b040720`; source amd64 digest `sha256:e8394b...16a1` | Approved conditional Zot path; source/destination/Pod imageID equality required |
 | Operator / sidecar images | exact linux/amd64 child pins in values | Resolved candidates; render/scan evidence remains before activation |
-| Resources/probes | MinIO `500m/768Mi` → `1 CPU/1Gi`; sidecar `50m/32Mi` → `100m/128Mi`; Operator/webhook `200m/256Mi/500Mi ephemeral` → `500m/256Mi/500Mi ephemeral` | Candidate scheduler budget is rendered; fresh node requests/ephemeral inventory remains required |
+| Resources/probes | MinIO `500m/768Mi` → `1 CPU/1Gi`; sidecar `50m/32Mi` → `100m/128Mi`; Operator/webhook `200m/256Mi/500Mi ephemeral` → `500m/256Mi/500Mi ephemeral` | Fresh node baseline is recorded; rollout still requires live pressure/restart/PVC observation |
 | Operator RBAC/TLS | `watchedNamespaces: [prod]`, `optOutAutomaticCertificates: true`, owner-approved TokenReview, OOB Operator/admission TLS | Rendered contract PASS; OIDC is future hardening, production Secret/CA availability remains external |
-| AIStor server TLS | `disableAutoCert: true`, OOB `repetly-aistor-green-tls`, Traefik `ServersTransport` with OOB CA | Template contract; exact Traefik CRD/version/SAN check remains required |
+| AIStor server TLS | `disableAutoCert: true`, OOB `repetly-aistor-green-tls`, Traefik `ServersTransport.rootCAs` with OOB CA and `serverName=minio.prod.svc.cluster.local` | Licensed disposable runtime and live CRD/SAN/SNI checks passed; production route remains BLUE/inert |
 | S3/TLS endpoint | `https://repetly-storage.chota.by` → Traefik `websecure` → GREEN Service HTTPS | Public hostname preserved for Repetly and browser presigned URLs; BLUE owns route before cutover |
-| NetworkPolicy | Traefik→GREEN public path, Operator→GREEN internal path, CoreDNS/API egress | Exact Traefik Pod labels and real CNI enforcement still require verification |
+| NetworkPolicy | Traefik→GREEN public path, Operator→GREEN internal path, CoreDNS/API egress | Live Traefik/CoreDNS labels and kube-router enforcement revalidated read-only |
 | License/config/pull/TLS Secrets | `minio-license:minio.license`, `repetly-aistor-green-env:config.env`, `aistor-zot-puller:.dockerconfigjson`, four OOB TLS/CA contracts | Names/keys resolved; values remain out-of-band |
 | Migration/rollback | BLUE → GREEN validation → freeze/final delta → Service cutover; BLUE remains rollback source | Architecture accepted; no migration executed |
 
-The full sanitized evidence is in
+The historical sanitized evidence is in
 [`PRODUCTION_READONLY_FACTS_2026-08-11.md`](./PRODUCTION_READONLY_FACTS_2026-08-11.md).
 
+The current sanitized production evidence is in
+[`PRODUCTION_READONLY_RECHECK_2026-08-13.md`](./PRODUCTION_READONLY_RECHECK_2026-08-13.md).
+
 Fix C rendered/resource evidence is in
-[`RESOURCE_AND_ROLLOUT_CONTRACT_2026-08-12.md`](./RESOURCE_AND_ROLLOUT_CONTRACT_2026-08-12.md)
+[`RESOURCE_AND_ROLLOUT_CONTRACT_2026-08-13.md`](./RESOURCE_AND_ROLLOUT_CONTRACT_2026-08-13.md)
 and the TLS separation is in
 [`aistor-green-tls-contract.md`](./aistor-green-tls-contract.md).
 Admission webhook certificate evidence is in
 [`ADMISSION_WEBHOOK_TLS_EVIDENCE_2026-08-12.md`](./ADMISSION_WEBHOOK_TLS_EVIDENCE_2026-08-12.md);
-the current disposable rehearsal boundary is in
-[`DISPOSABLE_FINAL_TLS_REHEARSAL_2026-08-12.md`](./DISPOSABLE_FINAL_TLS_REHEARSAL_2026-08-12.md).
+the current licensed disposable rehearsal is in
+[`DISPOSABLE_FINAL_TLS_REHEARSAL_2026-08-13.md`](./DISPOSABLE_FINAL_TLS_REHEARSAL_2026-08-13.md).
 
 ## Fix C current gate
 
@@ -504,10 +508,10 @@ With the lower-env probe/resource render active and ObjectStore
 
 The committed NetworkPolicy at that historical point used direct Repetly and
 scanner selectors. Fix C replaces those selectors with the final public
-Traefik path; the exact production Traefik label still requires a fresh
-read-only check. K3s embedded kube-router enforcement was recorded as enabled
-on 2026-08-11. The disposable AIStor kind node was `linux/arm64`; use the
-reviewed amd64 child digests for production.
+Traefik path. The 2026-08-13 production snapshot confirms the exact live
+Traefik/CoreDNS labels and active k3s embedded kube-router enforcement. The
+disposable AIStor node was `linux/arm64`; use the reviewed amd64 child digests
+for production.
 
 ### Historical local review verdict — 2026-08-11
 

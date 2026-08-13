@@ -1,12 +1,14 @@
-# DRAFT CONTRACT ONLY. Inert until the GREEN Service name/selector and CA
-# Secret are verified from the exact ObjectStore reconciliation output.
+# DRAFT CONTRACT ONLY. This remains inert until the approved GREEN cutover.
+# The licensed ObjectStore reconciliation verified the generated S3 Service
+# name/port and the sidecar's actual TLS SNI on 2026-08-13.
 apiVersion: traefik.io/v1alpha1
 kind: ServersTransport
 metadata:
   name: repetly-aistor-green
   namespace: prod
 spec:
-  # The ObjectStore controller generates the API Service from objectStore.name.
-  serverName: repetly-aistor-green.prod.svc.cluster.local
-  rootCAsSecrets:
-    - repetly-aistor-green-ca
+  # The generated Service is minio:443 -> pod targetPort 9000. The sidecar
+  # invokes this exact SNI, and the OOB server certificate covers it.
+  serverName: minio.prod.svc.cluster.local
+  rootCAs:
+    - secret: repetly-aistor-green-ca

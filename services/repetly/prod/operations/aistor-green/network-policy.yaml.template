@@ -1,8 +1,8 @@
 # DRAFT CONTRACT ONLY. This file is inert and is not referenced by the active
 # production Kustomization or Argo Application. It reflects the read-only
-# production labels/controller facts collected on 2026-08-11. The Traefik
-# label is carried as the explicit route contract and must be revalidated
-# against the live Pod before activation.
+# production labels/controller facts revalidated read-only on 2026-08-13. The
+# Traefik and CoreDNS labels below match the live Pods; this file remains
+# inert and is not referenced by the active production Kustomization.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

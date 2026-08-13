@@ -68,7 +68,9 @@ objectStore:
 
   # AIStor server TLS is separate from Operator autocert and public Traefik
   # TLS. The server certificate Secret is supplied out of band and must cover
-  # the generated Service DNS names documented in the TLS contract.
+  # minio.prod.svc.cluster.local (the generated S3 Service SNI), the
+  # ObjectStore/headless DNS names, and the peer names documented in the TLS
+  # contract.
   certificates:
     disableAutoCert: true
     server:

@@ -4,7 +4,7 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: repetly-storage
+  name: repetly-storage-chota-by
   namespace: prod
 spec:
   entryPoints:
@@ -13,8 +13,8 @@ spec:
     - match: Host(`repetly-storage.chota.by`)
       kind: Rule
       services:
-        - name: repetly-aistor-green
-          port: 9000
+        - name: minio
+          port: 443
           scheme: https
           serversTransport: repetly-aistor-green@kubernetescrd
   tls:
