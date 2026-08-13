@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zot-registry
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: chota-platform
+    app.kubernetes.io/component: private-registry
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:chotabyorg/gitops.git
+    targetRevision: main
+    path: platform/registry/zot
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: registry
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
