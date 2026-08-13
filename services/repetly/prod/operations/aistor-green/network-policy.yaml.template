@@ -1,0 +1,158 @@
+# DRAFT CONTRACT ONLY. This file is inert and is not referenced by the active
+# production Kustomization or Argo Application. It reflects the read-only
+# production labels/controller facts revalidated read-only on 2026-08-13. The
+# Traefik and CoreDNS labels below match the live Pods; this file remains
+# inert and is not referenced by the active production Kustomization.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: repetly-aistor-green
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      aistor.min.io/objectStore: repetly-aistor-green
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: traefik
+      ports:
+        - protocol: TCP
+          port: 9000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: prod
+          podSelector:
+            matchLabels:
+              aistor.min.io/name: object-store-operator
+      ports:
+        - protocol: TCP
+          port: 9000
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # TokenReview/API access is restricted to the observed Kubernetes service
+    # and the observed single-node API endpoint, not a broad CIDR.
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 153.80.244.178/32
+      ports:
+        - protocol: TCP
+          port: 6443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: repetly-aistor-operator
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      aistor.min.io/name: object-store-operator
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 153.80.244.178/32
+      ports:
+        - protocol: TCP
+          port: 6443
+    - to:
+        - podSelector:
+            matchLabels:
+              aistor.min.io/objectStore: repetly-aistor-green
+      ports:
+        - protocol: TCP
+          port: 9000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: repetly-aistor-webhook
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels:
+      aistor.min.io/name: object-store-webhook
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # K3s API traffic is served by the observed node IP; no broad pod/CIDR
+    # allowance is used.
+    - from:
+        - ipBlock:
+            cidr: 153.80.244.178/32
+      ports:
+        - protocol: TCP
+          port: 8443
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 153.80.244.178/32
+      ports:
+        - protocol: TCP
+          port: 6443
