@@ -1,4 +1,4 @@
-# AIStor GREEN runtime draft
+# AIStor GREEN runtime scaffold
 
 This directory is an intentionally inert runtime-implementation scaffold for
 GitOps #44. It is not referenced by
@@ -58,9 +58,9 @@ immutable Zot tag at
 
 ## Migration verification and cutover acceptance contract
 
-This is a fail-closed rollout contract. It is documentation only: this Draft
-does not copy objects, freeze writes, change the public route, enable storage,
-or activate the scanner.
+This is a fail-closed rollout contract. It is documentation only: this inert
+scaffold does not copy objects, freeze writes, change the public route, enable
+storage, or activate the scanner.
 
 ### Pre-migration BLUE baseline
 
@@ -571,8 +571,8 @@ Historical pre-fallback disposition: **VENDOR LIMITATION — documented digest
 syntax is incompatible with Operator 5.11.3 reconciliation**. The same result
 was reproduced with the nearest official 5.11.2 and 5.11.1 charts. The owner
 approved the immutable Zot content-tag fallback; a floating or mutable public
-tag remains rejected. #46 remains Draft until the fallback acceptance gates
-pass. The production read-only preflight is now collected, but the prepared non-secret report
+tag remains rejected. At that historical point, #46 remained Draft until the
+fallback acceptance gates passed. The production read-only preflight is now collected, but the prepared non-secret report
 is [`VENDOR_DEFECT_REPORT.md`](./VENDOR_DEFECT_REPORT.md); it has not been
 submitted externally.
 
@@ -808,4 +808,4 @@ run generic troubleshooting containers.
    storage/scanner separation, and reverse-sync rollback.
 
 No production cluster, PVC, license, Service, IAM, or storage data is touched
-by this Draft.
+by this inert scaffold.
