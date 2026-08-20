@@ -7,7 +7,8 @@
   "extra_config": {
     "security/cors": {
       "allow_origins": [
-        "https://chota.by"
+        "https://chota.by",
+        "https://agents.chota.by"
       ],
       "allow_methods": [
         "GET",
