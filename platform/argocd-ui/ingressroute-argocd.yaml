@@ -13,6 +13,8 @@ spec:
         - kind: Service
           name: argocd-server
           namespace: argocd
-          port: 80
+          port: 443
+          scheme: https
+          serversTransport: skip-tls-verify
   tls:
     certResolver: le
