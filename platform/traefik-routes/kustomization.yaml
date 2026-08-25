@@ -13,3 +13,4 @@ resources:
   - ingressroute-repetly.yaml
   - ingressroute-repetly-storage.yaml
   - ingressroute-widget.yaml
+  - ingerssroute-argocd.yaml
