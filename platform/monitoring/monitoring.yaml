@@ -9,7 +9,7 @@ spec:
     - repoURL: oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack
       targetRevision: 88.5.4
       helm:
-        valuesFiles:
+        valueFiles:
           - $values/platform/monitoring/values.yaml
     - repoURL: git@github.com:chotabyorg/gitops.git
       targetRevision: main
