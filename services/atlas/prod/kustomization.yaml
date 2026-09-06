@@ -5,8 +5,11 @@ resources: [../base, ingress.yaml]
 images:
   - name: atlas
     newName: ghcr.io/chotabyorg/atlas
-    newTag: a8421375c6186396f86bc6f43fac01000ab13afc
-    digest: sha256:a7598f95bec7b132a5e58bfd6a85f0b92dc6427dc0b9ab06ff09c1d0177bf03e
+    newTag: 7acfe372011805f5013bad18b4324c184e0ecabd
+    digest: sha256:9df8317e290ad3776feef9513daa4d0b39e40b5a66725c9bedb37d83d406edd7
 configMapGenerator:
   - name: atlas-config
     envs: [config.properties]
+
+patches:
+  - path: backup-before-accounts.yaml

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atlas
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: backup-before-accounts
+          image: ghcr.io/chotabyorg/atlas@sha256:a7598f95bec7b132a5e58bfd6a85f0b92dc6427dc0b9ab06ff09c1d0177bf03e
+          command:
+            - node
+            - --input-type=module
+            - -e
+            - |
+              import { DatabaseSync, backup } from 'node:sqlite';
+              import { existsSync, chmodSync, renameSync } from 'node:fs';
+              const source='/data/chota.sqlite', target='/data/pre-accounts-20260906.sqlite';
+              function verify(path) {
+                const db=new DatabaseSync(path,{readOnly:true});
+                try { if(db.prepare('PRAGMA quick_check').get().quick_check !== 'ok') throw new Error('Backup integrity check failed'); }
+                finally {db.close();}
+              }
+              if(existsSync(target)) { verify(target); console.log('Verified existing pre-accounts backup'); }
+              else if(existsSync(source)) {
+                const db=new DatabaseSync(source,{readOnly:true});
+                try { await backup(db,target+'.tmp'); } finally {db.close();}
+                verify(target+'.tmp'); chmodSync(target+'.tmp',0o600); renameSync(target+'.tmp',target);
+                console.log('Pre-accounts SQLite backup verified');
+              } else console.log('Fresh installation: no database to back up');
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: 250m, memory: 128Mi}
+          volumeMounts:
+            - {name: data, mountPath: /data}

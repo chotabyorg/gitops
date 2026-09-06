@@ -26,3 +26,10 @@ admin or public registration exists; credentials for local previews do not apply
 Backup with `node server/manage.mjs backup /data/backup-UNIQUE.sqlite` inside the
 API container, then copy to protected off-server storage. The PVC alone is not a
 backup. Analytics are opt-in and public bug reports are rate-limited.
+
+The 0.4.0 account migration first runs an initContainer using the previous pinned
+image. It creates and quick-checks /data/pre-accounts-20260906.sqlite before the
+new API opens the database. This is an on-volume migration snapshot, not an
+off-server backup. The migration only adds tables and a nullable column. An app
+rollback can leave those additions in place; restoring this snapshot would lose
+new registrations and must not be done as an ordinary image rollback.
