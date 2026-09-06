@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod
+resources: [../base, ingress.yaml]
+images:
+  - name: atlas
+    newName: ghcr.io/chotabyorg/atlas
+    newTag: a8421375c6186396f86bc6f43fac01000ab13afc
+configMapGenerator:
+  - name: atlas-config
+    envs: [config.properties]

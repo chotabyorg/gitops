@@ -1,0 +1,38 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: atlas-chota-by
+spec:
+  entryPoints: [websecure]
+  routes:
+    - kind: Rule
+      match: Host(`atlas.chota.by`)
+      services:
+        - name: atlas
+          port: 8080
+  tls:
+    certResolver: le
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: atlas-https
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: atlas-chota-by-http
+spec:
+  entryPoints: [web]
+  routes:
+    - kind: Rule
+      match: Host(`atlas.chota.by`)
+      middlewares:
+        - name: atlas-https
+      services:
+        - name: atlas
+          port: 8080
