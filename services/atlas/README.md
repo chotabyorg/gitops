@@ -7,11 +7,12 @@ The web and API containers share a pod; only web is exposed. API listens on
 loopback. Existing ghcr-pull-secret supplies registry access.
 
 The Atlas repository publishes tested images tagged with full commit SHA.
-Update prod/kustomization.yaml to the successful release SHA, validate using
+Update both newTag (full release SHA) and digest (published image digest) in
+prod/kustomization.yaml; the digest takes precedence over the tag. Validate using
 `kubectl kustomize services/atlas/prod`, and push through the authorized GitOps
 workflow. No GITOPS_PAT is provisioned in Atlas; tag promotion is explicit.
 
-Rollback: restore the previous image tag in Git and push. Do not delete the PVC.
+Rollback: restore the previous image tag and digest in Git and push. Do not delete the PVC.
 For the first release, remove the Deployment, Service and Ingress resources
 from the overlay to withdraw traffic, retaining the PVC resource. Take a database
 backup before releases that change schema. Do not roll back across incompatible
