@@ -24,7 +24,9 @@ Use a unique password of at least 14 characters. Never commit it. No default
 admin or public registration exists; credentials for local previews do not apply.
 
 Backup with `node server/manage.mjs backup /data/backup-UNIQUE.sqlite` inside the
-API container, then copy to protected off-server storage. The PVC alone is not a
+API container. Keep copies on approved protected infrastructure in Belarus with an explicit
+retention period and withdrawal/deletion handling; never copy the production
+database to Git or foreign cloud storage. The PVC alone is not a
 backup. Analytics are opt-in and public bug reports are rate-limited.
 
 The 0.4.0 account migration first runs an initContainer using the previous pinned
@@ -33,3 +35,16 @@ new API opens the database. This is an on-volume migration snapshot, not an
 off-server backup. The migration only adds tables and a nullable column. An app
 rollback can leave those additions in place; restoring this snapshot would lose
 new registrations and must not be done as an ordinary image rollback.
+
+The 0.5.0 privacy migration adds nullable consent-version fields and a receipt
+registry; it never backfills consent for existing users. The initContainer now
+uses the preceding 0.4.0 image to quick-check pre-privacy-20260906.sqlite first.
+Known pre-accounts/pre-privacy snapshots older than 7 days are cleaned at API
+startup and hourly. The public policy allows up to 8 days. Do not create other
+snapshots without matching retention controls. Old snapshots are not an automatic
+recovery source: subsequent withdrawals/deletions must be reapplied before public
+access is restored. If they cannot be reconstructed, do not restore that snapshot.
+Rollback the image without restoring the DB; additive schema changes can remain.
+A rollback to pre-privacy application code also removes its consent enforcement
+and cleanup: use only as an incident response with public registration disabled,
+not as a routine way to keep serving the new policy.

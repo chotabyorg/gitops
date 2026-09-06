@@ -5,8 +5,8 @@ resources: [../base, ingress.yaml]
 images:
   - name: atlas
     newName: ghcr.io/chotabyorg/atlas
-    newTag: 7acfe372011805f5013bad18b4324c184e0ecabd
-    digest: sha256:9df8317e290ad3776feef9513daa4d0b39e40b5a66725c9bedb37d83d406edd7
+    newTag: a57980acd16a4537e1ffbb8a8d3183c885956bf7
+    digest: sha256:38dd283d471c9fec5e59d2e1d79afec018554fbf7658b53fb931a85f43f58bf4
 configMapGenerator:
   - name: atlas-config
     envs: [config.properties]
