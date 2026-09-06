@@ -6,6 +6,7 @@ images:
   - name: atlas
     newName: ghcr.io/chotabyorg/atlas
     newTag: a8421375c6186396f86bc6f43fac01000ab13afc
+    digest: sha256:a7598f95bec7b132a5e58bfd6a85f0b92dc6427dc0b9ab06ff09c1d0177bf03e
 configMapGenerator:
   - name: atlas-config
     envs: [config.properties]
