@@ -6,8 +6,8 @@ spec:
   template:
     spec:
       initContainers:
-        - name: backup-before-privacy
-          image: ghcr.io/chotabyorg/atlas@sha256:9df8317e290ad3776feef9513daa4d0b39e40b5a66725c9bedb37d83d406edd7
+        - name: backup-before-osteology
+          image: ghcr.io/chotabyorg/atlas@sha256:38dd283d471c9fec5e59d2e1d79afec018554fbf7658b53fb931a85f43f58bf4
           command:
             - node
             - --input-type=module
@@ -15,18 +15,18 @@ spec:
             - |
               import { DatabaseSync, backup } from 'node:sqlite';
               import { existsSync, chmodSync, renameSync } from 'node:fs';
-              const source='/data/chota.sqlite', target='/data/pre-privacy-20260906.sqlite';
+              const source='/data/chota.sqlite', target='/data/pre-privacy-20260908.sqlite';
               function verify(path) {
                 const db=new DatabaseSync(path,{readOnly:true});
                 try { if(db.prepare('PRAGMA quick_check').get().quick_check !== 'ok') throw new Error('Backup integrity check failed'); }
                 finally {db.close();}
               }
-              if(existsSync(target)) { verify(target); console.log('Verified existing pre-privacy backup'); }
+              if(existsSync(target)) { verify(target); console.log('Verified existing pre-osteology backup'); }
               else if(existsSync(source)) {
                 const db=new DatabaseSync(source,{readOnly:true});
                 try { await backup(db,target+'.tmp'); } finally {db.close();}
                 verify(target+'.tmp'); chmodSync(target+'.tmp',0o600); renameSync(target+'.tmp',target);
-                console.log('Pre-privacy SQLite backup verified');
+                console.log('Pre-osteology SQLite backup verified');
               } else console.log('Fresh installation: no database to back up');
           securityContext:
             allowPrivilegeEscalation: false

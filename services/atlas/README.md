@@ -48,3 +48,13 @@ Rollback the image without restoring the DB; additive schema changes can remain.
 A rollback to pre-privacy application code also removes its consent enforcement
 and cleanup: use only as an incident response with public registration disabled,
 not as a routine way to keep serving the new policy.
+
+The 0.6.0-beta.1 osteology release adds nullable diagnostic/app_version event
+columns. The initContainer uses the previous 0.5.0 image and quick-checks
+/data/pre-privacy-20260908.sqlite before the API migration. The existing
+pre-privacy filename family intentionally preserves seven-day cleanup support
+in both 0.5.0 and 0.6.0, including after an image rollback. This is an on-volume
+migration snapshot, not an off-server backup. Roll back to 0.5.0 without DB
+restoration; the extra nullable columns are compatible with its named inserts.
+The previous image is a57980acd16a4537e1ffbb8a8d3183c885956bf7, digest
+sha256:38dd283d471c9fec5e59d2e1d79afec018554fbf7658b53fb931a85f43f58bf4.
