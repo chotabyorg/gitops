@@ -6,9 +6,16 @@ spec:
   entryPoints: [websecure]
   routes:
     - kind: Rule
-      match: Host(`atlas.chota.by`)
+      match: Host(`atlas.chota.by`) && (PathPrefix(`/api`) || PathPrefix(`/learn`) || Path(`/sitemap.xml`) || Path(`/robots.txt`) || Path(`/llms.txt`))
+      priority: 100
       services:
         - name: atlas
+          port: 8080
+    - kind: Rule
+      match: Host(`atlas.chota.by`)
+      priority: 10
+      services:
+        - name: atlas-web-blue
           port: 8080
   tls:
     certResolver: le
@@ -34,5 +41,5 @@ spec:
       middlewares:
         - name: atlas-https
       services:
-        - name: atlas
+        - name: atlas-web-blue
           port: 8080
