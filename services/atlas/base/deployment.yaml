@@ -37,6 +37,11 @@ spec:
             httpGet: {path: /healthz, port: 8080}
         - name: api
           image: atlas
+          # The image's standalone entrypoint supervises API + nginx. In this
+          # split Kubernetes pod nginx runs in the web container, so the API
+          # container must run only the API process and avoid nginx temp paths
+          # on its read-only root filesystem.
+          command: [node, server/index.mjs]
           envFrom:
             - configMapRef: {name: atlas-config}
           securityContext:
