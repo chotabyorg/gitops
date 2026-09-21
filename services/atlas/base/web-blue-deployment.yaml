@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atlas-web-blue
+  labels:
+    app: atlas-web
+    slot: blue
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  minReadySeconds: 15
+  progressDeadlineSeconds: 300
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: atlas-web
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: atlas-web
+        slot: blue
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: web
+          image: atlas-web-blue
+          command:
+            - sh
+            - -c
+            - >-
+              if [ -f /etc/nginx/nginx-web.conf ]; then
+                exec nginx -c /etc/nginx/nginx-web.conf -g 'daemon off;';
+              else
+                exec nginx -g 'daemon off;';
+              fi
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: '1', memory: 128Mi}
+          volumeMounts:
+            - {name: web-tmp, mountPath: /tmp}
+          readinessProbe:
+            httpGet: {path: /healthz, port: http}
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+      volumes:
+        - name: web-tmp
+          emptyDir: {medium: Memory, sizeLimit: 32Mi}

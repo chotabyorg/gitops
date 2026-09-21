@@ -2,11 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: atlas
+  labels:
+    app: atlas
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: atlas
   strategy:
     type: Recreate
   template:
+    metadata:
+      labels:
+        app: atlas
     spec:
       imagePullSecrets:
         - name: ghcr-pull-secret

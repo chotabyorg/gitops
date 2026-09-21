@@ -1,10 +1,34 @@
 # Atlas
 
 Public URL: https://atlas.chota.by. ArgoCD application: atlas-prod.
-Single replica with Recreate strategy: SQLite has one writer and persists in
-atlas-data (1 GiB). PVC pruning is disabled to preserve data during removal.
-The web and API containers share a pod; only web is exposed. API listens on
-loopback. Existing ghcr-pull-secret supplies registry access.
+The legacy `atlas` pod is still a single replica with Recreate strategy because
+SQLite has one writer and persists in `atlas-data` (1 GiB). The first safe
+migration stage adds two stateless web slots (`atlas-web-blue` and
+`atlas-web-green`). The active ingress remains on
+the legacy `atlas` Service until the new slots pass their release gate.
+
+The target split ingress is stored in `prod/ingress-bluegreen.yaml` and is
+intentionally not included by `prod/kustomization.yaml` yet. Do not activate
+it until both web slots are ready with the intended image, port-forward smoke
+tests pass, and the release ID, model manifest, search, cards, rotation,
+`/api/health`, and `/release.json` match the same build. The old pod remains
+available during this staged migration so a content release cannot remove the
+only working database process.
+
+The web slots prefer `/etc/nginx/nginx-web.conf`, which is present only in Atlas
+images built after the web/API split change, and fall back to the image default
+nginx configuration while an older image is being staged. Do not activate the
+split ingress until the intended image is present; readiness alone is not a
+content or routing smoke test. The green slot is a rollback target; update only
+the inactive slot, test it, switch the ingress service, and update the old slot
+after the new one is proven.
+
+The legacy web/API containers share a pod; API listens on loopback there. During
+this migration, dynamic ingress routes stay on the legacy `atlas` Service and
+only static routes move to a web slot. `prod/api-split-deployment.yaml` and
+`base/api-service.yaml` are inactive future targets and must not be added while
+the legacy pod still mounts the RWO SQLite PVC. Existing `ghcr-pull-secret`
+supplies registry access.
 
 The Atlas repository publishes tested images tagged with full commit SHA.
 Update both newTag (full release SHA) and digest (published image digest) in
@@ -12,7 +36,10 @@ prod/kustomization.yaml; the digest takes precedence over the tag. Validate usin
 `kubectl kustomize services/atlas/prod`, and push through the authorized GitOps
 workflow. No GITOPS_PAT is provisioned in Atlas; tag promotion is explicit.
 
-Rollback: restore the previous image tag and digest in Git and push. Do not delete the PVC.
+Rollback: switch the ingress service back to the previous ready web slot and
+restore its image tag and digest in Git. Do not delete the PVC. Keep the last
+known-good release manifest and image digest until the new slot has passed live
+checks.
 For the first release, remove the Deployment, Service and Ingress resources
 from the overlay to withdraw traffic, retaining the PVC resource. Take a database
 backup before releases that change schema. Do not roll back across incompatible
