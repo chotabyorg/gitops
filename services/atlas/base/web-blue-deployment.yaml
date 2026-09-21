@@ -39,6 +39,9 @@ spec:
             - sh
             - -c
             - >-
+              mkdir -p /var/lib/nginx/logs /var/lib/nginx/tmp/client_body
+              /var/lib/nginx/tmp/proxy /var/lib/nginx/tmp/fastcgi
+              /var/lib/nginx/tmp/uwsgi /var/lib/nginx/tmp/scgi;
               if [ -f /etc/nginx/nginx-web.conf ]; then
                 exec nginx -c /etc/nginx/nginx-web.conf -g 'daemon off;';
               else
