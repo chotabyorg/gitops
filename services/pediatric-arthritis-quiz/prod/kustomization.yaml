@@ -8,7 +8,7 @@ resources:
 images:
   - name: pediatric-arthritis-quiz
     newName: ghcr.io/chotabyorg/pediatric-arthritis-quiz
-    digest: sha256:2dfe6886f51c73b12ab4e006cd9e1c3dd8de505fbb5ceae44ef86dc9c6258a4d
+    digest: sha256:d66276fe264ffeb910e11e93425385234a1b576d60aae635835566cca061cf46
 configMapGenerator:
   - name: pediatric-arthritis-quiz-config
     env: config.properties
