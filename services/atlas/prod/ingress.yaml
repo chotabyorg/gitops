@@ -15,7 +15,7 @@ spec:
       match: Host(`atlas.chota.by`)
       priority: 10
       services:
-        - name: atlas-web-blue
+        - name: atlas-web-green
           port: 8080
   tls:
     certResolver: le
@@ -41,5 +41,5 @@ spec:
       middlewares:
         - name: atlas-https
       services:
-        - name: atlas-web-blue
+        - name: atlas-web-green
           port: 8080
