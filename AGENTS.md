@@ -43,6 +43,9 @@ ArgoCD is the sole deployment mechanism. The repository contains `Application` a
 | Application | Source | Namespace |
 |-------------|--------|-----------|
 | `traefik-routes` | `platform/traefik-routes` | `prod` |
+| `argocd-ui` | `platform/argocd-ui` | `argocd` |
+| `zot-registry` | `platform/registry/zot` | `registry` |
+| `kube-prometheus-stack` | OCI helm chart + `platform/monitoring` | `monitoring` |
 
 ### Repo Credential
 
@@ -55,7 +58,10 @@ On a fresh cluster, apply the platform-level ArgoCD manifests first, then ArgoCD
 ```bash
 kubectl apply -f platform/argocd/sealed-secrets.yaml
 kubectl apply -f platform/argocd/prod.yaml
-kubectl apply -f platform/argocd/traefik-routes.yaml
+kubectl apply -f platform/traefik-routes/traefik-routes.yaml
+kubectl apply -f platform/argocd-ui/argocd-ui.yaml
+kubectl apply -f platform/registry/zot-registry.yaml
+kubectl apply -f platform/monitoring/monitoring.yaml
 ```
 
 ### Sync flow
@@ -84,6 +90,39 @@ argocd app diff <app-name>
 
 # Force sync
 argocd app sync <app-name>
+```
+
+## Monitoring (kube-prometheus-stack)
+
+Deployed via a multi-source ArgoCD `Application` ([`platform/monitoring/monitoring.yaml`](platform/monitoring/monitoring.yaml)):
+
+- **Chart source** — `oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack`, version pinned in `monitoring.yaml`
+- **Values** — [`platform/monitoring/values.yaml`](platform/monitoring/values.yaml), referenced via `$values` ref
+- **Kustomize source** — `platform/monitoring/` (same git repo, `path:` source) renders the Grafana `IngressRoute` and `SealedSecret`
+
+### Grafana
+
+- Exposed at `grafana.chota.by` via a Traefik `IngressRoute` ([`platform/monitoring/ingressroute-grafana.yaml`](platform/monitoring/ingressroute-grafana.yaml)) → service `kube-prometheus-stack-grafana:80`
+- **Auth** — GitHub OAuth SSO only:
+  - `security.disable_initial_admin_creation: true` — no local `admin` account is ever created
+  - `auth.disable_login_form: true` + `auth.github.auto_login: true` — login form hidden, auto-redirect to GitHub
+  - `allowed_organizations: chotabyorg` — only org members may log in
+  - Role mapping: `NeOchenHorosho` → `GrafanaAdmin`, everyone else → org `Admin`
+- The GitHub OAuth App callback URL must be `https://grafana.chota.by/login/github`
+
+### Alertmanager
+
+Disabled (`alertmanager.enabled: false`). Alerts are not routed anywhere yet.
+
+### Secrets
+
+The `grafana-secrets` secret holds the GitHub OAuth `client_id`/`client_secret` (consumed via `grafana.envValueFrom`). Template at [`platform/monitoring/secrets.yaml.template`](platform/monitoring/secrets.yaml.template); seal it before first sync:
+
+```bash
+cp platform/monitoring/secrets.yaml.template platform/monitoring/secrets.yaml
+# fill client_id / client_secret from the GitHub OAuth App
+kubeseal --format yaml < platform/monitoring/secrets.yaml > platform/monitoring/sealed-secrets.yaml
+rm platform/monitoring/secrets.yaml
 ```
 
 ## Service overlay pattern
