@@ -13,8 +13,8 @@ images:
     digest: sha256:ef9ceb80433628b0d03541ab0de6be8562e5ca3070b541101e7a909e07743edc
   - name: atlas-web-green
     newName: ghcr.io/chotabyorg/atlas
-    newTag: c4d96dd437b4e7cd8460783e8ff61bc3f096a71b
-    digest: sha256:011c6cbd5857ac7f67ff4028f46e9d49cb8f9ad026a3b437e1913c34c0fb8952
+    newTag: 60e44650ca8046a17bad5f4ed86cc59380e0cca3
+    digest: sha256:9599617b80b90159c9fc1401ba2257589a5c8bc87315d4555e2db3da3766ed07
 configMapGenerator:
   - name: atlas-config
     envs: [config.properties]
