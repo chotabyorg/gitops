@@ -12,6 +12,12 @@ spec:
         - name: atlas
           port: 8080
     - kind: Rule
+      match: Host(`atlas.chota.by`) && (Path(`/admin`) || PathPrefix(`/admin/`) || Path(`/privacy`) || Path(`/consent`))
+      priority: 90
+      services:
+        - name: atlas
+          port: 8080
+    - kind: Rule
       match: Host(`atlas.chota.by`)
       priority: 10
       services:
