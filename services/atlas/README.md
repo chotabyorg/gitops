@@ -2,26 +2,31 @@
 
 Public URL: https://atlas.chota.by. ArgoCD application: atlas-prod.
 The legacy `atlas` pod is still a single replica with Recreate strategy because
-SQLite has one writer and persists in `atlas-data` (1 GiB). The first safe
-migration stage adds two stateless web slots (`atlas-web-blue` and
-`atlas-web-green`). The active ingress remains on
-the legacy `atlas` Service until the new slots pass their release gate.
+SQLite has one writer and persists in `atlas-data` (1 GiB). Two stateless web
+slots (`atlas-web-blue` and `atlas-web-green`) run alongside it. Static
+application traffic currently uses blue; dynamic `/api` and editorial routes
+use the legacy `atlas` Service. Admin and policy routes temporarily use that
+Service until the new web image passes its smoke test in inactive green.
 
-The target split ingress is stored in `prod/ingress-bluegreen.yaml` and is
-intentionally not included by `prod/kustomization.yaml` yet. Do not activate
-it until both web slots are ready with the intended image, port-forward smoke
-tests pass, and the release ID, model manifest, search, cards, rotation,
-`/api/health`, and `/release.json` match the same build. The old pod remains
-available during this staged migration so a content release cannot remove the
-only working database process.
+The separate API Deployment remains inactive in `prod/api-split-deployment.yaml`.
+Before switching static traffic to a new slot, verify its release ID, model
+manifest, search, cards and camera interactions, and check the current API's
+`/api/health` and `/api/ready`. The singleton API must remain available.
+The B2C policy rollout updates the API while blue still serves the old web;
+`ATLAS_LEGACY_POLICY_ACCEPT_UNTIL` briefly accepts the previous policy version
+without recording it as the new one. Then green takes static traffic and old
+accounts must accept the new policy in the new web app.
+During staging, `X-Atlas-Preview: b2c-20260923` selects green for static
+routes; the higher-priority API route stays on the singleton. Remove this
+temporary preview rule after the switch.
 
 The web slots prefer `/etc/nginx/nginx-web.conf`, which is present only in Atlas
 images built after the web/API split change, and fall back to the image default
 nginx configuration while an older image is being staged. Do not activate the
 split ingress until the intended image is present; readiness alone is not a
-content or routing smoke test. The green slot is a rollback target; update only
-the inactive slot, test it, switch the ingress service, and update the old slot
-after the new one is proven.
+content or routing smoke test. The inactive slot is a rollback target; update only
+the inactive slot, test it, switch the ingress service, and keep the old slot
+ready during the rollback window.
 
 The legacy web/API containers share a pod; API listens on loopback there. During
 this migration, dynamic ingress routes stay on the legacy `atlas` Service and
@@ -55,6 +60,14 @@ API container. Keep copies on approved protected infrastructure in Belarus with 
 retention period and withdrawal/deletion handling; never copy the production
 database to Git or foreign cloud storage. The PVC alone is not a
 backup. Analytics are opt-in and public bug reports are rate-limited.
+
+The 2026-09-23 B2C migration creates and quick-checks
+`/data/pre-b2c-20260923.sqlite` before the API image changes. Its init
+container is removed after the new API and web slot pass the live checks, so
+a later restart cannot recreate a misleading "pre-release" snapshot.
+The application removes that snapshot after seven days. Restoring it would
+discard subsequent registrations and consent changes; use it only for a
+verified incident recovery with those changes reconciled.
 
 The 0.4.0 account migration first runs an initContainer using the previous pinned
 image. It creates and quick-checks /data/pre-accounts-20260906.sqlite before the

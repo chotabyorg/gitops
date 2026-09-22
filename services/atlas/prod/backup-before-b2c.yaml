@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atlas
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: backup-before-b2c
+          image: ghcr.io/chotabyorg/atlas@sha256:87df07df3068f396922cdee33148df669b9039e78d90b2a38e122b1fcd27119e
+          command:
+            - node
+            - --input-type=module
+            - -e
+            - |
+              import { DatabaseSync, backup } from 'node:sqlite';
+              import { existsSync, chmodSync, renameSync, rmSync } from 'node:fs';
+              const source='/data/chota.sqlite', target='/data/pre-b2c-20260923.sqlite', temporary=target+'.tmp';
+              function verify(path) {
+                const db=new DatabaseSync(path,{readOnly:true});
+                try { if(db.prepare('PRAGMA quick_check').get().quick_check !== 'ok') throw new Error('SQLite integrity check failed'); }
+                finally { db.close(); }
+              }
+              if(!existsSync(source)) throw new Error('Production SQLite database is missing');
+              verify(source);
+              if(existsSync(target)) { verify(target); console.log('Verified existing pre-b2c backup'); }
+              else {
+                rmSync(temporary,{force:true});
+                const db=new DatabaseSync(source,{readOnly:true});
+                try { await backup(db,temporary); } finally { db.close(); }
+                verify(temporary); chmodSync(temporary,0o600); renameSync(temporary,target);
+                console.log('Pre-b2c SQLite backup verified');
+              }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: 250m, memory: 128Mi}
+          volumeMounts:
+            - {name: data, mountPath: /data}

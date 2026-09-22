@@ -12,6 +12,12 @@ spec:
         - name: atlas
           port: 8080
     - kind: Rule
+      match: Host(`atlas.chota.by`) && Header(`X-Atlas-Preview`, `b2c-20260923`)
+      priority: 95
+      services:
+        - name: atlas-web-green
+          port: 8080
+    - kind: Rule
       match: Host(`atlas.chota.by`) && (Path(`/admin`) || PathPrefix(`/admin/`) || Path(`/privacy`) || Path(`/consent`))
       priority: 90
       services:

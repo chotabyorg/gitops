@@ -5,20 +5,20 @@ resources: [../base, ingress.yaml]
 images:
   - name: atlas
     newName: ghcr.io/chotabyorg/atlas
-    newTag: f699c93dfd04ca9ba53fd975f438caa714a58cf1
-    digest: sha256:87df07df3068f396922cdee33148df669b9039e78d90b2a38e122b1fcd27119e
+    newTag: f09918705a1eb40a082c8d73503dcdecca2e4312
+    digest: sha256:b6d1ca09bbf14e7fca70ff3f190da86f198e97f8fe599b45e37a5b92adb2bd68
   - name: atlas-web-blue
     newName: ghcr.io/chotabyorg/atlas
     newTag: f699c93dfd04ca9ba53fd975f438caa714a58cf1
     digest: sha256:87df07df3068f396922cdee33148df669b9039e78d90b2a38e122b1fcd27119e
   - name: atlas-web-green
     newName: ghcr.io/chotabyorg/atlas
-    newTag: 60e44650ca8046a17bad5f4ed86cc59380e0cca3
-    digest: sha256:9599617b80b90159c9fc1401ba2257589a5c8bc87315d4555e2db3da3766ed07
+    newTag: f09918705a1eb40a082c8d73503dcdecca2e4312
+    digest: sha256:b6d1ca09bbf14e7fca70ff3f190da86f198e97f8fe599b45e37a5b92adb2bd68
 configMapGenerator:
   - name: atlas-config
     envs: [config.properties]
 
 patches:
-  - path: backup-before-accounts.yaml
+  - path: backup-before-b2c.yaml
   - path: api-readiness.yaml
