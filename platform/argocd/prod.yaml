@@ -11,7 +11,6 @@ spec:
         directories:
           - path: "services/outsors/prod"
           - path: "services/atlas/prod"
-          - path: "services/pediatric-arthritis-quiz/prod"
           - path: "services/repetly/prod"
   template:
     metadata:
