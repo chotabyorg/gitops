@@ -4,9 +4,9 @@ Public URL: https://atlas.chota.by. ArgoCD application: atlas-prod.
 The legacy `atlas` pod is still a single replica with Recreate strategy because
 SQLite has one writer and persists in `atlas-data` (1 GiB). Two stateless web
 slots (`atlas-web-blue` and `atlas-web-green`) run alongside it. Static
-application traffic currently uses blue; dynamic `/api` and editorial routes
-use the legacy `atlas` Service. Admin and policy routes temporarily use that
-Service until the new web image passes its smoke test in inactive green.
+application traffic uses green; dynamic `/api` and editorial routes use the
+legacy `atlas` Service. Admin and policy routes use green as well. Blue holds
+the previous web build for immediate static-route rollback.
 
 The separate API Deployment remains inactive in `prod/api-split-deployment.yaml`.
 Before switching static traffic to a new slot, verify its release ID, model
@@ -16,9 +16,8 @@ The B2C policy rollout updates the API while blue still serves the old web;
 `ATLAS_LEGACY_POLICY_ACCEPT_UNTIL` briefly accepts the previous policy version
 without recording it as the new one. Then green takes static traffic and old
 accounts must accept the new policy in the new web app.
-During staging, `X-Atlas-Preview: b2c-20260923` selects green for static
-routes; the higher-priority API route stays on the singleton. Remove this
-temporary preview rule after the switch.
+The temporary `X-Atlas-Preview: b2c-20260923` route used to test green before
+cutover has been removed. The higher-priority API route stays on the singleton.
 
 The web slots prefer `/etc/nginx/nginx-web.conf`, which is present only in Atlas
 images built after the web/API split change, and fall back to the image default
@@ -63,8 +62,11 @@ backup. Analytics are opt-in and public bug reports are rate-limited.
 
 The 2026-09-23 B2C migration creates and quick-checks
 `/data/pre-b2c-20260923.sqlite` before the API image changes. Its init
-container is removed after the new API and web slot pass the live checks, so
-a later restart cannot recreate a misleading "pre-release" snapshot.
+container must be removed in a separate API maintenance change before the
+seven-day cleanup deadline. Removing it changes the singleton pod template and
+causes a brief API outage under `Recreate`; it is deliberately not coupled to
+the web-only cutover. Until removal, avoid restarting the API after cleanup,
+because the init container would recreate a misleading "pre-release" snapshot.
 The application removes that snapshot after seven days. Restoring it would
 discard subsequent registrations and consent changes; use it only for a
 verified incident recovery with those changes reconciled.
