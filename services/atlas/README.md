@@ -4,20 +4,22 @@ Public URL: https://atlas.chota.by. ArgoCD application: atlas-prod.
 The legacy `atlas` pod is still a single replica with Recreate strategy because
 SQLite has one writer and persists in `atlas-data` (1 GiB). Two stateless web
 slots (`atlas-web-blue` and `atlas-web-green`) run alongside it. Static
-application traffic uses green; dynamic `/api` and editorial routes use the
-legacy `atlas` Service. Admin and policy routes use green as well. Blue holds
-the previous web build for immediate static-route rollback.
+application traffic uses blue; dynamic `/api` and editorial routes use the
+legacy `atlas` Service. Admin and policy routes use the active web slot as well.
+As of 2026-09-23, blue serves web commit
+`0897df868378f4f911bf32aeb8896259318a85fd` (digest
+`sha256:17ba5c0c9456e8b59838d040aaac635cef0f03bdcccfaff7c109963b84f11a1f`);
+green retains the previous verified web commit
+`f09918705a1eb40a082c8d73503dcdecca2e4312` for immediate rollback.
 
 The separate API Deployment remains inactive in `prod/api-split-deployment.yaml`.
 Before switching static traffic to a new slot, verify its release ID, model
 manifest, search, cards and camera interactions, and check the current API's
 `/api/health` and `/api/ready`. The singleton API must remain available.
-The B2C policy rollout updates the API while blue still serves the old web;
-`ATLAS_LEGACY_POLICY_ACCEPT_UNTIL` briefly accepts the previous policy version
-without recording it as the new one. Then green takes static traffic and old
-accounts must accept the new policy in the new web app.
-The temporary `X-Atlas-Preview: b2c-20260923` route used to test green before
-cutover has been removed. The higher-priority API route stays on the singleton.
+The 2026-09-23 release updates the API before the web slot. The temporary
+`X-Atlas-Preview: prelaunch-0897df8-20260923` route used to test blue before
+cutover is removed by this promotion. The higher-priority API route stays on the
+singleton.
 
 The web slots prefer `/etc/nginx/nginx-web.conf`, which is present only in Atlas
 images built after the web/API split change, and fall back to the image default
