@@ -5,8 +5,8 @@ resources: [../base, ingress.yaml]
 images:
   - name: atlas
     newName: ghcr.io/chotabyorg/atlas
-    newTag: f09918705a1eb40a082c8d73503dcdecca2e4312
-    digest: sha256:b6d1ca09bbf14e7fca70ff3f190da86f198e97f8fe599b45e37a5b92adb2bd68
+    newTag: 0897df868378f4f911bf32aeb8896259318a85fd
+    digest: sha256:17ba5c0c9456e8b59838d040aaac635cef0f03bdcccfaff7c109963b84f11a1f
   - name: atlas-web-blue
     newName: ghcr.io/chotabyorg/atlas
     newTag: f699c93dfd04ca9ba53fd975f438caa714a58cf1
