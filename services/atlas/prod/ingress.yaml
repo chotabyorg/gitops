@@ -12,22 +12,16 @@ spec:
         - name: atlas
           port: 8080
     - kind: Rule
-      match: Host(`atlas.chota.by`) && Header(`X-Atlas-Preview`, `prelaunch-0897df8-20260923`)
-      priority: 95
-      services:
-        - name: atlas-web-blue
-          port: 8080
-    - kind: Rule
       match: Host(`atlas.chota.by`) && (Path(`/admin`) || PathPrefix(`/admin/`) || Path(`/privacy`) || Path(`/consent`))
       priority: 90
       services:
-        - name: atlas-web-green
+        - name: atlas-web-blue
           port: 8080
     - kind: Rule
       match: Host(`atlas.chota.by`)
       priority: 10
       services:
-        - name: atlas-web-green
+        - name: atlas-web-blue
           port: 8080
   tls:
     certResolver: le
@@ -53,5 +47,5 @@ spec:
       middlewares:
         - name: atlas-https
       services:
-        - name: atlas-web-green
+        - name: atlas-web-blue
           port: 8080
