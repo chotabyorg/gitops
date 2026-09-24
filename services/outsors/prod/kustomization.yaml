@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: outsors
     newName: ghcr.io/chotabyorg/outsors
-    newTag: "d6e3df1"
+    newTag: "b9c157e"
 configMapGenerator:
   - name: outsors-config
     env: config.properties
