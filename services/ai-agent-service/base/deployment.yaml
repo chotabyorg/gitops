@@ -28,6 +28,12 @@ spec:
           name: ai-agent-service
           ports:
             - containerPort: 8000
+          env:
+            - name: INTERNAL_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: control-plane-secret
+                  key: INTERNAL_API_TOKEN
           envFrom:
             - configMapRef:
                 name: ai-agent-config
