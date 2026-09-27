@@ -19,7 +19,8 @@ Traefik (ingress + TLS)              namespace: kube-system
    +---> repetly-minio:9000      (repetly-storage.chota.by)
    +---> website-gateway-service:8080  (widget.chota.by)
    |
-   +---> KrakenD (chota-gateway):8080  (api.chota.by)
+   +---> control-plane-service:8000  (GET api.chota.by/v1/instagram/callback only; exact Traefik route preserves OAuth 302)
+   +---> KrakenD (chota-gateway):8080  (all other api.chota.by requests)
           |
           +---> user-service            + PostgreSQL 15
           +---> ai-agent-service        + PostgreSQL 15 + Redis 7
@@ -339,13 +340,14 @@ All backend services use Kubernetes service DNS names (e.g., `http://user-servic
 
 External traffic enters via **Traefik** (k3s built-in ingress controller) with **Let's Encrypt HTTP-01** for automatic TLS. IngressRoutes are defined in `platform/traefik-routes/` and managed by ArgoCD.
 
-**Hostname → Service mapping:**
+**Host/path → Service mapping:**
 
-| Hostname | Service | Port |
+| Host/path | Service | Port |
 |----------|---------|------|
 | `chota.by` | `outsors` | 80 |
 | `www.chota.by` | → redirect to `chota.by` | |
-| `api.chota.by` | `chota-gateway` (KrakenD) | 8080 |
+| `api.chota.by/v1/instagram/callback` (`GET` only) | `control-plane-service` (exact Traefik route; preserves OAuth `302 Location`) | 8000 |
+| `api.chota.by` (all other requests) | `chota-gateway` (KrakenD) | 8080 |
 | `agents.chota.by` | `chota-site` | 3000 |
 | `blockrise.chota.by` | `blockrise` | 80 |
 | `demo.chota.by` | `demo-website` (ExternalName → default ns) | 80 |
@@ -356,6 +358,8 @@ External traffic enters via **Traefik** (k3s built-in ingress controller) with *
 **DNS:** All hostnames have A records pointing to the server's public IP. Cloudflare proxy is disabled (DNS-only mode).
 
 **TLS:** Traefik automatically obtains and renews Let's Encrypt certificates via HTTP-01 challenges. Certificates are stored on the host at `/var/lib/rancher/k3s/traefik-acme/acme.json`. No cert-manager or manual certificate management is needed.
+
+The exact `GET /v1/instagram/callback` route has explicit priority above the broad `Host(api.chota.by)` route and forwards directly to `control-plane-service:8000`. This preserves the OAuth callback's `302 Location` response; all other API requests, including other methods on this path, continue through KrakenD. The callback remains public and Instagram self-service remains disabled.
 
 **Traefik configuration** is managed via k3s's HelmChartConfig (see `platform/traefik-routes/traefik-helm-config.yaml.ref`).
 

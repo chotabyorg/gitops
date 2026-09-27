@@ -6,6 +6,7 @@ resources:
   - ingressroute-chota-http.yaml
   - ingressroute-outsors.yaml
   - ingressroute-www.yaml
+  - ingressroute-api-instagram-callback.yaml
   - ingressroute-api.yaml
   - ingressroute-agents.yaml
   - ingressroute-blockrise.yaml
