@@ -5,7 +5,7 @@ namespace: prod
 images:
   - name: control-plane-service
     newName: ghcr.io/chotabyorg/control-plane-service
-    newTag: af20f6c
+    newTag: a78bc71
 configMapGenerator:
   - name: control-plane-config
     env: config.properties
