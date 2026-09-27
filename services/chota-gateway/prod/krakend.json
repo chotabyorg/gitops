@@ -196,14 +196,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -234,14 +228,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -272,14 +260,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -313,14 +295,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -586,18 +562,7 @@
           "method": "POST",
           "host": [
             "http://ai-agent-service:8000"
-          ],
-          "extra_config": {
-            "modifier/martian": {
-              "header.Modifier": {
-                "scope": [
-                  "request"
-                ],
-                "name": "X-Service-Token",
-                "value": "{{ env \"CHAT_S2S_TOKEN\" }}"
-              }
-            }
-          }
+          ]
         }
       ]
     },
@@ -2211,14 +2176,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2253,14 +2212,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2291,14 +2244,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2329,14 +2276,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2367,14 +2308,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2405,14 +2340,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2446,14 +2375,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2484,14 +2407,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
@@ -2522,14 +2439,8 @@
           "disable_jwk_security": true,
           "cookie_key": "access_token",
           "propagate_claims": [
-            [
-              "sub",
-              "X-User-Id"
-            ],
-            [
-              "role",
-              "X-User-Role"
-            ]
+            ["sub", "X-User-Id"],
+            ["role", "X-User-Role"]
           ]
         }
       },
