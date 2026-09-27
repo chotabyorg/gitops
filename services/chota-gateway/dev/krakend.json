@@ -266,7 +266,18 @@
           "method": "POST",
           "host": [
             "http://ai-agent-service"
-          ]
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "X-Service-Token",
+                "value": "{{ env \"CHAT_S2S_TOKEN\" }}"
+              }
+            }
+          }
         }
       ]
     },

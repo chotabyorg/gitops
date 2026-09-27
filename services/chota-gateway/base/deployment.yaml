@@ -12,6 +12,15 @@ spec:
         - image: krakend:2.13.3
           name: chota-gateway
           command: ["krakend", "run", "-c", "/etc/krakend/krakend.json"]
+          env:
+            - name: FC_ENABLE
+              value: "1"
+            - name: CHAT_S2S_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chat-s2s-secret
+                  key: CHAT_S2S_TOKEN
+                  optional: true
           ports:
             - containerPort: 8080
           volumeMounts:
