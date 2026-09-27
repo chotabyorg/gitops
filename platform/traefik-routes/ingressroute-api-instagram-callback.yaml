@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: api-instagram-callback
+  namespace: prod
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`api.chota.by`) && Path(`/v1/instagram/callback`) && Method(`GET`)
+      priority: 1000
+      services:
+        - kind: Service
+          name: control-plane-service
+          namespace: prod
+          port: 8000
+  tls:
+    certResolver: le
