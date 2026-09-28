@@ -29,6 +29,12 @@ spec:
           ports:
             - containerPort: 8000
           env:
+            - name: CHAT_S2S_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chat-s2s-secret
+                  key: CHAT_S2S_TOKEN
+                  optional: true
             - name: INTERNAL_API_TOKEN
               valueFrom:
                 secretKeyRef:

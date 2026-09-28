@@ -13,6 +13,13 @@ spec:
           name: website-gateway-service
           ports:
             - containerPort: 8080
+          env:
+            - name: CHAT_S2S_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chat-s2s-secret
+                  key: CHAT_S2S_TOKEN
+                  optional: true
           envFrom:
             - configMapRef:
                 name: website-gateway-config
