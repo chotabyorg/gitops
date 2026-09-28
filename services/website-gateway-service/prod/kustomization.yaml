@@ -5,7 +5,7 @@ namespace: prod
 images:
   - name: website-gateway-service
     newName: ghcr.io/chotabyorg/website-gateway-service
-    newTag: 2dfc7ec
+    newTag: fda632c
 configMapGenerator:
   - envs:
       - config.properties
