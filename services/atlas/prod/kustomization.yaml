@@ -9,8 +9,8 @@ images:
     digest: sha256:17ba5c0c9456e8b59838d040aaac635cef0f03bdcccfaff7c109963b84f11a1f
   - name: atlas-web-blue
     newName: ghcr.io/chotabyorg/atlas
-    newTag: 0897df868378f4f911bf32aeb8896259318a85fd
-    digest: sha256:17ba5c0c9456e8b59838d040aaac635cef0f03bdcccfaff7c109963b84f11a1f
+    newTag: 23a104c06d24990fd5c8e292104bd472d2d9e4b7
+    digest: sha256:173227888ac71210b298a71af43f849b84550b037ab6d81a7b6a757dc252e7d1
   - name: atlas-web-green
     newName: ghcr.io/chotabyorg/atlas
     newTag: 0db373d328be2a473da29a6661e685cb4720ae54
