@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: whatsapp-gateway-service
     newName: ghcr.io/chotabyorg/whatsapp-gateway-service
-    newTag: "f7a06e0"
+    newTag: "ac47fea"
 configMapGenerator:
   - name: whatsapp-gateway-config
     envs:
