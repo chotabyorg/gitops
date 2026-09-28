@@ -7,7 +7,7 @@ namespace: prod
 images:
   - name: instagram-gateway-service
     newName: ghcr.io/chotabyorg/instagram-gateway-service
-    newTag: "2673400"
+    newTag: "f366b46"
 configMapGenerator:
   - name: instagram-gateway-config
     env: config.properties
