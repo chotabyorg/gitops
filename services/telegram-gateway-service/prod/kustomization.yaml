@@ -5,7 +5,7 @@ namespace: prod
 images:
   - name: telegram-gateway-service
     newName: ghcr.io/chotabyorg/telegram-gateway-service
-    newTag: 4067f9b
+    newTag: 591d713
 configMapGenerator:
   - envs:
       - config.properties
