@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../base
   - sealed-secrets.yaml
+  - chat-s2s-sealed-secret.yaml
 namespace: prod
 images:
   - name: ai-agent-service
