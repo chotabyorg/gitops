@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: ai-agent-migrations
+          env:
+            - name: CHAT_S2S_AUTH_REQUIRED
+              value: "false"

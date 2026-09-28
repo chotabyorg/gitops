@@ -4,6 +4,8 @@ resources:
   - ../base
   - sealed-secrets.yaml
   - chat-s2s-sealed-secret.yaml
+patches:
+  - path: migration-chat-auth-patch.yaml
 namespace: prod
 images:
   - name: ai-agent-service
