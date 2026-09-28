@@ -4,6 +4,7 @@ resources:
   - ../base
   - sealed-secrets.yaml
   - chat-s2s-sealed-secret.yaml
+  - mcp-credentials-backfill-job.yaml
 patches:
   - path: migration-chat-auth-patch.yaml
 namespace: prod
