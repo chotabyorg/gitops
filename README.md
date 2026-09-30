@@ -404,3 +404,9 @@ kubectl get deployment user-service -n prod -o yaml
 # View logs
 kubectl logs -n prod -l app=user-service --tail=100 -f
 ```
+
+## ChotaCRM v0.1
+
+The independently reviewed CRM release is promoted through a separate GitOps PR, not direct application CI pushes. See [release provenance, checks and rollout](services/chota-crm-service/RELEASE.md), [backend/storage boundaries](services/chota-crm-service/README.md), [local daily backup and recovery](services/chota-crm-service/operations/BACKUP.md), and [frontend deployment](services/chota-crm-web/README.md). CRM exposes only crm.chota.by; its API is internal behind the existing gateway.
+
+Live prod-services discovery currently uses services/*/prod while the tracked ApplicationSet is stale. This release deliberately leaves that platform file untouched and relies on the verified live generator; never apply the stale file as part of CRM rollout. Both complete CRM prod overlays become discoverable together after deployment review/merge.

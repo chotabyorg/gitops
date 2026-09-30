@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: chota-crm-restore-check-v01
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 900
+  template:
+    metadata:
+      labels:
+        app: chota-crm-restore-check
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: restore-check
+        image: postgres:18.6-alpine3.24@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+        command:
+        - sh
+        - /opt/restore/restore.sh
+        env:
+        - name: RESTORE_FILE
+          value: /backups/REPLACE_WITH_COMPLETED_TIMESTAMP.dump
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        volumeMounts:
+        - name: backups
+          mountPath: /backups
+          readOnly: true
+        - name: data
+          mountPath: /var/lib/postgresql
+        - name: run
+          mountPath: /var/run/postgresql
+        - name: tmp
+          mountPath: /tmp
+        - name: scripts
+          mountPath: /opt/restore
+          readOnly: true
+      volumes:
+      - name: backups
+        persistentVolumeClaim:
+          claimName: chota-crm-service-backups
+          readOnly: true
+      - name: data
+        emptyDir:
+          sizeLimit: 4Gi
+      - name: run
+        emptyDir:
+          sizeLimit: 16Mi
+      - name: tmp
+        emptyDir:
+          sizeLimit: 32Mi
+      - name: scripts
+        configMap:
+          name: chota-crm-restore-scripts
+          defaultMode: 292

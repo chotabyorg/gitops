@@ -7,6 +7,7 @@ namespace: prod
 images:
   - name: krakend
     newTag: "2.13.3"
+    digest: sha256:bd392b692271209927da6c62f1b42d7f8f7bd0cd60b00d97c93bb5b8d42b4999
 configMapGenerator:
   - name: krakend-config
     files:
