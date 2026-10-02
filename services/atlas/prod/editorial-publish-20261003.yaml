@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: atlas-editorial-publish-20261003
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: atlas-editorial-publish
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      # SQLite's RWO volume can be shared only on the API pod's node.
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: atlas
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: publish
+          image: ghcr.io/chotabyorg/atlas@sha256:17ba5c0c9456e8b59838d040aaac635cef0f03bdcccfaff7c109963b84f11a1f
+          workingDir: /srv/chota
+          command:
+            - node
+            - --input-type=module
+            - -e
+            - |
+              import { DatabaseSync } from 'node:sqlite';
+              import { existsSync } from 'node:fs';
+              import { EDITORIAL_QUEUE, validateEditorialArticle, renderEditorialArticle } from './server/editorial.mjs';
+              const slugs = ['shoulder-joint', 'hip-joint'];
+              const path = process.env.EDITORIAL_DB_PATH || '/data/chota.sqlite';
+              if (!existsSync(path)) throw new Error('Production database is missing');
+              const articles = slugs.map(slug => {
+                const article = EDITORIAL_QUEUE.find(item => item.slug === slug);
+                if (!article) throw new Error('Article missing: ' + slug);
+                validateEditorialArticle(article);
+                renderEditorialArticle(article);
+                return article;
+              });
+              const db = new DatabaseSync(path);
+              try {
+                db.exec('PRAGMA busy_timeout=15000');
+                if (db.prepare('PRAGMA quick_check').get().quick_check !== 'ok') throw new Error('SQLite integrity check failed');
+                db.exec('BEGIN IMMEDIATE');
+                try {
+                  if (db.prepare("SELECT value FROM meta WHERE key='editorial_paused'").get()?.value === 'true') throw new Error('Editorial queue is paused');
+                  const now = Date.now();
+                  const publish = db.prepare(`INSERT INTO editorial_publications(slug,scheduled_at,verification_status,published_at,failed_at,failure,updated_at)
+                    VALUES(?,?,?, ?,NULL,NULL,?) ON CONFLICT(slug) DO UPDATE SET
+                    published_at=excluded.published_at,failed_at=NULL,failure=NULL,updated_at=excluded.updated_at
+                    WHERE editorial_publications.published_at IS NULL`);
+                  for (const article of articles) publish.run(article.slug,Date.parse(article.scheduledAt),article.verificationStatus,now,now);
+                  for (const slug of slugs) if (!db.prepare('SELECT published_at FROM editorial_publications WHERE slug=?').get(slug)?.published_at) throw new Error('Publication not saved: '+slug);
+                  db.exec('COMMIT');
+                } catch (error) { db.exec('ROLLBACK'); throw error; }
+                console.log(JSON.stringify({published:slugs,checked:true}));
+              } finally { db.close(); }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits: {cpu: 250m, memory: 128Mi}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: atlas-data}
