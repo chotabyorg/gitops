@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: chota-crm-service-backup-initial-v01
+  name: chota-crm-service-backup-initial-v02
   annotations:
     argocd.argoproj.io/sync-wave: '2'
 spec:
@@ -30,7 +30,7 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
         - sh
-        - /opt/crm-backup/backup.sh
+        - /opt/crm-backup/backup-ready.sh
         envFrom:
         - configMapRef:
             name: chota-crm-service-backup-config

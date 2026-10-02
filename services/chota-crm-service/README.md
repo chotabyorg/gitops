@@ -19,10 +19,15 @@ The API initContainer uses exactly the application image. `prod/migrate.py` wait
 
 Startup/liveness check `/health`; API readiness checks `/ready` including revision `0001_crm` and the booking exclusion constraint. A successful process probe does not bypass migration compatibility. API and frontend are single replicas with maxSurge 0 / maxUnavailable 1; future updates can briefly interrupt CRM. PostgreSQL uses Recreate and a 60-second termination grace period so two postmasters cannot share its RWO volume.
 
+Both the initial `backup-initial-v02` Job and the daily CronJob run `prod/backup-ready.sh` before the unchanged reviewed archive helper. It tolerates transient PostgreSQL reachability failures with 30 bounded probes, then either executes the helper once or fails without starting a dump. API health and sync waves alone do not establish connectivity from a newly created backup pod. Readiness is not authentication or archive validation; failures in the actual helper still fail the Job. See the [backup runbook](operations/BACKUP.md) for the observed first-release failure, retry bounds and versioned-Job rollout.
+
 ## Validation
 
 ```sh
 python3 services/chota-crm-service/operations/validate.py
+python3 services/chota-crm-service/operations/test-backup-readiness.py
+# Focused real-PG backup startup/failure proof on disposable local Docker resources.
+python3 services/chota-crm-service/operations/verify-backup-readiness.py
 kubectl kustomize services/chota-crm-service/prod
 kubectl kustomize services/chota-crm-web/prod
 # Isolated Docker proof; defaults to the pinned release image (registry access required).
@@ -31,7 +36,7 @@ python3 services/chota-crm-service/operations/verify-local.py
 python3 services/chota-crm-service/operations/verify-local.py reviewed-local-image
 ```
 
-The manifest validator requires Python/PyYAML and the available kubectl Kustomize v5. It renders every production overlay and checks collisions, selectors, digest pins, protected storage, references, probes, network boundaries and exact reviewed helper/config hashes. The local proof uses private disposable Docker networks, no host ports and synthetic/empty data; verifies delayed DB startup, concurrent migration serialization, held-lock blocking, hardened API/PG startup, PG persistence, backup mode/archive integrity and isolated restore, then removes only its own resources. It does not prove production image-pull access, CNI enforcement, TLS or SSO.
+The manifest validator requires Python/PyYAML and the available kubectl Kustomize v5. It renders every production overlay and checks collisions, selectors, digest pins, protected storage, references, probes, network boundaries and exact reviewed helper/config hashes. The focused backup proof uses a delayed PG18 server, a never-ready endpoint, real dump/write failures and a separate backup volume with UID70/read-only clients. The broader local proof uses private disposable Docker networks, no host ports and synthetic/empty data; verifies delayed DB startup, concurrent migration serialization, held-lock blocking, hardened API/PG startup, PG persistence, backup mode/archive integrity and isolated restore, then removes only its own resources. Neither proves production image-pull access, CNI enforcement, TLS or SSO.
 
 ## Rollback
 

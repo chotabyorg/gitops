@@ -84,9 +84,28 @@ assert pg['spec']['strategy']['type'] == 'Recreate'
 assert '/var/lib/postgresql' in [v['mountPath'] for v in pg['spec']['template']['spec']['containers'][0]['volumeMounts']]
 cron = one(backend, 'CronJob', CRM+'-backup')['spec']
 assert cron['concurrencyPolicy'] == 'Forbid' and cron['timeZone'] == 'Etc/UTC' and cron['schedule'] == '15 2 * * *'
+assert cron['suspend'] is False and cron['startingDeadlineSeconds'] == 3600
 assert cron['jobTemplate']['spec']['activeDeadlineSeconds'] == 900
-job = one(backend, 'Job', CRM+'-backup-initial-v01')
+assert cron['jobTemplate']['spec']['backoffLimit'] == 1
+job = one(backend, 'Job', CRM+'-backup-initial-v02')
+assert not any(x['kind'] == 'Job' and x['metadata']['name'] == CRM+'-backup-initial-v01' for x in backend)
 assert job['spec'] == cron['jobTemplate']['spec']
+backup_pod = job['spec']['template']['spec']
+backup_container = backup_pod['containers'][0]
+assert backup_container['command'] == ['sh', '/opt/crm-backup/backup-ready.sh']
+assert backup_container['env'] == [{'name': 'PGPASSWORD', 'valueFrom': {'secretKeyRef': {'name': CRM+'-secret', 'key': 'POSTGRES_PASSWORD'}}}]
+assert backup_container['resources'] == {'requests': {'cpu': '50m', 'memory': '32Mi'}, 'limits': {'cpu': '250m', 'memory': '128Mi'}}
+assert backup_pod['securityContext']['runAsUser'] == 70
+backup_volumes = {v['name']: v for v in backup_pod['volumes']}
+assert backup_volumes['backups']['persistentVolumeClaim']['claimName'] == CRM+'-backups'
+assert backup_volumes['scripts']['configMap']['defaultMode'] == 292
+assert next(v for v in backup_container['volumeMounts'] if v['name'] == 'scripts')['readOnly'] is True
+backup_scripts = configs[backup_volumes['scripts']['configMap']['name']]['data']
+assert set(backup_scripts) == {'backup-ready.sh', 'backup.sh', 'restore-check.sh'}
+for name, content in backup_scripts.items():
+    assert content.encode() == (ROOT / f'services/{CRM}/prod/{name}').read_bytes(), 'Backup script bytes changed during render'
+backup_config = configs[backup_container['envFrom'][0]['configMapRef']['name']]['data']
+assert backup_config['PGHOST'] == CRM+'-postgres' and backup_config['BACKUP_DIR'] == '/backups'
 assert one(backend, 'NetworkPolicy', CRM+'-api')['spec']['ingress'][0]['from'] == [{'podSelector': {'matchLabels': {'app': 'chota-gateway'}}}]
 assert one(frontend, 'NetworkPolicy', 'chota-crm-web')['spec']['egress'] == []
 assert not any(x['kind'] == 'IngressRoute' and CRM in str(x['spec']) for x in routes)
