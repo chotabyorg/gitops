@@ -61,7 +61,7 @@ try:
  assert sql('SELECT version_num FROM alembic_version')=='0001_crm'
  print('PASS: non-root read-only PG18 restart persists schema at PG18 mount')
  backup=['--network',prefix,'--read-only','--user','70:70','--cap-drop=ALL','--security-opt=no-new-privileges','--memory','128m','--cpus','0.25','--tmpfs','/tmp:uid=70,gid=70,size=33554432','--mount',f'type=volume,src={volumes[2]},dst=/backups','-v',f'{BASE}:/opt/crm-backup:ro','-e','PGHOST=source','-e','PGUSER=crm_test','-e','PGDATABASE=crm_test','-e','BACKUP_DIR=/backups','-e','PGCONNECT_TIMEOUT=10','-e','PGOPTIONS=-c statement_timeout=600000 -c lock_timeout=30000']
- r=run(['run','--rm',*backup,PG,'sh','/opt/crm-backup/backup.sh']);assert 'CRM backup completed' in r.stdout
+ r=run(['run','--rm',*backup,PG,'sh','/opt/crm-backup/backup-ready.sh']);assert 'CRM backup completed' in r.stdout
  r=run(['run','--rm','--network','none','--user','70:70','--mount',f'type=volume,src={volumes[2]},dst=/backups,readonly',PG,'sh','-c',"set -- /backups/chotacrm-*.dump; test $# -eq 1; test \"$(stat -c %a \"$1\")\" = 600; pg_restore --list \"$1\" >/dev/null"]);assert r.returncode==0
  print('PASS: exact backup helper, separate volume, UID70, mode0600, valid archive')
  pg(prefix+'-target',volumes[1],'target')

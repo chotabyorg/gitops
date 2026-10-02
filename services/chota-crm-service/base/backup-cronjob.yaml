@@ -39,7 +39,7 @@ spec:
             imagePullPolicy: IfNotPresent
             command:
             - sh
-            - /opt/crm-backup/backup.sh
+            - /opt/crm-backup/backup-ready.sh
             envFrom:
             - configMapRef:
                 name: chota-crm-service-backup-config

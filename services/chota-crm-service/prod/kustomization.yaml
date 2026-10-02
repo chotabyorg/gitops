@@ -28,6 +28,7 @@ configMapGenerator:
   - migrate.py
 - name: chota-crm-service-backup-scripts
   files:
+  - backup-ready.sh
   - backup.sh
   - restore-check.sh
 generatorOptions:
