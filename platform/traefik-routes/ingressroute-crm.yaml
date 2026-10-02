@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: crm-chota-by
+  namespace: prod
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`crm.chota.by`)
+    services:
+    - kind: Service
+      name: chota-crm-web
+      namespace: prod
+      port: 3000
+  tls:
+    certResolver: le

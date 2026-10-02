@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chota-crm-service-postgres
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  type: ClusterIP
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: postgres
+  selector:
+    component: postgres

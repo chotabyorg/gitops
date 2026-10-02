@@ -14,3 +14,4 @@ resources:
   - ingressroute-repetly.yaml
   - ingressroute-repetly-storage.yaml
   - ingressroute-widget.yaml
+  - ingressroute-crm.yaml

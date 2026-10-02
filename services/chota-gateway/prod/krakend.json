@@ -8,7 +8,8 @@
     "security/cors": {
       "allow_origins": [
         "https://chota.by",
-        "https://agents.chota.by"
+        "https://agents.chota.by",
+        "https://crm.chota.by"
       ],
       "allow_methods": [
         "GET",
@@ -2541,6 +2542,3232 @@
             "http://knowledge-base-service:8000"
           ]
         }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/members",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/members",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "search",
+        "archived",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}",
+      "method": "DELETE",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/identities",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/identities",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/identities",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/identities",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/identities/{identity_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/identities/{identity_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/identities/{identity_id}",
+      "method": "DELETE",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/identities/{identity_id}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories/{category_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories/{category_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories/{category_id}",
+      "method": "DELETE",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/categories/{category_id}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "search",
+        "active",
+        "type",
+        "category_id",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings/{offering_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings/{offering_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings/{offering_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/catalog/offerings/{offering_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/inquiries",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/inquiries",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "customer_id",
+        "status",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/inquiries",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/inquiries",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/inquiries/{inquiry_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/inquiries/{inquiry_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/inquiries/{inquiry_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/inquiries/{inquiry_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deal-stages",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deal-stages",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "customer_id",
+        "stage_id",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items/{item_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items/{item_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items/{item_id}",
+      "method": "DELETE",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/deals/{deal_id}/items/{item_id}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/resources",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/resources",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "active",
+        "search",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/resources",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/resources",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/resources/{resource_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/resources/{resource_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/resources/{resource_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/resources/{resource_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/bookings/availability",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/bookings/availability",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "start_at",
+        "end_at",
+        "resource_id",
+        "exclude_booking_id"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/bookings",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/bookings",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "customer_id",
+        "resource_id",
+        "status",
+        "range_start",
+        "range_end",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/bookings",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/bookings",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}/cancel",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}/cancel",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}/complete",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/bookings/{booking_id}/complete",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/timeline",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/timeline",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/notes",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/notes",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/notes",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/customers/{customer_id}/notes",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/notes/{note_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/notes/{note_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/notes/{note_id}",
+      "method": "DELETE",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/notes/{note_id}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/followups",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/followups",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "customer_id",
+        "status",
+        "assigned_user_id",
+        "due_before",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/followups",
+      "method": "POST",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/followups",
+          "method": "POST",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/followups/{followup_id}",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/followups/{followup_id}",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/followups/{followup_id}",
+      "method": "PATCH",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/followups/{followup_id}",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/followups/{followup_id}",
+      "method": "DELETE",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/followups/{followup_id}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/crm/v1/workspaces/{workspace_id}/audit-events",
+      "method": "GET",
+      "timeout": "15s",
+      "cache_ttl": "0s",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/crm/v1/workspaces/{workspace_id}/audit-events",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://chota-crm-service:8000"
+          ],
+          "extra_config": {
+            "modifier/martian": {
+              "header.Blacklist": {
+                "scope": [
+                  "response"
+                ],
+                "names": [
+                  "Access-Control-Allow-Origin",
+                  "Access-Control-Allow-Credentials"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "input_query_strings": [
+        "limit",
+        "offset"
       ]
     }
   ]

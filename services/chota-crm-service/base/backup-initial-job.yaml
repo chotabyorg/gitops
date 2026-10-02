@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: chota-crm-service-backup-initial-v01
+  annotations:
+    argocd.argoproj.io/sync-wave: '2'
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 900
+  template:
+    metadata:
+      labels:
+        app: chota-crm-service
+        component: backup
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        runAsGroup: 70
+        fsGroup: 70
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: backup
+        image: postgres
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - /opt/crm-backup/backup.sh
+        envFrom:
+        - configMapRef:
+            name: chota-crm-service-backup-config
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: chota-crm-service-secret
+              key: POSTGRES_PASSWORD
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
+          limits:
+            cpu: 250m
+            memory: 128Mi
+        volumeMounts:
+        - name: backups
+          mountPath: /backups
+        - name: scripts
+          mountPath: /opt/crm-backup
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: backups
+        persistentVolumeClaim:
+          claimName: chota-crm-service-backups
+      - name: scripts
+        configMap:
+          name: chota-crm-service-backup-scripts
+          defaultMode: 292
+      - name: tmp
+        emptyDir:
+          sizeLimit: 32Mi

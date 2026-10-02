@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+- network-policy.yaml
+namespace: prod
+images:
+- name: chota-crm-web
+  newName: ghcr.io/chotabyorg/chota-crm-web
+  newTag: a76dc47beca7f26f51aa65741bf8befc5e13c06c
+  digest: sha256:76cc7dddd468fe7a11a787ef19f411f46766a8e8a1fb2dfe4bfef8fa11d7c3d9
+configMapGenerator:
+- name: chota-crm-web-config
+  envs:
+  - config.properties
