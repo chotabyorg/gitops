@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: voice
+  namespace: argocd
+spec:
+  description: Independent Voice pilot, namespaced application resources only
+  sourceRepos:
+    - git@github.com:chotabyorg/gitops.git
+  destinations:
+    - server: https://10.250.0.2:6443
+      namespace: voice
+  clusterResourceWhitelist: []
+  clusterResourceBlacklist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: PersistentVolumeClaim
+    - group: bitnami.com
+      kind: SealedSecret
+    - group: networking.k8s.io
+      kind: NetworkPolicy

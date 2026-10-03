@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: voice
+resources:
+  - base
+  - network-policy.yaml
+  - sealed-secrets.yaml
+configMapGenerator:
+  - name: chota-va-config
+    envs: [config.properties]
+    files: [runtime_probe.py]
+images:
+  - name: chota-va
+    newName: ghcr.io/chotabyorg/chota-va
+    digest: sha256:9eecdc93205e9c745ca95bf6f7e5e01840f662d9f5c58c36dbe4157856e4caf7

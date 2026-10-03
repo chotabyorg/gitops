@@ -1,6 +1,8 @@
-# Voice cluster bootstrap and future GitOps boundary
+# Voice cluster bootstrap and GitOps boundary
 
-Infrastructure bootstrap is independent of production. No chota-va or current Chota application is deployed.
+Infrastructure bootstrap is independent of production. The first inert chota-va
+pilot is defined in `apps/chota-va`; activation requires the gates in its README.
+Current production Chota applications must never be deployed to this cluster.
 
 - Host: voice.chota.internal, 185.66.68.64, Ubuntu 24.04.5 LTS.
 - Access: `ssh -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519 -p 52222 chota-admin@185.66.68.64`.
@@ -32,12 +34,24 @@ sudo /root/chota-voice-bootstrap/kubeseal --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
 The checked-in certificate is PUBLIC and belongs to voice, fingerprint SHA256 D7:33:B2:25:59:D5:1B:14:99:EE:3D:AA:49:73:FB:EE:5D:61:2A:0B:F8:73:87:4D:5F:93:EA:53:2B:44:65:EE. Refresh from the controller before sealing. Never copy the production private sealing key or reuse production ciphertext. Use strict binding to namespace voice and the intended Secret name.
 
-The existing operational pattern is namespaced ghcr-pull-secret (kubernetes.io/dockerconfigjson), backed by SealedSecret. Voice default ServiceAccount references that name. Credential installation and private-image pull readiness remain pending: no GHCR credential has been copied or minted. The attempt to inspect production credential scope through api.github.com was rejected by automatic approval review, so its scope is unverified. Obtain approval for that exact check/reuse, or provide a dedicated package-read credential through a secure local file. Prefer classic PAT with only read:packages and required package access; do not grant repo/write:packages for pulling.
+The existing operational pattern is namespaced ghcr-pull-secret
+(kubernetes.io/dockerconfigjson), backed by SealedSecret. Voice default
+ServiceAccount references that name. The explicitly approved GitHub API scope
+check found broad production credential scopes: repo, write:packages,
+delete:packages, workflow, admin:public_key. That credential must not be copied.
+Private pull readiness remains pending until a dedicated classic PAT with only
+read:packages and required package ACL is installed through a secure local file.
+No GHCR credential has been copied or minted for voice.
 
 `secrets/ghcr-pull-secret.yaml.template` is a ciphertext-only template. Replace it with output sealed for voice; do not apply the placeholder. No plaintext credential belongs in this repository.
 
-## Future application
+## First application
 
-The examples define the intended boundary, not live resources. After repository review and explicit deployment authorization, chota-va must use project voice, destination cluster voice/private API, and namespace voice. Source must be outside existing `services/*/prod`, e.g. `clusters/voice/apps/chota-va`, to avoid production auto-discovery. That application directory is not created in this PR. Do not enable automated sync or change the current ApplicationSet in this bootstrap PR.
+`argocd/` defines the explicit `voice` AppProject and manual-sync
+`chota-va-voice` Application. Source is `clusters/voice/apps/chota-va`, project
+voice, destination cluster voice, namespace voice. Bootstrap those two resources
+only after merge. They are outside existing `services/*/prod` and production
+ApplicationSet discovery. There is no automated sync. Cluster-wide infrastructure
+is not delegated to this application. The `.example` manifests remain references.
 
 Verify node/system Deployments, DNS, PVC, sealing roundtrip, private API TLS, WireGuard, SSH/UFW and production hashes before any next-stage deployment. Temporary smoke namespace/resources must be removed after testing.
