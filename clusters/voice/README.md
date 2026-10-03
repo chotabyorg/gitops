@@ -8,6 +8,7 @@ Infrastructure bootstrap is independent of production. No chota-va or current Ch
 - k3s: v1.35.9+k3s1, node voice, PodCIDR10.52.0.0/16, ServiceCIDR10.53.0.0/16, DNS10.53.0.10.
 - Private API: https://10.250.0.2:6443, CA validation enabled and IP in TLS SAN. API is bound to WireGuard/loopback and UFW permits management access only from10.250.0.1 on wg0.
 - k3s requires wg-quick@wg0.service at boot; PartOf propagates an explicit WireGuard restart to k3s, preserving the required startup order. No production join token is used.
+- UFW before.rules includes the reference mangle PREROUTING guard for new public-interface Kubernetes/ingress/NodePort traffic before DNAT; it preserves SSH52222, WireGuard51820 and established reply traffic. Public ingress activation later must explicitly review this guard together with UFW rules.
 - Default Traefik retained as ClusterIP with `service.spec.type` for chart40; ServiceLB disabled. No public80/443 or NodePorts.
 - Storage: default local-path, single-node local disk; PVC provisioning and Pod restart persistence are smoke-tested.
 
