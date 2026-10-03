@@ -1,0 +1,43 @@
+# PROPOSAL ONLY: not a live project or ApplicationSet change.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: voice
+  namespace: argocd
+spec:
+  sourceRepos:
+    - git@github.com:chotabyorg/gitops.git
+  destinations:
+    - server: https://10.250.0.2:6443
+      namespace: voice
+  clusterResourceBlacklist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - {group: '', kind: Pod}
+    - {group: '', kind: Service}
+    - {group: '', kind: ConfigMap}
+    - {group: '', kind: Secret}
+    - {group: '', kind: PersistentVolumeClaim}
+    - {group: '', kind: ServiceAccount}
+    - {group: apps, kind: Deployment}
+    - {group: apps, kind: StatefulSet}
+    - {group: apps, kind: DaemonSet}
+    - {group: apps, kind: ReplicaSet}
+    - {group: batch, kind: Job}
+    - {group: batch, kind: CronJob}
+    - {group: networking.k8s.io, kind: Ingress}
+    - {group: networking.k8s.io, kind: NetworkPolicy}
+    - {group: autoscaling, kind: HorizontalPodAutoscaler}
+    - {group: policy, kind: PodDisruptionBudget}
+    - {group: bitnami.com, kind: SealedSecret}
+    - {group: traefik.io, kind: IngressRoute}
+    - {group: traefik.io, kind: IngressRouteTCP}
+    - {group: traefik.io, kind: IngressRouteUDP}
+    - {group: traefik.io, kind: Middleware}
+    - {group: traefik.io, kind: MiddlewareTCP}
+    - {group: traefik.io, kind: TraefikService}
+    - {group: traefik.io, kind: TLSOption}
+    - {group: traefik.io, kind: TLSStore}
+    - {group: traefik.io, kind: ServersTransport}
+    - {group: traefik.io, kind: ServersTransportTCP}

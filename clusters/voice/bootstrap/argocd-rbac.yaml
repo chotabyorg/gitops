@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd-access
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: argocd-voice
+  namespace: argocd-access
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-voice-token
+  namespace: argocd-access
+  annotations:
+    kubernetes.io/service-account.name: argocd-voice
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argocd-voice-manager
+  namespace: voice
+rules:
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: [get, list, watch]
+  - apiGroups: [""]
+    resources: [pods, services, configmaps, secrets, persistentvolumeclaims, serviceaccounts, events]
+    verbs: [create, update, patch, delete, deletecollection]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets, statefulsets, daemonsets]
+    verbs: [create, update, patch, delete, deletecollection]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [create, update, patch, delete, deletecollection]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses, networkpolicies]
+    verbs: [create, update, patch, delete, deletecollection]
+  - apiGroups: [autoscaling]
+    resources: [horizontalpodautoscalers]
+    verbs: [create, update, patch, delete, deletecollection]
+  - apiGroups: [policy]
+    resources: [poddisruptionbudgets]
+    verbs: [create, update, patch, delete, deletecollection]
+  - apiGroups: [bitnami.com]
+    resources: [sealedsecrets]
+    verbs: [create, update, patch, delete, deletecollection]
+  - apiGroups: [traefik.io]
+    resources: [ingressroutes, ingressroutetcps, ingressrouteudps, middlewares, middlewaretcps, traefikservices, tlsoptions, tlsstores, serverstransports, serverstransporttcps]
+    verbs: [create, update, patch, delete, deletecollection]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argocd-voice-manager
+  namespace: voice
+subjects:
+  - kind: ServiceAccount
+    name: argocd-voice
+    namespace: argocd-access
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: argocd-voice-manager
