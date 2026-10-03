@@ -1,0 +1,13 @@
+node-name: voice
+node-ip: 10.250.0.2
+bind-address: 10.250.0.2
+advertise-address: 10.250.0.2
+tls-san:
+  - 10.250.0.2
+cluster-cidr: 10.52.0.0/16
+service-cidr: 10.53.0.0/16
+cluster-dns: 10.53.0.10
+flannel-iface: wg0
+write-kubeconfig-mode: "0600"
+disable:
+  - servicelb
