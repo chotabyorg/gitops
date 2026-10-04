@@ -5,3 +5,4 @@ resources:
   - argocd-rbac.yaml
   - traefik-config.yaml
   - default-serviceaccount.yaml
+  - ../secrets
