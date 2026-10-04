@@ -1,0 +1,13 @@
+[Unit]
+Description=Limit Chota Voice S2S externalIP ports to WireGuard peer
+After=network-pre.target
+Before=k3s.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/chota-voice-s2s-guard start
+ExecStop=/usr/local/sbin/chota-voice-s2s-guard stop
+
+[Install]
+WantedBy=multi-user.target

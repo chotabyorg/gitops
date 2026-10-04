@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+# These rules touch only the newly reserved WireGuard-address S2S ports.
+# Mangle PREROUTING runs before kube-proxy DNAT and preserves existing traffic.
+mode=${1:-start}
+operation=-I
+[ "$mode" = stop ] && operation=-D
+rule() {
+  if [ "$mode" = stop ]; then
+    iptables -w -t mangle -C PREROUTING "$@" 2>/dev/null && iptables -w -t mangle -D PREROUTING "$@" || true
+  else
+    iptables -w -t mangle -C PREROUTING "$@" 2>/dev/null || iptables -w -t mangle -I PREROUTING 1 "$@"
+  fi
+}
+rule -d 10.250.0.1/32 ! -i wg0 -p tcp -m multiport --dports 18080,18081 -m comment --comment chota-voice-s2s-wg-only -j DROP
+rule -d 10.250.0.1/32 -i wg0 ! -s 10.250.0.2/32 -p tcp -m multiport --dports 18080,18081 -m comment --comment chota-voice-s2s-peer-only -j DROP
