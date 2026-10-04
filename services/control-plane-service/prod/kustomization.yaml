@@ -2,6 +2,7 @@ resources:
   - ../base
   - sealed-secrets.yaml
   - voice-s2s-service.yaml
+  - ai-voice-s2s-service.yaml
 namespace: prod
 images:
   - name: control-plane-service
