@@ -29,6 +29,16 @@ spec:
             - configMapRef:
                 name: chota-va-config
           env:
+            - name: CHOTA_CONTROL_PLANE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chota-va-chota-s2s
+                  key: CHOTA_CONTROL_PLANE_TOKEN
+            - name: CHOTA_CHAT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chota-va-chota-s2s
+                  key: CHOTA_CHAT_TOKEN
             - name: API_TOKEN
               valueFrom:
                 secretKeyRef:

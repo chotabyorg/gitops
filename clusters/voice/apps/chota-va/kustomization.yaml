@@ -5,6 +5,7 @@ resources:
   - base
   - network-policy.yaml
   - sealed-secrets.yaml
+  - chota-s2s-sealed-secret.yaml
 configMapGenerator:
   - name: chota-va-config
     envs: [config.properties]
