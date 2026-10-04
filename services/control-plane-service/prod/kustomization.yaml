@@ -7,6 +7,7 @@ images:
   - name: control-plane-service
     newName: ghcr.io/chotabyorg/control-plane-service
     newTag: 96a4b40
+    digest: sha256:1979950cebd0bd20a26ff96e9284f3e3252d2c7ce6b253f75f8f1aa0af857e9a
 configMapGenerator:
   - name: control-plane-config
     env: config.properties
