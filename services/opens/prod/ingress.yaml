@@ -1,0 +1,46 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: opens-canonical
+spec:
+  redirectRegex:
+    regex: ^https?://(www\.)?opensi\.by/(.*)
+    replacement: https://opensi.by/${2}
+    permanent: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: opens-https
+spec:
+  entryPoints: [websecure]
+  routes:
+    - kind: Rule
+      match: Host(`opensi.by`)
+      services:
+        - name: opens
+          port: 80
+    - kind: Rule
+      match: Host(`www.opensi.by`)
+      middlewares:
+        - name: opens-canonical
+      services:
+        - name: opens
+          port: 80
+  tls:
+    certResolver: le
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: opens-http
+spec:
+  entryPoints: [web]
+  routes:
+    - kind: Rule
+      match: Host(`opensi.by`) || Host(`www.opensi.by`)
+      middlewares:
+        - name: opens-canonical
+      services:
+        - name: opens
+          port: 80
