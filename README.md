@@ -2,6 +2,16 @@
 
 Kubernetes manifests for the CHOTA platform, managed with [Kustomize](https://kustomize.io/).
 
+## Main Chota Platform vs Chota 2.0
+
+This repository describes the desired deployment state of **Main Chota Platform**, the production platform built from separate service repositories. Main planning belongs to [GitHub Project #3 — Chota Platform](https://github.com/orgs/chotabyorg/projects/3).
+
+[`chotabyorg/chota`](https://github.com/chotabyorg/chota) and [Project #6 — Chota 2.0](https://github.com/orgs/chotabyorg/projects/6) belong to a **separate, currently paused fashion/e-commerce AI sales product**. Its code, Conversation Core, E0/E1/E4, issues and roadmap are not Main Platform implementation, architecture evidence or backlog.
+
+Source code at a named revision, a draft PR, GitOps desired state and verified live runtime are different evidence. The default branch or an image tag in GitOps alone does not prove which revision is running. Record the source commit, image provenance and observed runtime when making deployment claims.
+
+The [Main Chota Conversation Foundation ADR](docs/main-chota-conversation-foundation.md) records accepted architecture direction with implementation pending. It does not add a service or route production traffic.
+
 ## Architecture
 
 ```
