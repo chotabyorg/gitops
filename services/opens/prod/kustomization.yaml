@@ -7,5 +7,5 @@ resources:
 images:
   - name: opens
     newName: ghcr.io/chotabyorg/opens
-    newTag: "bfeaee7da35568cac87684c6a01e07f8bf4fd957"
-    digest: sha256:7b532da5528327027f00161d1f194f491d27d14ac1b279629610e37030e384d7
+    newTag: "df95648c221bf5ef28ec5c7f63e44152bb619a11"
+    digest: sha256:98cf843db634b1caa3312cc2d1323a8220587f375df11145e2f49efac7d54205
