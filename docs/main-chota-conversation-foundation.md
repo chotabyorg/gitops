@@ -10,7 +10,7 @@ The current-flow statements below describe inspected Main source revisions, not 
 
 ## Context and problems
 
-The inspected text-channel paths resolve integration configuration through control-plane and call AI independently for each inbound message:
+The representative inspected Telegram, Instagram and Website Widget source paths resolve integration configuration through control-plane and call AI independently for each inbound message:
 
 ```text
 Provider event
@@ -22,6 +22,8 @@ Provider event
   → user + assistant history saved to Redis
   → answer returned → Gateway formatting / network delivery → Provider
 ```
+
+WhatsApp's pinned source describes an MVP gateway foundation, not a full production launch. Its client expects control-plane polling with `channel_type=WHATSAPP`, while the pinned control-plane `ChannelType` enum contains only `TELEGRAM`, `INSTAGRAM`, `WEBSITE_WIDGET` and `VOICE`. This unresolved source-contract mismatch means the WhatsApp snapshot does not establish end-to-end integration compatibility. These source observations do not establish live WhatsApp behavior.
 
 The compact current diagram is `Gateway → AI → Redis → Gateway`; Redis stores context before the gateway sends the answer. `ConversationSession` is AI context identity, not a provider-neutral platform Conversation. Redis history has a TTL and stores the entire user/assistant context, not an authoritative communications journal.
 
@@ -67,7 +69,7 @@ Conversation stores trusted integration/routing references, not gateway/provider
 
 ## Responsibility map
 
-“Current” is the inspected Main text path; absence means no shared platform owner identified in that path. Voice donor capabilities are not current Main capabilities.
+“Current” is the representative inspected Telegram, Instagram and Website Widget source path above; absence means no shared platform owner identified in that path. WhatsApp compatibility remains unresolved as described above. Voice donor capabilities are not current Main capabilities.
 
 | Responsibility | Current | Target |
 | --- | --- | --- |
@@ -184,14 +186,14 @@ Source evidence must be pinned to exact inspected revisions; live deployment was
 
 AI, Telegram and control-plane default-branch revisions were reconfirmed on 2026-10-05. Instagram, Website and WhatsApp evidence uses the correction audit's pinned source snapshots; their latest default-branch revisions were not rechecked for this ADR. The concurrency risk is an inference from the inspected unsynchronized history read/whole-list write, not a claimed observed production incident.
 
-| Main repository / inspected revision | Source paths supporting current flow |
+| Main repository / inspected revision | Source evidence and compatibility limits |
 | --- | --- |
 | ai-agent-service — `3eafb97726fd33e614e443bbac5c10f9fce72a81` | [Session model](https://github.com/chotabyorg/ai-agent-service/blob/3eafb97726fd33e614e443bbac5c10f9fce72a81/models/session.py#L13-L38), [session identity lookup](https://github.com/chotabyorg/ai-agent-service/blob/3eafb97726fd33e614e443bbac5c10f9fce72a81/services/session_service.py#L33-L59), [load/generate/save-before-return flow](https://github.com/chotabyorg/ai-agent-service/blob/3eafb97726fd33e614e443bbac5c10f9fce72a81/services/llm_service.py#L340-L470), [Redis whole-history GET/SET with TTL](https://github.com/chotabyorg/ai-agent-service/blob/3eafb97726fd33e614e443bbac5c10f9fce72a81/services/history_service.py#L49-L78) |
 | telegram-gateway-service — `591d713302f06dd15fd583db1ca5629b240b4bf7` | [Direct AI request and external identity](https://github.com/chotabyorg/telegram-gateway-service/blob/591d713302f06dd15fd583db1ca5629b240b4bf7/services/core_api.py#L22-L34), [provider send after AI returns](https://github.com/chotabyorg/telegram-gateway-service/blob/591d713302f06dd15fd583db1ca5629b240b4bf7/bot/handlers.py#L27-L34) |
-| control-plane-service — `96a4b40daeb113f435f5cd02a6f7a2fc12502b24` | [Integration binding](https://github.com/chotabyorg/control-plane-service/blob/96a4b40daeb113f435f5cd02a6f7a2fc12502b24/models/integration.py#L27-L47), [authenticated internal route](https://github.com/chotabyorg/control-plane-service/blob/96a4b40daeb113f435f5cd02a6f7a2fc12502b24/api/routes/internal.py#L18-L30), [trusted integration/owner/agent and credential response](https://github.com/chotabyorg/control-plane-service/blob/96a4b40daeb113f435f5cd02a6f7a2fc12502b24/services/integration_service.py#L135-L156) |
+| control-plane-service — `96a4b40daeb113f435f5cd02a6f7a2fc12502b24` | [ChannelType enum without WhatsApp](https://github.com/chotabyorg/control-plane-service/blob/96a4b40daeb113f435f5cd02a6f7a2fc12502b24/models/integration.py#L14-L18), [integration binding](https://github.com/chotabyorg/control-plane-service/blob/96a4b40daeb113f435f5cd02a6f7a2fc12502b24/models/integration.py#L27-L47), [authenticated internal route](https://github.com/chotabyorg/control-plane-service/blob/96a4b40daeb113f435f5cd02a6f7a2fc12502b24/api/routes/internal.py#L18-L30), [trusted integration/owner/agent and credential response](https://github.com/chotabyorg/control-plane-service/blob/96a4b40daeb113f435f5cd02a6f7a2fc12502b24/services/integration_service.py#L135-L156) |
 | instagram-gateway-service — `f366b46cee2c4e845da150f81df573af467503b6` | [Direct AI request](https://github.com/chotabyorg/instagram-gateway-service/blob/f366b46cee2c4e845da150f81df573af467503b6/services/core_api.py), [in-memory dedup and provider send](https://github.com/chotabyorg/instagram-gateway-service/blob/f366b46cee2c4e845da150f81df573af467503b6/bot/worker.py) |
 | website-gateway-service — `fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b` | [Direct AI request](https://github.com/chotabyorg/website-gateway-service/blob/fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b/services/core_api.py), [validated widget request and HTTP reply](https://github.com/chotabyorg/website-gateway-service/blob/fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b/api/handlers.py) |
-| whatsapp-gateway-service — `ac47fea4a5c630622cee218747c0f0b9ec551d69` | [Direct AI request](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/services/core_api.py), [in-memory dedup, scoped external identity and provider send](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/bot/worker.py) |
+| whatsapp-gateway-service — `ac47fea4a5c630622cee218747c0f0b9ec551d69` | [MVP scope](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/README.md#L1-L5), [expected WHATSAPP polling contract](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/services/control_plane_client.py#L31-L39), [direct AI request](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/services/core_api.py), [in-memory dedup, scoped external identity and provider send](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/bot/worker.py). End-to-end compatibility is unresolved against the pinned control-plane enum. |
 
 The foundation implementation belongs in Project #3 as **`[HOT] Main Chota Conversation foundation: durable messages, turn coordination and delivery authority`**, under the existing initiative rather than a duplicate epic. Keep future implementation in Backlog and link the item to this ADR, AI #18 and pending Business V2 PR #43.
 
