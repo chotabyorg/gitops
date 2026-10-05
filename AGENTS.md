@@ -9,6 +9,13 @@ Kubernetes manifests for the CHOTA platform. Managed with Kustomize (v5+) and de
 - **CI** = each service repo calls `.github/workflows/reusable-deploy.yaml` in this repo
 - **Deployment** = ArgoCD watches this repo and auto-syncs to the cluster (no manual `kubectl apply`)
 
+### Product boundary and evidence
+
+- GitOps describes **Main Chota Platform**. Use [Project #3 — Chota Platform](https://github.com/orgs/chotabyorg/projects/3) for Main planning.
+- Never conflate Main with [`chotabyorg/chota`](https://github.com/chotabyorg/chota) / [Project #6 — Chota 2.0](https://github.com/orgs/chotabyorg/projects/6), the separate, currently paused fashion/e-commerce product. Its code, Conversation Core, E0/E1/E4, issues and roadmap are not Main architecture evidence or backlog. A separate task must explicitly authorize any use as an external reference.
+- Audits must identify the repository and exact source revision for each finding. Distinguish **source code**, **draft/pending PR**, **GitOps desired state** and **verified live runtime**. Neither a default branch nor an image tag alone proves deployed code; report the limit when live provenance was not verified.
+- Follow the accepted [Main Chota Conversation Foundation ADR](docs/main-chota-conversation-foundation.md) for future communication work. Its implementation is pending; do not present Conversation Service, managed turns or clean Voice Gateway as deployed capabilities.
+
 ## Verification
 
 ```bash
