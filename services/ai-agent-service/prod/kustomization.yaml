@@ -4,8 +4,11 @@ resources:
   - ../base
   - sealed-secrets.yaml
   - chat-s2s-sealed-secret.yaml
+  - business-transport/sealed-secret.yaml
+  - business-transport/signing-sealed-secret.yaml
   - mcp-credentials-backfill-job.yaml
 patches:
+  - path: business-transport/deployment-patch.yaml
   - path: migration-chat-auth-patch.yaml
 namespace: prod
 images:
@@ -17,3 +20,6 @@ configMapGenerator:
     env: config.properties
   - name: ai-agent-service-postgres-config
     env: postgres.properties
+  - name: ai-business-tls-config
+    files:
+      - nginx.conf=business-transport/nginx.conf
