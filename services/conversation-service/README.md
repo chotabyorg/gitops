@@ -5,12 +5,13 @@ worker and dedicated PostgreSQL 16 with persistent storage. [GitOps #111](https:
 tracks this lane; the [Main ADR](../../docs/main-chota-conversation-foundation.md)
 is architecture authority. The Foundation remains an unfinished umbrella.
 
-**Source candidate only. No Conversation `prod` overlay exists yet, no real seal or
-release image is supplied, and no production mutation has been performed.** Files
-under `release/` are staging inputs, outside the live ApplicationSet's
-`services/*/prod` discovery. A template or fixture render is not a deployable seal.
-Read [release stages, prerequisites and rollback](RELEASE.md) before materializing
-the complete production directory.
+**Exact dark release candidate; no production release approved or mutation performed.**
+The complete `prod/` directory now pins the published Conversation source image and
+PostgreSQL artifact and contains genuine Main-scoped seals. It is not on GitOps main.
+Its eventual main merge is a deployment action and requires fresh release CLEAN.
+Files under `release/` remain staging inputs for later separately reviewed phases;
+a template or fixture render is not a deployable seal. Read
+[release stages, prerequisites and rollback](RELEASE.md) before any promotion.
 
 ## Components and ownership
 
@@ -103,5 +104,7 @@ Canary validation additionally requires `--approval-record` pointing to a privat
 non-secret record with exact candidate IDs and true binding, logging, smoke-safety
 and CLEAN exact-release gates; the record references completed external proofs,
 it does not perform or replace them.
-Real migration serialization, hardened container/API/worker lifecycle and
-effective positive/negative NetworkPolicy proof remain pre-release gates.
+Real migration serialization and local hardened PostgreSQL lifecycle have passed.
+Published API/worker artifact verification and fresh exact release review remain
+required before main promotion; actual Kubernetes volume/probe and effective
+positive/negative NetworkPolicy proof follow dark deployment before activation.

@@ -1,8 +1,10 @@
 # Goal 4A Main production release gates
 
-**Unmerged source candidate; no production release approved.** The reviewed v2
-architecture permits source implementation, not an exact image/seal candidate,
-real widget credential use, production canary or Business-provider smoke.
+**Exact dark release candidate; no production release approved.** Reviewed source
+PRs have merged and immutable images have been published. The complete Conversation
+`prod/` directory remains only on this isolated candidate branch. Fresh exact
+release CLEAN is required before its main merge. The reviewed v2 architecture
+does not authorize real widget credential use, production canary or Business-provider smoke.
 [GitOps #111](https://github.com/chotabyorg/gitops/issues/111),
 [Control Plane #21](https://github.com/chotabyorg/control-plane-service/issues/21)
 and the [Main ADR](../../docs/main-chota-conversation-foundation.md) retain the
@@ -28,9 +30,9 @@ Actual live prod-services discovers `services/*/prod` except payment, with
 automated enabled/prune/selfHeal and CreateNamespace. The source ApplicationSet
 is reconciled to exactly that observed spec; no discovery expansion is introduced
 and it must never be applied manually. A new discoverable directory on main is a
-deployment action. Website main CI automatically promotes its image; Conversation
-initial publisher must be genuinely manual/build-only. Do not invoke reusable
-deploy expecting it to publish without changing GitOps.
+deployment action. Website's reviewed workflow now stages only on its isolated
+release branch; Conversation's publisher is manual/build-only. Do not invoke reusable
+deploy expecting it to publish without changing the selected GitOps branch.
 
 ## Concrete candidate-image flow
 
@@ -72,17 +74,36 @@ still be contained by a separately reviewed service-workflow gate, or remain
 unmerged. No future CI digest, main merge, registry write or production action is
 authorized by this source staging document.
 
-## Pending real artifacts
+## Materialized dark artifacts
 
-No `services/conversation-service/prod` is created by this candidate. Materialize
-it from `release/dark` only after the exact reviewed Conversation full source SHA
-and GHCR digest, verified supported PostgreSQL 16 Alpine tag/digest, and genuine
-strict-name/namespace Main SealedSecrets are supplied. Copy the unchanged migration
-wrapper and properties; generate the real Kustomization from the template and add
-only ciphertext resources. Inspect controller identity and use the trusted matching
-kubeseal version; schema fixtures are never seal inputs. Plaintext files are local,
-ignored, short-lived and must never enter Git/report/output. Do not regenerate
-the database password during redeploy: existing PG credentials are retained.
+`services/conversation-service/prod` is materialized from unchanged `release/dark`
+properties and migration wrapper. It pins Conversation source merge
+`506f3edd7ef26f12f9433fc9f2917c12e7c22453` at OCI index
+`sha256:fa63a329173e4400985ae87d5896ab3effd45f0f7040adb4849b5d3f9ccdfe63`
+and PostgreSQL `16.15-alpine` at
+`sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea`.
+Both have a linux/amd64 manifest matching Main. The Conversation merge tree is
+identical to independently reviewed `a47cd733867c7479a4f353d84bff062a244eb713`.
+Manual build-only publisher run `37842445696` succeeded; published artifact
+startup/lifecycle verification and exact release review remain explicit gates.
+
+Three actual strict `prod/<name>` Conversation seals passed the existing Main
+controller's read-only `/v1/verify`; changed-name ciphertext was rejected, and
+Secret resource names remained unchanged. The matching kubeseal 0.36.6 archive and
+checksums passed publisher signature verification before execution. Controller
+runtime version 0.36.6 and digest were observed on the verified Main node. Values
+were generated and matched in memory, with no plaintext file or token output.
+Website/AI matching seals are privately staged for a later separate release and
+are absent from this dark production overlay. Schema fixtures were never inputs.
+Do not regenerate the database password during redeploy: retain these credentials.
+
+Initial state remains API replicas 1, PostgreSQL replicas 1, worker replicas 0,
+`WEBSITE_BINDINGS=[]` and all worker flags false. Existing Website, AI and CP prod
+overlays are unchanged. Missing Website cohort/guard settings mean legacy default
+only during this dark phase; later stages require explicit exact configuration.
+The separate dark validator staging finding was fixed in a fresh context, with
+six offline tests and retained synthetic-seal/public-exposure negative checks;
+a fresh complete GitOps and exact-release review is mandatory after that fix.
 
 All five dedicated credential names and key schemas are in [README](README.md).
 SealedSecret metadata and Secret template must retain strict scope `prod/<name>`,
