@@ -72,14 +72,22 @@ override. Website starts its reviewed AppRunner with `access_log=None`.
 
 Author verification rendered all 24 production overlays and compared every
 canonical resource to the exact prospective Stage 2 parent. Only the two service
-image substitutions and explicit empty Website fields changed; ConfigMap hashing
-updates its Deployment reference as expected. The 14 operations tests, actual
-`--stage dark` check and whitespace check passed. An additional `--fixture` run
-failed: the unchanged helper copies the Website config and then appends its
-default settings, duplicating the newly explicit routing keys. The failure is
-retained and disclosed, not reported as PASS or used to change actual configuration.
-The helper is outside this bounded four-file privacy diff; actual overlays and
-their checks pass. Fresh review must assess this synthetic-helper limitation.
+image substitutions and explicit empty Website fields change rendered production
+resources; ConfigMap hashing updates its Deployment reference as expected. The
+original 14 operations tests and actual `--stage dark` check passed, but
+`--fixture` failed because its helper appended duplicate routing keys. That
+accepted Important validation finding was fixed in a separate context: the
+temporary fixture now upserts only default-overlay keys, preserves unrelated
+Website properties and leaves source configuration bytes unchanged. Seven new
+regressions exercise real fixture trees and Kustomize rendering for missing,
+empty, configured, duplicate/indented/BOM and distinct-key inputs. They retain
+synthetic seal markers and actual-release rejection, and prove actual nonempty
+routing is still rejected. All 21 tests, actual `--stage dark`, `--fixture`, all
+24 actual overlays and whitespace checks pass. Running the new regressions with
+the original helper fails, retaining direct evidence of the defect. The bounded
+privacy diff now includes only these two operations files in addition to its
+original four files. This fix establishes no release CLEAN or native PASS; a new
+complete source and exact privacy release review is required.
 
 ## Required release and runtime gates
 
@@ -103,7 +111,7 @@ their checks pass. Fresh review must assess this synthetic-helper limitation.
    after the Stage 2 merge tree equals the reviewed prospective parent; do not rebase
    or change a reviewed head. New parent/tree/runtime drift requires reevaluation.
    Argo is the deployment authority. Render
-   every prod overlay and run the unchanged Conversation validator with
+   every prod overlay and run the Conversation validator with
    `--stage dark`; here it checks empty routing and retained dark infrastructure,
    not approval of image provenance or credential privacy.
 3. After Argo reconciliation, prove both Applications Synced/Healthy, ready pods,

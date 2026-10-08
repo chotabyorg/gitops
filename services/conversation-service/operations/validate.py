@@ -47,6 +47,34 @@ def fixture_seal(template, path):
     path.write_text(yaml.safe_dump(document, sort_keys=False))
 
 
+def fixture_env_key(line, index):
+    # Match Kustomize's env loader: first-line BOM and leading whitespace only.
+    if index == 0:
+        line = line.removeprefix("\ufeff")
+    line = line.lstrip()
+    return None if not line or line.startswith("#") else line.split("=", 1)[0]
+
+
+def fixture_properties(path, defaults):
+    """Upsert the default overlay only in the temporary fixture copy."""
+    overrides = {}
+    for index, line in enumerate(defaults.read_text().split("\n")):
+        key = fixture_env_key(line, index)
+        if key is not None:
+            overrides[key] = line.removeprefix("\ufeff") if index == 0 else line
+    merged = []
+    replaced = set()
+    for index, line in enumerate(path.read_text().split("\n")):
+        key = fixture_env_key(line, index)
+        if key not in overrides:
+            merged.append(line)
+        elif key not in replaced:
+            merged.append(overrides[key])
+            replaced.add(key)
+    merged.extend(line for key, line in overrides.items() if key not in replaced)
+    path.write_text("\n".join(merged) + "\n")
+
+
 def fixture_tree(target):
     for name in SERVICES[1:]:
         shutil.copytree(REPO / "services" / name, target / "services" / name)
@@ -76,8 +104,7 @@ def fixture_tree(target):
             manifest["resources"].append("goal4a-sealed-secret.yaml")
         (overlay / "kustomization.yaml").write_text(yaml.safe_dump(manifest, sort_keys=False))
     website = target / "services" / SERVICES[1] / "prod" / "config.properties"
-    website.write_text(website.read_text().rstrip() + "\n" +
-                       (SERVICE / "release" / "website" / "default-legacy-config.properties").read_text())
+    fixture_properties(website, SERVICE / "release" / "website" / "default-legacy-config.properties")
 
 
 def render(root, service):
