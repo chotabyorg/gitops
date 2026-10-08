@@ -189,8 +189,13 @@ def check_conversation(documents, root, stage, fixture):
 def check_website(documents, stage):
     config = next(item["data"] for item in documents if item["kind"] == "ConfigMap" and
                   item["metadata"]["name"].startswith("website-gateway-config-"))
-    guards = json.loads(config["MANAGED_WEBSITE_GUARDED_INTEGRATIONS"])
-    cohorts = json.loads(config["MANAGED_WEBSITE_COHORTS"])
+    if stage != "dark":
+        require(all(key in config for key in (
+            "MANAGED_WEBSITE_GUARDED_INTEGRATIONS", "MANAGED_WEBSITE_COHORTS")),
+            "WEBSITE_ROUTING_FIELDS_REQUIRED")
+    # Dark precedes Website deployment; absent fields retain its legacy defaults.
+    guards = json.loads(config.get("MANAGED_WEBSITE_GUARDED_INTEGRATIONS", "{}"))
+    cohorts = json.loads(config.get("MANAGED_WEBSITE_COHORTS", "{}"))
     identity = json.loads((SERVICE / "release" / "activation" / "routing-candidate.json").read_text())
     integration = identity["integration_id"]
     expected_guard = {integration: identity["expected_agent_id"]}

@@ -133,6 +133,9 @@ and a new cross-track design/release review.
    Main identity, routing/gates and rollback. Require CLEAN before dark merge.
 4. Argo deploys dark API+PG only: API replicas 1, worker replicas 0, shared
    `WEBSITE_BINDINGS=[]`, API+worker worker flagsfalse; Website guards/cohorts `{}`.
+   Website routing fields may still be absent in its existing prod config; only
+   dark validation treats those omissions as empty legacy defaults. Later stages
+   require both explicit fields, and nonempty dark routing always blocks release.
    Observe Synced/Healthy, actual images, PVC, PG/schema/API readiness, endpoints,
    private exposure and effective approved/unauthorized-caller policy enforcement.
    Stop here on failure; no CNI/controller infrastructure change is in scope.

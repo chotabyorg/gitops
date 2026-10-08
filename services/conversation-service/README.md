@@ -83,6 +83,7 @@ use candidate IDs pending supported credential binding verification.
 
 ```sh
 python3 services/conversation-service/operations/validate.py --fixture
+python3 -m unittest discover -s services/conversation-service/operations -p test_validate.py
 # Only after genuine artifacts are materialized into the complete prod directory:
 python3 services/conversation-service/operations/validate.py --stage dark
 kubectl kustomize services/conversation-service/prod
@@ -95,6 +96,9 @@ The fixture check uses temporary synthetic schema-only ciphertext and image
 digests to verify source rendering and references. It never claims cryptographic
 validity, a pulled image, runtime readiness, CNI enforcement or production release
 approval. Production validation refuses fixture markers and missing artifacts.
+Dark validation accepts absent Website guard/cohort fields as their empty legacy
+defaults, so it does not require an early Website deployment. Explicit nonempty
+values are rejected. Every later stage requires both fields explicitly present.
 Canary validation additionally requires `--approval-record` pointing to a private
 non-secret record with exact candidate IDs and true binding, logging, smoke-safety
 and CLEAN exact-release gates; the record references completed external proofs,
