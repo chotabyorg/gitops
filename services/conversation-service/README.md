@@ -5,10 +5,13 @@ worker and dedicated PostgreSQL 16 with persistent storage. [GitOps #111](https:
 tracks this lane; the [Main ADR](../../docs/main-chota-conversation-foundation.md)
 is architecture authority. The Foundation remains an unfinished umbrella.
 
-**Exact dark release candidate; no production release approved or mutation performed.**
-The complete `prod/` directory now pins the published Conversation source image and
-PostgreSQL artifact and contains genuine Main-scoped seals. It is not on GitOps main.
-Its eventual main merge is a deployment action and requires fresh release CLEAN.
+**Initial dark rollout reached Main; the native storage gate failed.** GitOps merge
+`f30e256493cc644c6e8e755446aaf121db248fb1` deployed API 1 / PostgreSQL 1 / worker 0,
+with no admitted work. The image-defined PostgreSQL volume shadowed the parent PVC
+mount. This separate forward-fix candidate mounts the PVC at the exact image-volume
+destination and restarts API migration declaratively; it requires a fresh complete
+source and exact-release review before merge. See [storage finding and gates](STORAGE-FIX.md).
+The complete `prod/` directory retains the published images and genuine Main-scoped seals.
 Files under `release/` remain staging inputs for later separately reviewed phases;
 a template or fixture render is not a deployable seal. Read
 [release stages, prerequisites and rollback](RELEASE.md) before any promotion.
@@ -36,6 +39,9 @@ selectors. PostgreSQL and API use single-replica Recreate. The 4Gi `local-path` 
 has `Prune=false,Delete=false`; basic storage protection does not imply backup or
 HA guarantees. PostgreSQL SCRAM TCP authentication is explicit; local socket trust
 is confined to its pod. No shared database or backup/replication work is added.
+The PVC mounts at `/var/lib/postgresql/data`, exactly overriding the pinned image's
+declared VOLUME; `PGDATA=/var/lib/postgresql/data/pgdata` is its UID 70-owned child.
+Mounting only `/var/lib/postgresql` is invalid on the observed Main containerd CRI.
 
 ## Migration and launch
 
@@ -105,6 +111,7 @@ non-secret record with exact candidate IDs and true binding, logging, smoke-safe
 and CLEAN exact-release gates; the record references completed external proofs,
 it does not perform or replace them.
 Real migration serialization and local hardened PostgreSQL lifecycle have passed.
-Published API/worker artifact verification and fresh exact release review remain
-required before main promotion; actual Kubernetes volume/probe and effective
-positive/negative NetworkPolicy proof follow dark deployment before activation.
+Published artifact checks and the initial exact release review preceded dark
+deployment. Native readiness and policy checks passed, but storage persistence
+did not. A fresh complete review, repaired GitOps rollout and independent native
+PVC/pod-recreation persistence proof are required before any next activation.

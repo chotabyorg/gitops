@@ -1,9 +1,13 @@
 # Goal 4A Main production release gates
 
-**Exact dark release candidate; no production release approved.** Reviewed source
-PRs have merged and immutable images have been published. The complete Conversation
-`prod/` directory remains only on this isolated candidate branch. Fresh exact
-release CLEAN is required before its main merge. The reviewed v2 architecture
+**Dark storage forward-fix candidate; no repaired release approved.** Reviewed source
+PRs and the initial dark GitOps PR #112 have merged. Native verification of Main
+revision `f30e256493cc644c6e8e755446aaf121db248fb1` found PostgreSQL on a CRI image
+volume shadowing its PVC, despite healthy probes and schema. All nine journal
+tables were empty and admission was disabled. [STORAGE-FIX.md](STORAGE-FIX.md)
+records the minimal candidate, fresh zero-data pre-merge condition and independent
+post-fix persistence gate. Fresh complete source and exact-release CLEAN are
+required before this separate fix merges. The reviewed v2 architecture
 does not authorize real widget credential use, production canary or Business-provider smoke.
 [GitOps #111](https://github.com/chotabyorg/gitops/issues/111),
 [Control Plane #21](https://github.com/chotabyorg/control-plane-service/issues/21)
@@ -12,7 +16,7 @@ Website-first Goal 4A and subsequent Goal 4B boundary. Foundation is unfinished.
 
 ## Recorded Main baseline
 
-Read-only 2026-10-08 evidence identifies Main `chota.by`, node 153.80.244.178,
+The historical pre-rollout read-only 2026-10-08 baseline identifies Main `chota.by`, node 153.80.244.178,
 context `default`, prod UID `84409e45-1c54-4893-bf30-d353a55acb47` and kube-system
 UID `a90ac8e6-6a20-46d2-8af8-ee4580edeaa0`. Refresh these immediately before any
 mutation; this document does not prove a future shell/context. Never use the
@@ -84,8 +88,9 @@ and PostgreSQL `16.15-alpine` at
 `sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea`.
 Both have a linux/amd64 manifest matching Main. The Conversation merge tree is
 identical to independently reviewed `a47cd733867c7479a4f353d84bff062a244eb713`.
-Manual build-only publisher run `37842445696` succeeded; published artifact
-startup/lifecycle verification and exact release review remain explicit gates.
+Manual build-only publisher run `37842445696` succeeded. Published artifact checks
+and the initial exact release review passed before PR #112 merged; they did not
+establish native PVC durability. The repaired candidate retains both image pins.
 
 Three actual strict `prod/<name>` Conversation seals passed the existing Main
 controller's read-only `/v1/verify`; changed-name ciphertext was rejected, and
@@ -103,7 +108,9 @@ overlays are unchanged. Missing Website cohort/guard settings mean legacy defaul
 only during this dark phase; later stages require explicit exact configuration.
 The separate dark validator staging finding was fixed in a fresh context, with
 six offline tests and retained synthetic-seal/public-exposure negative checks;
-a fresh complete GitOps and exact-release review is mandatory after that fix.
+a fresh complete GitOps and exact-release review was performed before dark merge.
+The subsequent native storage Important finding invalidates progression until
+this separate forward fix, another complete review and actual persistence proof.
 
 All five dedicated credential names and key schemas are in [README](README.md).
 SealedSecret metadata and Secret template must retain strict scope `prod/<name>`,
@@ -160,6 +167,14 @@ and a new cross-track design/release review.
    Observe Synced/Healthy, actual images, PVC, PG/schema/API readiness, endpoints,
    private exposure and effective approved/unauthorized-caller policy enforcement.
    Stop here on failure; no CNI/controller infrastructure change is in scope.
+   The initial rollout failed the native storage gate. Before this storage fix
+   merges, independently refresh the full public-table census and disabled
+   admission state. Continue only with migration metadata and zero domain rows.
+   The PVC mount changes at PostgreSQL wave 0; API template annotation changes at
+   wave 1, causing Recreate and the existing serialized init migration against the
+   now-persistent database. Do not manually restart/migrate/copy/delete data. All
+   next stages remain held until fresh native verification proves the PVC mapping
+   and the same database across a separately reviewed GitOps pod recreation.
 5. Add separate exact AI registry and Website S2S keyRef/seals through reviewed
    GitOps changes. Preserve all existing AI Business/image/hook state. Deploy the
    reviewed default-legacy Website and CP privacy candidates, keeping empty guards
