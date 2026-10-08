@@ -118,9 +118,9 @@ expected = {
 for name, digest in expected.items():
     assert hashlib.sha256((ROOT / f'services/{CRM}/prod/{name}').read_bytes()).hexdigest() == digest
 config = ROOT / 'services/chota-gateway/prod/krakend.json'
-assert hashlib.sha256(config.read_bytes()).hexdigest() == 'c9913f040992db88d080133360cee2a838cac3cfaca628e4ded2557bdffa0ac3'
+assert hashlib.sha256(config.read_bytes()).hexdigest() == 'aa75520bd372b6851341ac6d324fc0297336d71826c16b216147da49319a6e35'
 gateway = json.loads(config.read_text())
-assert len(gateway['endpoints']) == 128
+assert len(gateway['endpoints']) == 133
 assert len([e for e in gateway['endpoints'] if e['endpoint'].startswith('/api/crm/v1')]) == 57
 print('PASS: deployment selectors, immutable images, private boundaries, ConfigMap/Secret references, probes, resource budgets, retained PVCs, migration/backup wiring, reviewed script/config hashes')
 

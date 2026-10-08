@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: chota-crm-service-api
+spec:
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: chota-gateway
+    ports:
+    - protocol: TCP
+      port: 8000
+  - from:
+    - podSelector:
+        matchLabels:
+          app: ai-agent-service
+          component: api
+    ports:
+    - protocol: TCP
+      port: 8443

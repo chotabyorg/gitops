@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chota-crm-service
+spec:
+  ports:
+  - name: business-mtls
+    port: 8443
+    targetPort: business-mtls
+    protocol: TCP

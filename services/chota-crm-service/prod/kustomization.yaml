@@ -3,7 +3,12 @@ kind: Kustomization
 resources:
 - ../base
 - sealed-secrets.yaml
+- business-transport/sealed-secret.yaml
 namespace: prod
+patches:
+- path: business-transport/deployment-patch.yaml
+- path: business-transport/service-patch.yaml
+- path: business-transport/network-policy-patch.yaml
 images:
 - name: chota-crm-service
   newName: ghcr.io/chotabyorg/chota-crm-service
@@ -31,6 +36,9 @@ configMapGenerator:
   - backup-ready.sh
   - backup.sh
   - restore-check.sh
+- name: crm-business-tls-config
+  files:
+  - nginx.conf=business-transport/nginx.conf
 generatorOptions:
   annotations:
     argocd.argoproj.io/sync-wave: '-1'

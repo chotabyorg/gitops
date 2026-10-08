@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chota-crm-service
+spec:
+  template:
+    spec:
+      containers:
+      - name: business-tls-server
+        image: docker.io/library/nginx@sha256:8f029c543423e3eac6b08254718bc31eb75633b1e448026b6616927baa7d4bfe
+        imagePullPolicy: IfNotPresent
+        command:
+        - nginx
+        args:
+        - -c
+        - /etc/business-proxy/nginx.conf
+        - -g
+        - daemon off;
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 200m
+            memory: 64Mi
+        volumeMounts:
+        - name: crm-business-tls-config
+          mountPath: /etc/business-proxy
+          readOnly: true
+        - name: crm-business-tls-identity
+          mountPath: /etc/business-tls
+          readOnly: true
+        - name: crm-business-tls-tmp
+          mountPath: /tmp
+        readinessProbe:
+          exec:
+            command:
+            - curl
+            - --fail
+            - --silent
+            - --max-time
+            - '2'
+            - http://127.0.0.1:18082/healthz
+          periodSeconds: 10
+          timeoutSeconds: 3
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - --fail
+            - --silent
+            - --max-time
+            - '2'
+            - http://127.0.0.1:18082/healthz
+          initialDelaySeconds: 5
+          periodSeconds: 20
+          timeoutSeconds: 3
+        ports:
+        - name: business-mtls
+          containerPort: 8443
+        startupProbe:
+          exec:
+            command:
+            - curl
+            - --fail
+            - --silent
+            - --max-time
+            - '2'
+            - http://127.0.0.1:18082/healthz
+          periodSeconds: 2
+          timeoutSeconds: 3
+          failureThreshold: 30
+      volumes:
+      - name: crm-business-tls-config
+        configMap:
+          name: crm-business-tls-config
+      - name: crm-business-tls-identity
+        secret:
+          secretName: crm-business-tls-v1
+          defaultMode: 292
+      - name: crm-business-tls-tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi

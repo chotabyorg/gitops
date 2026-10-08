@@ -43,3 +43,10 @@ The manifest validator requires Python/PyYAML and the available kubectl Kustomiz
 Use a reviewed GitOps change. For initial-release failure, remove `crm-chota-by` routing, restore prior site/gateway configuration and scale CRM API/web to zero **while retaining both complete service directories, PostgreSQL, credential, network isolation, PVCs and backup schedule**. Reverting the entire initial commit removes the ApplicationSet source directory and risks deleting workload resources; prefer this explicit containment change. Both PVCs and the SealedSecret/template have `Prune=false,Delete=false` as a second safety layer. They do not protect against direct namespace deletion, node loss or an operator deleting a PVC; never do those as rollback.
 
 Future app rollback must be compatible with the installed schema. Never run production Alembic downgrade (initial downgrade destroys all CRM tables). Use a compatible old image, forward repair, or restore to a new isolated database and review a configuration switch after validation. Keep prior data until recovery is accepted. `local-path` has Delete reclaim and no expansion; monitor node capacity and plan storage changes before it fills.
+
+## Business V2 private transport preparation
+
+The prod overlay includes a dedicated rootless mTLS sidecar for AI Business calls
+on private TCP8443. The existing browser API remains on8000. Business stays disabled;
+real versioned TLS SealedSecrets and independent review are required before deployment.
+See the [transport contract, test proof and rollout gates](../../docs/business-transport/README.md).
