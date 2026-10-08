@@ -1,0 +1,31 @@
+# RELEASE INPUT TEMPLATE. Copy to services/conversation-service/prod only after
+# genuine Main seals and independently reviewed immutable image inputs exist.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod
+resources:
+  - ../base
+  - database-sealed-secret.yaml
+  - principals-sealed-secret.yaml
+  - managed-ai-sealed-secret.yaml
+images:
+  - name: conversation-service
+    newName: ghcr.io/chotabyorg/conversation-service
+    newTag: ${CONVERSATION_SOURCE_SHA}
+    digest: ${CONVERSATION_IMAGE_DIGEST}
+  - name: postgres
+    newName: docker.io/library/postgres
+    newTag: ${POSTGRES_16_ALPINE_TAG}
+    digest: ${POSTGRES_16_ALPINE_DIGEST}
+configMapGenerator:
+  - name: conversation-config
+    envs: [config.properties]
+  - name: conversation-worker-config
+    envs: [worker.properties]
+  - name: conversation-postgres-config
+    envs: [postgres.properties]
+  - name: conversation-migration
+    files: [migrate.py]
+generatorOptions:
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'

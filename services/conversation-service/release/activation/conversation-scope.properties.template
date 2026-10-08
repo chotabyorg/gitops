@@ -1,0 +1,2 @@
+# Add after supported real credential binding; worker still disabled in this stage.
+WEBSITE_BINDINGS=[{"owner_id":"dc3dd7eb-536f-45d4-84f2-c8d35575d928","integration_id":"8d4a1b73-7973-4dcc-a3d4-1312d871c1d4","agent_id":"0b750714-af8d-4d8c-8fdc-4ddfeda98af9"}]

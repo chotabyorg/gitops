@@ -1,0 +1,2 @@
+# Feature rollback only. Keep guard, API/worker/DB/grants/images and exact binding.
+MANAGED_WEBSITE_COHORTS={}

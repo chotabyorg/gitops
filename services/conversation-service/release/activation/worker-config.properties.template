@@ -1,0 +1,3 @@
+# Enable after exact scopes/bindings/grants, API readiness and release review.
+# This is independent of the technical cohort and grants no new managed admission.
+WEBSITE_WORKER_ENABLED=true

@@ -1,0 +1,16 @@
+# Add to Website prod patches only with a genuine Main-scoped matching seal.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-gateway-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: website-gateway-service
+          env:
+            - name: CONVERSATION_S2S_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: website-conversation-s2s-secret
+                  key: CONVERSATION_S2S_TOKEN
