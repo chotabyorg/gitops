@@ -14,6 +14,7 @@ spec:
     metadata:
       annotations:
         goal4a.chota.by/postgres-storage-layout: pvc-data-v1
+        goal4a.chota.by/storage-persistence-proof: recreate-v1
     spec:
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 60
