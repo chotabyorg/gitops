@@ -7,8 +7,8 @@ namespace: prod
 images:
 - name: chota-crm-service
   newName: ghcr.io/chotabyorg/chota-crm-service
-  newTag: e0127c7d98014e122b78e84684a938db1294e4db
-  digest: sha256:5480abfddfcc030d17107ba820777ff02467924aaa6472abd3b9c13c412d2df0
+  newTag: a9aa8984756a213ed74b468e46c270283d698262
+  digest: sha256:bd4c0a387746472cc5ca1ef982c6c4ae86f39793684ba56c29f21f986b36ae61
 - name: postgres
   newName: postgres
   newTag: 18.6-alpine3.24
