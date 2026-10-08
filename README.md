@@ -10,7 +10,7 @@ This repository describes the desired deployment state of **Main Chota Platform*
 
 Source code at a named revision, a draft PR, GitOps desired state and verified live runtime are different evidence. The default branch or an image tag in GitOps alone does not prove which revision is running. Record the source commit, image provenance and observed runtime when making deployment claims.
 
-The [Main Chota Conversation Foundation ADR](docs/main-chota-conversation-foundation.md) records accepted architecture direction with implementation pending. It does not add a service or route production traffic.
+The [Main Chota Conversation Foundation ADR](docs/main-chota-conversation-foundation.md) records accepted architecture, Goals0–3 source maturity and the Website-first Goal4A rollout boundary. The [Conversation release candidate](services/conversation-service/RELEASE.md) stays outside auto-discovered production paths until real immutable images, Main-scoped seals and independent release review are complete. Foundation and the next Telegram Goal4B remain unfinished.
 
 ## Architecture
 
@@ -419,4 +419,4 @@ kubectl logs -n prod -l app=user-service --tail=100 -f
 
 The independently reviewed CRM release is promoted through a separate GitOps PR, not direct application CI pushes. See [release provenance, checks and rollout](services/chota-crm-service/RELEASE.md), [backend/storage boundaries](services/chota-crm-service/README.md), [local daily backup and recovery](services/chota-crm-service/operations/BACKUP.md), and [frontend deployment](services/chota-crm-web/README.md). CRM exposes only crm.chota.by; its API is internal behind the existing gateway.
 
-Live prod-services discovery currently uses services/*/prod while the tracked ApplicationSet is stale. This release deliberately leaves that platform file untouched and relies on the verified live generator; never apply the stale file as part of CRM rollout. Both complete CRM prod overlays become discoverable together after deployment review/merge.
+The Goal4A source change reconciles tracked `platform/argocd/prod.yaml` to the read-only 2026-10-08 live generator: `services/*/prod`, payment exclusion and existing automated enabled/prune/selfHeal. It adds no discovery scope beyond actual Main behavior. ArgoCD remains deployment authority; do not manually apply the ApplicationSet. Both complete CRM prod overlays use this existing discovery behavior.

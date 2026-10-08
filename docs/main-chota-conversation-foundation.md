@@ -2,11 +2,11 @@
 
 ## Status and scope
 
-**Accepted direction; implementation pending.** This ADR defines Main Chota Platform communication ownership and the next implementation boundaries. It creates no runtime capability, repository, schema, deployment or production routing change.
+**Accepted architecture; Goals 0–3 source foundation complete; Goal 4A source implementation in progress.** Conversation is not yet deployed on Main. Goal 4A prepares the first private production Conversation deployment and one Website technical-session canary. Goal 4B will follow with Telegram. The Foundation remains an unfinished umbrella; source maturity does not establish production readiness or complete the roadmap.
 
 Main planning belongs to [Project #3 — Chota Platform](https://github.com/orgs/chotabyorg/projects/3). [`chotabyorg/chota`](https://github.com/chotabyorg/chota) / [Project #6 — Chota 2.0](https://github.com/orgs/chotabyorg/projects/6) are a separate, paused fashion/e-commerce product. Their code, E0/E1/E4, Conversation Core, issues and roadmap were **not used as Main architecture evidence**.
 
-The current-flow statements below describe inspected Main source revisions, not verified live runtime. GitOps expresses desired state; its default branch does not prove a running service revision. [Business V2 PR #43](https://github.com/chotabyorg/ai-agent-service/pull/43) is **draft/pending**, not an implemented or deployed platform dependency.
+The representative legacy-flow statements below remain historical source observations. Goals 1–3 have since added the durable Conversation journal, managed v1 Turn contract and AI-owned Business evidence recovery. The Goal4A read-only Main baseline on 2026-10-08 identifies Conversation source `d238064215d3875c5d2061bba5a00b55dc5fad0e` with no production Deployment, Website `fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b`, AI `4fa17597b8083d2e09428c9c1ac949aa42f5990d` with Business V2 enabled, and Control Plane `96a4b40daeb113f435f5cd02a6f7a2fc12502b24`. Preserve that current AI Business baseline; PR #43's earlier draft status is historical, not the current release authority. GitOps desired state, Argo revision and observed pod digests are separate evidence. See the [Goal4A release record](../services/conversation-service/RELEASE.md) for pending artifacts and gates.
 
 ## Context and problems
 
@@ -31,7 +31,7 @@ The inspected legacy AI path has no shared per-Conversation serialization: concu
 
 ## Decision and target flow
 
-Introduce a small independent **`conversation-service` with PostgreSQL** as the authoritative owner of communication lifecycle. Redis may accelerate work, but must not own durable history, queue or handoff. Exact schemas, APIs and state-machine details remain future implementation decisions.
+Use the independent **`conversation-service` with PostgreSQL** as the authoritative owner of communication lifecycle. Redis may accelerate work, but must not own durable history, queue or handoff. Goals 1–3 define the accepted journal/Turn/delivery primitives and stable managed v1 contracts. Goal4A adds narrowly scoped Website admission, immediate processing and HTTP transport evidence without redesigning those ownership boundaries.
 
 ```text
 Provider ↔ Channel Gateway ↔ Conversation Service ↔ ai-agent-service
@@ -84,7 +84,7 @@ Conversation stores trusted integration/routing references, not gateway/provider
 | AI reasoning / prompts / agent config | ai-agent-service | ai-agent-service |
 | KB / RAG | AI retrieval with knowledge/RAG services | AI composes/retrieves context; knowledge/RAG services retain their responsibilities |
 | Tool selection / business authorization | AI / MCP tool execution | AI business runtime: intent, permission, confirmation and tool selection |
-| Business receipts / recovery | Legacy tool execution; PR #43 draft/pending | AI business runtime owns operation reservation, idempotency, receipts and UNKNOWN recovery; no second ledger in Conversation |
+| Business receipts / recovery | AI Business V2 is part of the current Main baseline; early draft evidence below is historical | AI business runtime owns operation reservation, idempotency, receipts and UNKNOWN recovery; Conversation stores opaque operation references, never a second ledger |
 | Provider delivery | Gateway sends after AI answer; no shared delivery journal | Gateway performs network delivery and reports outcome; Conversation owns DeliveryAttempt records and dispatch authority |
 | Handoff / operator authority | No shared owner in inspected path | Conversation workflow/control authority; AI requests, Gateway performs channel actions |
 | CRM projection | Separate business product/integration | Optional consumer: Inquiry/case, summary, status, known customer reference and Conversation link/ID |
@@ -141,7 +141,7 @@ Voice acoustic TurnCoordinator handles `audio / STT partial / VAD → final utte
 
 Do not create another BusinessOperation ledger in Conversation. Keep completed operation references/outcomes available after supersede so the next Turn can use authoritative receipts. Cancellation of communication work cannot erase completed effects. UNKNOWN reconciliation belongs to business runtime; the next Turn must not blindly create a new operation.
 
-[Business V2 PR #43](https://github.com/chotabyorg/ai-agent-service/pull/43) remains draft/pending. Its proposed receipt/recovery contract must be checked for compatibility before any future managed cohort rollout. Discovery or a draft PR does not establish implementation or deployment.
+The current AI baseline has Business V2 and the accepted managed execution/evidence interfaces. Goal3 preserves frozen actions, stable BusinessOperation identity, durable receipts, `UNKNOWN != FAILED`, scoped confirmation and no blind mutation retry. Conversation carries opaque `operation_refs`; it neither replays an ambiguous AI dispatch nor reconciles providers. Goal4A must preserve the current AI image, Business settings, TLS/signing sidecar and migration/backfill hooks. Early PR #43 discovery remains historical evidence only.
 
 ## Handoff, CRM and Voice
 
@@ -161,28 +161,32 @@ Voice owns provider/PBX media integration, SIP/RTP/Asterisk/AudioSocket where re
 
 ## Migration order and rollout boundary
 
-1. Thin Conversation foundation with PostgreSQL and contracts; no production traffic.
-2. Managed AI contract carrying stable Turn identity and authorized context.
-3. Business receipt/recovery compatibility, retaining AI ownership.
-4. One explicitly selected Telegram integration cohort; other integrations retain their legacy path.
-5. Turn coordination and bounded settling/debounce.
-6. Remaining text channels, including Instagram, Website and WhatsApp.
-7. Platform handoff/operator authority and optional CRM projection.
-8. Clean Voice Gateway foundation.
-9. Voice integration.
-10. Production recordings decisions and later legacy retirement.
+1. Goal0 architecture/ownership foundation — complete.
+2. Goal1 thin Conversation durable journal and contracts — source complete, unconsumed in production.
+3. Goal2 managed AI v1 contract carrying stable Turn identity and authorized context — source complete.
+4. Goal3 Business receipt/evidence compatibility, retaining AI ownership — source complete.
+5. Goal4A first private Conversation production deployment plus one exact Website integration's dedicated technical session — current stage; ordinary demo and every other Website integration retain legacy. Production cohorts remain empty until separate binding, logging and no-business smoke gates pass.
+6. Goal4B one explicitly selected Telegram canary using the proven production infrastructure — next; no Telegram migration in Goal4A.
+7. Goal5 advanced settling/debounce/grouping/supersede/fencing policy — later; Goal4 parity is one accepted inbound Message per logical Turn with a durable serial queue.
+8. Remaining text channels, including Instagram and compatible WhatsApp, after their own reviewed cutovers.
+9. Platform handoff/operator authority and optional CRM projection.
+10. Clean Voice Gateway foundation.
+11. Voice integration.
+12. Production recordings decisions and later legacy retirement.
 
-Future cohort enable/disable/drain and rollback must have one routing authority. An integration must never be processed by legacy and managed paths simultaneously. Retain accepted inbound and delivery evidence through restart/drain; recover stable processing/sending identities and reconcile UNKNOWN outcomes before retry. Tenant/integration identities must not collide. Non-migrated integrations preserve current behavior. Exact rollout controls and schema are future decisions.
+Website cohort admission and rollback have one durable routing authority: Conversation atomically reserves LEGACY or commits MANAGED admission plus inbound Message under the stable client `message_id`. A retained disposition cannot change on cohort rollback. The trusted integration guard survives cohort disable/removal; identified guarded traffic fails closed if Conversation is unavailable. Retain API/worker/DB, exact scopes/grants and compatible images. Already accepted managed messages are never replayed through legacy AI. There is no database downgrade or pre-sticky gateway image rollback.
+
+Goal4A uses `SESSION_ALLOWLIST` for exactly one technical session only. Source supports bounded `INTEGRATION_ALL` as a future capability, but no Goal4A production stage may activate it. Future full demo cutover requires stable per-message IDs in the real widget, explicit review/approval, and a separate assistant-history/context-limit policy review: current managed history is inbound-only and does not establish full conversation parity. See [release and rollback](../services/conversation-service/RELEASE.md).
 
 ## Non-goals and next stage
 
-Automatic cross-channel identity merging, a full contact center, campaigns, live Voice transfer, production recordings, implementing debounce/queue/handoff/schema, creating `conversation-service`, merging Business V2 PR #43, runtime changes, image updates, migrations and deployment are outside this documentation decision.
+Automatic cross-channel identity merging, full contact center, campaigns, live Voice transfer, production recordings, advanced debounce/settling/supersede, human Inbox/handoff, CRM/provider configuration and backup/HA/DR remain outside Goal4A. This ADR itself applies no manifest or traffic change.
 
-**Next planned stage: Goal 1 — create thin `conversation-service` foundation with PostgreSQL and contracts, with zero production traffic routed through it.** This ADR does not start Goal 1.
+**Current stage: Goal4A — Website technical managed canary and first Main Conversation production rollout. Next: Goal4B — Telegram managed canary, parity-first, after the actual Goal4A production infrastructure and evidence gates pass.** Foundation and Goal4B are not complete.
 
 ## Evidence and backlog
 
-Source evidence must be pinned to exact inspected revisions; live deployment was not verified. See the existing [internal AI chat boundary](internal-agent-chat-s2s-boundary.md) for authentication rollout scope, separate from Conversation ownership.
+The table below records historical architecture discovery, not the current deployment or Goal4A candidate. Source evidence must remain pinned; actual live status requires refreshed Main-cluster and pod evidence. See the [Goal4A release record](../services/conversation-service/RELEASE.md) and existing [internal AI chat boundary](internal-agent-chat-s2s-boundary.md).
 
 AI, Telegram and control-plane default-branch revisions were reconfirmed on 2026-10-05. Instagram, Website and WhatsApp evidence uses the correction audit's pinned source snapshots; their latest default-branch revisions were not rechecked for this ADR. The concurrency risk is an inference from the inspected unsynchronized history read/whole-list write, not a claimed observed production incident.
 
@@ -195,9 +199,9 @@ AI, Telegram and control-plane default-branch revisions were reconfirmed on 2026
 | website-gateway-service — `fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b` | [Direct AI request](https://github.com/chotabyorg/website-gateway-service/blob/fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b/services/core_api.py), [validated widget request and HTTP reply](https://github.com/chotabyorg/website-gateway-service/blob/fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b/api/handlers.py) |
 | whatsapp-gateway-service — `ac47fea4a5c630622cee218747c0f0b9ec551d69` | [MVP scope](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/README.md#L1-L5), [expected WHATSAPP polling contract](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/services/control_plane_client.py#L31-L39), [direct AI request](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/services/core_api.py), [in-memory dedup, scoped external identity and provider send](https://github.com/chotabyorg/whatsapp-gateway-service/blob/ac47fea4a5c630622cee218747c0f0b9ec551d69/bot/worker.py). End-to-end compatibility is unresolved against the pinned control-plane enum. |
 
-The foundation implementation belongs in Project #3 as **`[HOT] Main Chota Conversation foundation: durable messages, turn coordination and delivery authority`**, under the existing initiative rather than a duplicate epic. Keep future implementation in Backlog and link the item to this ADR, AI #18 and pending Business V2 PR #43.
+The foundation remains the Project #3 umbrella **`[HOT] Main Chota Conversation foundation: durable messages, turn coordination and delivery authority`**. [GitOps #111](https://github.com/chotabyorg/gitops/issues/111) tracks Goal4A production configuration; it does not complete Foundation or Goal4B. Preserve the existing initiative links and historical discovery evidence rather than creating a duplicate Foundation epic.
 
 - [EPIC — Conversations / Inbox / Handoff](https://github.com/orgs/chotabyorg/projects/3/views/1?pane=issue&itemId=255891847) and [Discovery — Conversation workspace & handoff plan](https://github.com/orgs/chotabyorg/projects/3/views/1?pane=issue&itemId=255892197).
 - [EPIC — Voice / Calls](https://github.com/orgs/chotabyorg/projects/3/views/1?pane=issue&itemId=255891834) and [Discovery — Voice product & implementation plan](https://github.com/orgs/chotabyorg/projects/3/views/1?pane=issue&itemId=255892126): depend on the Conversation foundation for canonical lifecycle/authority; acoustic decisions remain Voice-specific.
 - [EPIC — Business Capabilities & MCP 2.0](https://github.com/orgs/chotabyorg/projects/3/views/1?pane=issue&itemId=255891840) and [Discovery — Business capabilities & MCP 2.0 plan](https://github.com/orgs/chotabyorg/projects/3/views/1?pane=issue&itemId=255892193): retain separate business-operation ownership.
-- [AI #18](https://github.com/chotabyorg/ai-agent-service/issues/18): dependent settling slice; [AI PR #43](https://github.com/chotabyorg/ai-agent-service/pull/43): draft/pending receipt compatibility input. Discovery, accepted direction and backlog are not implementation/deployment evidence.
+- [AI #18](https://github.com/chotabyorg/ai-agent-service/issues/18): dependent settling slice; [AI PR #43](https://github.com/chotabyorg/ai-agent-service/pull/43): historical receipt compatibility input. Current Goal4A uses the preserved AI `4fa1759` Business baseline. Discovery, accepted direction and backlog are not deployment evidence.

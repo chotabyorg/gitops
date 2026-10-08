@@ -9,9 +9,9 @@ spec:
         repoURL: git@github.com:chotabyorg/gitops.git
         revision: main
         directories:
-          - path: "services/outsors/prod"
-          - path: "services/atlas/prod"
-          - path: "services/repetly/prod"
+          - path: "services/*/prod"
+          - path: "services/payment-service/prod"
+            exclude: true
   template:
     metadata:
       name: "{{path[1]}}-prod"
@@ -26,6 +26,7 @@ spec:
         namespace: prod
       syncPolicy:
         automated:
+          enabled: true
           selfHeal: true
           prune: true
         syncOptions:

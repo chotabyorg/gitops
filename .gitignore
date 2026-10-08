@@ -1,2 +1,5 @@
 **/secrets.yaml
 **/krakend-jwk.json
+services/conversation-service/**/database-secrets.yaml
+services/conversation-service/**/principals-secrets.yaml
+services/conversation-service/**/managed-ai-secrets.yaml

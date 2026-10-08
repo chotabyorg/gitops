@@ -1,0 +1,10 @@
+{
+  "integration_id": "8d4a1b73-7973-4dcc-a3d4-1312d871c1d4",
+  "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+  "expected_agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+  "technical_session_id": "5074470b-e568-4828-be24-f7c815c6bf16",
+  "routing_mode": "SESSION_ALLOWLIST",
+  "default_route": "LEGACY",
+  "credential_binding_verified": false,
+  "smoke_safety_approved": false
+}
