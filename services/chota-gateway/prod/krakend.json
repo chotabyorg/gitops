@@ -5769,6 +5769,216 @@
         "limit",
         "offset"
       ]
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/business-tools/workspaces",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/business-tools/workspaces",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ],
+      "timeout": "15s",
+      "cache_ttl": "0s"
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/business-tools",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/business-tools",
+          "method": "GET",
+          "encoding": "no-op",
+          "host": [
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ],
+      "timeout": "15s",
+      "cache_ttl": "0s"
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/business-tools",
+      "method": "PUT",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/business-tools",
+          "method": "PUT",
+          "encoding": "no-op",
+          "host": [
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ],
+      "timeout": "15s",
+      "cache_ttl": "0s"
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/business-tools",
+      "method": "PATCH",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/business-tools",
+          "method": "PATCH",
+          "encoding": "no-op",
+          "host": [
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ],
+      "timeout": "15s",
+      "cache_ttl": "0s"
+    },
+    {
+      "endpoint": "/api/agents/{agent_id}/business-tools",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "Origin",
+        "X-User-Id",
+        "X-User-Role"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/agents/{agent_id}/business-tools",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "host": [
+            "http://ai-agent-service:8000"
+          ]
+        }
+      ],
+      "timeout": "15s",
+      "cache_ttl": "0s"
     }
   ]
 }
