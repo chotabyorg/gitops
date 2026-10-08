@@ -1,11 +1,24 @@
 # Goal 4A default-legacy credential privacy release
 
-This is a separate exact release candidate based on Main GitOps dark merge
-`f30e256493cc644c6e8e755446aaf121db248fb1` ([PR #112](https://github.com/chotabyorg/gitops/pull/112)).
+This v2 exact release candidate is based on the **prospective frozen storage-proof
+source tree** `a1750930ad32dca263c3e1b270c3402401240e9e`, branch
+`codex/goal4a-conversation-storage-proof` ([PR #115](https://github.com/chotabyorg/gitops/pull/115)).
+That parent is a reviewed conditional candidate, not a claim of current Main or
+successful native persistence. The original dark Main merge
+`f30e256493cc644c6e8e755446aaf121db248fb1` ([PR #112](https://github.com/chotabyorg/gitops/pull/112))
+failed native storage verification: the image volume shadowed its parent PVC mount.
+The separately reviewed Stage 1 correction source
+`3a851eb9d734ddd720531df718e44d791c1f2751` merged as
+`caddbafeb23a3cc580ccc861f873f04b9f94de8b`
+([PR #114](https://github.com/chotabyorg/gitops/pull/114)). Both Stage 1 native PASS
+and a different verifier's Stage 2 native persistence PASS remain mandatory gates.
 It changes Website and Control Plane images and explicitly sets both Website
 routing mappings to `{}`. It records candidate inputs, not live deployment or
-approval. Complete native Main dark verification and a fresh independent exact
-release CLEAN are required before this candidate can merge to GitOps main.
+approval. The v1 privacy candidate was HELD at the failed dark-storage gate and
+received no release CLEAN; its successful offline checks are not approval for v2.
+Both finite native storage gates and a fresh independent complete v2 exact release
+CLEAN are required before this candidate can merge to GitOps main. See the
+[storage correction and finite proof](../conversation-service/STORAGE-FIX.md).
 
 ## Immutable image inputs
 
@@ -39,7 +52,11 @@ establish native production startup or logging protection.
 100% legacy routing for the demo and every other integration. No Conversation
 URL, S2S reference, seal, binding or cohort is added. Conversation remains at the
 reviewed dark state: API 1, PostgreSQL 1, worker 0, `WEBSITE_BINDINGS=[]`, both worker
-flags false. AI image, Business settings, credentials, providers and PostSync
+flags false. Its storage mapping and API/PG proof annotations are unchanged from
+the exact prospective Stage 2 parent: retained PVC at `/var/lib/postgresql/data`,
+`PGDATA=/var/lib/postgresql/data/pgdata`, API layout stamp `pvc-data-v1`, and both
+API/PG `storage-persistence-proof: recreate-v1` annotations. This privacy diff
+neither changes nor performs either storage stage. AI image, Business settings, credentials, providers and PostSync
 hook are unchanged. Existing service ports/selectors, probes, secret references,
 Control Plane Voice services and Website configuration/CORS are preserved.
 
@@ -53,15 +70,39 @@ fresh release preflight and after reconciliation. The new Control Plane image's
 actual Docker CMD includes `--no-access-log`; this overlay has no command/args
 override. Website starts its reviewed AppRunner with `access_log=None`.
 
+Author verification rendered all 24 production overlays and compared every
+canonical resource to the exact prospective Stage 2 parent. Only the two service
+image substitutions and explicit empty Website fields changed; ConfigMap hashing
+updates its Deployment reference as expected. The 14 operations tests, actual
+`--stage dark` check and whitespace check passed. An additional `--fixture` run
+failed: the unchanged helper copies the Website config and then appends its
+default settings, duplicating the newly explicit routing keys. The failure is
+retained and disclosed, not reported as PASS or used to change actual configuration.
+The helper is outside this bounded four-file privacy diff; actual overlays and
+their checks pass. Fresh review must assess this synthetic-helper limitation.
+
 ## Required release and runtime gates
 
-1. Independently finish native dark verification on Main `chota.by`, node
+1. Independently finish both finite storage stages on Main `chota.by`, node
    `153.80.244.178`, context `default`, namespace `prod` UID
    `84409e45-1c54-4893-bf30-d353a55acb47`, kube-system UID
-   `a90ac8e6-6a20-46d2-8af8-ee4580edeaa0`. Refresh identity, current images and Argo
-   state before promotion. A document or image tag is not live proof.
+   `a90ac8e6-6a20-46d2-8af8-ee4580edeaa0`. Stage 1 must prove corrected native PVC
+   mapping without image-volume shadow, retained PV/PVC/file identity, the fresh
+   database system identifier, schema, readiness, zero domain census and disabled
+   admission. Only after Stage 1 PASS may the frozen Stage 2 be promoted. A different
+   fresh native verifier must then prove both PG/API pod UIDs replaced while that
+   same Stage 1 system identifier, PV/PVC/file inodes and schema survive, and recheck
+   native hardening, effective policies, private exposure and existing services.
+   Any failure or uncertainty holds this privacy candidate. Storage source/release
+   CLEAN does not establish either native PASS or approve this privacy promotion.
+   Refresh identity, current images, zero-admission state and Argo revision before
+   promotion. A document or image tag is not live proof.
 2. Review the complete exact GitOps candidate and actual immutable artifacts;
-   require fresh CLEAN before merging. Argo is the deployment authority. Render
+   require fresh complete v2 CLEAN before merging. Initially its draft PR targets
+   the frozen Stage 2 branch. Retarget the same frozen privacy head to `main` only
+   after the Stage 2 merge tree equals the reviewed prospective parent; do not rebase
+   or change a reviewed head. New parent/tree/runtime drift requires reevaluation.
+   Argo is the deployment authority. Render
    every prod overlay and run the unchanged Conversation validator with
    `--stage dark`; here it checks empty routing and retained dark infrastructure,
    not approval of image provenance or credential privacy.
@@ -89,7 +130,7 @@ this stage.
 
 ## Abort and recovery
 
-If native dark checks fail, do not promote this candidate. If reconciliation,
+If either native storage stage fails or remains uncertain, do not promote this candidate. If reconciliation,
 readiness, migration, provenance or deployed logging proof fails, stop subsequent
 stages and real credential use. Diagnose safely and submit a bounded forward fix
 through GitOps with a fresh complete review. Retain Conversation/PVC/seals and
