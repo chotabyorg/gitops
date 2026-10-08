@@ -17,6 +17,10 @@ REPO = SERVICE.parents[1]
 SERVICES = ("conversation-service", "website-gateway-service", "ai-agent-service", "control-plane-service")
 DIGEST = re.compile(r"sha256:[0-9a-f]{64}$")
 FULL_SHA = re.compile(r"[0-9a-f]{40}$")
+# The pinned official PostgreSQL 16 image declares this VOLUME. Main's CRI
+# creates an image volume unless a runtime mount has this exact destination;
+# mounting only its parent does not put PGDATA on the retained PVC.
+POSTGRES_IMAGE_VOLUME = "/var/lib/postgresql/data"
 
 
 def require(condition, code):
@@ -88,12 +92,38 @@ def render(root, service):
     return documents
 
 
+def check_postgres_storage(documents):
+    deployments = {item["metadata"]["name"]: item for item in documents if item["kind"] == "Deployment"}
+    postgres = deployments["conversation-service-postgres"]
+    api = deployments["conversation-service"]
+    pod = postgres["spec"]["template"]["spec"]
+    container = pod["containers"][0]
+    pvc_volumes = [item for item in pod["volumes"] if "persistentVolumeClaim" in item]
+    require(len(pvc_volumes) == 1 and pvc_volumes[0]["persistentVolumeClaim"] == {
+        "claimName": "conversation-service-postgres-data"}, "POSTGRES_RETAINED_PVC_REQUIRED")
+    mounts = [item for item in container["volumeMounts"] if item["name"] == pvc_volumes[0]["name"]]
+    require(len(mounts) == 1 and mounts[0] == {
+        "name": pvc_volumes[0]["name"], "mountPath": POSTGRES_IMAGE_VOLUME}, "POSTGRES_IMAGE_VOLUME_MOUNT_REQUIRED")
+    config_name = container["envFrom"][0]["configMapRef"]["name"]
+    config = next(item["data"] for item in documents if item["kind"] == "ConfigMap" and
+                  item["metadata"]["name"] == config_name)
+    require(config["PGDATA"] == f"{POSTGRES_IMAGE_VOLUME}/pgdata", "POSTGRES_PGDATA_ON_PVC_REQUIRED")
+    security = pod["securityContext"]
+    require(security["runAsUser"] == security["runAsGroup"] == security["fsGroup"] == 70 and
+            security["fsGroupChangePolicy"] == "OnRootMismatch", "POSTGRES_PVC_OWNERSHIP_REQUIRED")
+    require(postgres["metadata"]["annotations"]["argocd.argoproj.io/sync-wave"] == "0" and
+            api["metadata"]["annotations"]["argocd.argoproj.io/sync-wave"] == "1", "STORAGE_MIGRATION_WAVE_ORDER_REQUIRED")
+    require(api["spec"]["template"]["metadata"].get("annotations", {}).get(
+        "goal4a.chota.by/postgres-storage-layout") == "pvc-data-v1", "STORAGE_API_REINITIALIZATION_REQUIRED")
+
+
 def check_conversation(documents, root, stage, fixture):
     deployments = {item["metadata"]["name"]: item for item in documents if item["kind"] == "Deployment"}
     api = deployments["conversation-service"]
     worker = deployments["conversation-service-worker"]
     postgres = deployments["conversation-service-postgres"]
     require(set(deployments) == {"conversation-service", "conversation-service-worker", "conversation-service-postgres"}, "UNEXPECTED_DEPLOYMENT")
+    check_postgres_storage(documents)
     require(api["spec"]["replicas"] == postgres["spec"]["replicas"] == 1, "API_PG_REPLICA_SCOPE")
     require(worker["spec"]["replicas"] == (1 if stage in {"worker", "canary", "rollback"} else 0), "WORKER_STAGE")
     images = []

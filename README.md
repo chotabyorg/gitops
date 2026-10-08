@@ -10,7 +10,7 @@ This repository describes the desired deployment state of **Main Chota Platform*
 
 Source code at a named revision, a draft PR, GitOps desired state and verified live runtime are different evidence. The default branch or an image tag in GitOps alone does not prove which revision is running. Record the source commit, image provenance and observed runtime when making deployment claims.
 
-The [Main Chota Conversation Foundation ADR](docs/main-chota-conversation-foundation.md) records accepted architecture, Goals0–3 source maturity and the Website-first Goal4A rollout boundary. The [Conversation release candidate](services/conversation-service/RELEASE.md) stays outside auto-discovered production paths until real immutable images, Main-scoped seals and independent release review are complete. Foundation and the next Telegram Goal4B remain unfinished.
+The [Main Chota Conversation Foundation ADR](docs/main-chota-conversation-foundation.md) records accepted architecture, Goals0–3 source maturity and the Website-first Goal4A rollout boundary. The initial dark Conversation release reached Main with admission disabled, but independent native verification failed its PVC durability gate. The [separate storage forward fix](services/conversation-service/STORAGE-FIX.md) requires fresh complete review and native persistence proof before further [release stages](services/conversation-service/RELEASE.md). Foundation and the next Telegram Goal4B remain unfinished.
 
 ## Architecture
 

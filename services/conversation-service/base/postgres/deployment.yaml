@@ -82,7 +82,7 @@ spec:
             failureThreshold: 6
           volumeMounts:
             - name: postgres-data
-              mountPath: /var/lib/postgresql
+              mountPath: /var/lib/postgresql/data
             - name: postgres-run
               mountPath: /var/run/postgresql
             - name: tmp

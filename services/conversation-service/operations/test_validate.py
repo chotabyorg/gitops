@@ -1,4 +1,4 @@
-"""Offline checks for stage-specific Website routing validation."""
+"""Render and offline regression checks for bounded Goal4A release contracts."""
 
 import copy
 import importlib.util
@@ -84,7 +84,70 @@ class WebsiteRoutingStageTests(unittest.TestCase):
             self.check({
                 "MANAGED_WEBSITE_GUARDED_INTEGRATIONS": json.dumps(self.guard),
                 "MANAGED_WEBSITE_COHORTS": json.dumps(cohort),
-            }, "canary")
+                }, "canary")
+
+
+class PostgresStorageTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.rendered = validate.render(validate.REPO, "conversation-service")
+
+    def setUp(self):
+        self.documents = copy.deepcopy(self.rendered)
+        deployments = {item["metadata"]["name"]: item for item in self.documents if item["kind"] == "Deployment"}
+        self.postgres = deployments["conversation-service-postgres"]
+        self.api = deployments["conversation-service"]
+        self.pod = self.postgres["spec"]["template"]["spec"]
+        self.container = self.pod["containers"][0]
+        self.mount = next(item for item in self.container["volumeMounts"] if item["name"] == "postgres-data")
+
+    def check(self):
+        validate.check_postgres_storage(self.documents)
+
+    def test_rendered_release_puts_pgdata_on_retained_pvc(self):
+        self.check()
+
+    def test_parent_mount_leaves_image_volume_uncovered(self):
+        self.mount["mountPath"] = "/var/lib/postgresql"
+        with self.assertRaisesRegex(ValueError, "^POSTGRES_IMAGE_VOLUME_MOUNT_REQUIRED$"):
+            self.check()
+
+    def test_subpath_or_readonly_mount_cannot_substitute_for_volume_root(self):
+        for field, value in (("subPath", "data"), ("subPathExpr", "$(POD_NAME)"), ("readOnly", True)):
+            with self.subTest(field=field):
+                self.mount[field] = value
+                with self.assertRaisesRegex(ValueError, "^POSTGRES_IMAGE_VOLUME_MOUNT_REQUIRED$"):
+                    self.check()
+                del self.mount[field]
+
+    def test_pgdata_outside_retained_mount_is_rejected(self):
+        config_name = self.container["envFrom"][0]["configMapRef"]["name"]
+        config = next(item["data"] for item in self.documents if item["kind"] == "ConfigMap" and
+                      item["metadata"]["name"] == config_name)
+        config["PGDATA"] = "/var/lib/postgresql/pgdata"
+        with self.assertRaisesRegex(ValueError, "^POSTGRES_PGDATA_ON_PVC_REQUIRED$"):
+            self.check()
+
+    def test_changed_pvc_reference_is_rejected(self):
+        volume = next(item for item in self.pod["volumes"] if "persistentVolumeClaim" in item)
+        volume["persistentVolumeClaim"]["claimName"] = "unrelated-data"
+        with self.assertRaisesRegex(ValueError, "^POSTGRES_RETAINED_PVC_REQUIRED$"):
+            self.check()
+
+    def test_nonmatching_filesystem_group_is_rejected(self):
+        self.pod["securityContext"]["fsGroup"] = 10001
+        with self.assertRaisesRegex(ValueError, "^POSTGRES_PVC_OWNERSHIP_REQUIRED$"):
+            self.check()
+
+    def test_api_reinitialization_after_database_rollout_is_required(self):
+        self.api["spec"]["template"]["metadata"]["annotations"].pop("goal4a.chota.by/postgres-storage-layout")
+        with self.assertRaisesRegex(ValueError, "^STORAGE_API_REINITIALIZATION_REQUIRED$"):
+            self.check()
+
+    def test_api_migration_cannot_precede_database_wave(self):
+        self.api["metadata"]["annotations"]["argocd.argoproj.io/sync-wave"] = "0"
+        with self.assertRaisesRegex(ValueError, "^STORAGE_MIGRATION_WAVE_ORDER_REQUIRED$"):
+            self.check()
 
 
 if __name__ == "__main__":
