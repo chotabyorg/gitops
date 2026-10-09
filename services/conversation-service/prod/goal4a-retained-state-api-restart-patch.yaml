@@ -1,0 +1,9 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service
+spec:
+  template:
+    metadata:
+      annotations:
+        goal4a.chota.by/retained-state-restart: goal4a-retained-state-v1
