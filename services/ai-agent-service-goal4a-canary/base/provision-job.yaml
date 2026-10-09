@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: goal4a-ai-readonly-provision-v1
+  name: goal4a-ai-readonly-provision-v2
   annotations: {argocd.argoproj.io/sync-wave: '-2'}
 spec:
   backoffLimit: 0
@@ -12,6 +12,7 @@ spec:
     spec:
       restartPolicy: Never
       automountServiceAccountToken: false
+      imagePullSecrets: [{name: ghcr-pull-secret}]
       nodeSelector: {kubernetes.io/hostname: chota.by, kubernetes.io/arch: amd64}
       securityContext:
         runAsNonRoot: true
