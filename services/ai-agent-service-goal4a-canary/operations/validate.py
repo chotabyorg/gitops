@@ -13,6 +13,7 @@ import yaml
 SERVICE = Path(__file__).resolve().parents[1]
 AI_IMAGE = "ghcr.io/chotabyorg/ai-agent-service@sha256:5eba680cf018acf0f8062bbc1b0909e8c09ff157795e5a7f79ac4232a863ef4c"
 NGINX_IMAGE = "docker.io/library/nginx@sha256:8f029c543423e3eac6b08254718bc31eb75633b1e448026b6616927baa7d4bfe"
+PULL_SECRET = "ghcr-pull-secret"
 
 
 def require(condition, code):
@@ -60,7 +61,7 @@ def validate(documents, fixture=False):
     deps={d["metadata"]["name"]:d for d in documents if d["kind"]=="Deployment"}
     require(set(deps)=={"ai-agent-service-goal4a-canary","ai-agent-service-goal4a-llm-relay"},"DEPLOYMENT_SCOPE")
     jobs=[d for d in documents if d["kind"]=="Job"]
-    require(len(jobs)==1 and jobs[0]["metadata"]["name"]=="goal4a-ai-readonly-provision-v1" and
+    require(len(jobs)==1 and jobs[0]["metadata"]["name"]=="goal4a-ai-readonly-provision-v2" and
             jobs[0]["spec"]["backoffLimit"]==0 and jobs[0]["spec"]["activeDeadlineSeconds"]==240 and
             "ttlSecondsAfterFinished" not in jobs[0]["spec"] and
             not any("hook" in key.lower() for key in jobs[0]["metadata"].get("annotations",{})),"FINITE_ORDINARY_JOB")
@@ -79,6 +80,13 @@ def validate(documents, fixture=False):
         require(set(seal["spec"]["encryptedData"])=={expected_key},"SECRET_KEY_SCOPE")
     all_pods=[d["spec"]["template"]["spec"] for d in list(deps.values())+jobs]
     for pod in all_pods:
+        containers=pod.get("initContainers",[])+pod["containers"]
+        expected_pull=[{"name":PULL_SECRET}] if any(c["image"]==AI_IMAGE for c in containers) else []
+        require(pod.get("imagePullSecrets",[])==expected_pull,"EXACT_KUBELET_PULL_SECRET")
+        require(PULL_SECRET not in json.dumps({key:pod.get(key,[]) for key in
+                ("containers","initContainers","volumes")}),"REGISTRY_CREDENTIAL_IN_CONTAINER")
+        require(not any(e["name"] in {"DOCKER_CONFIG","DOCKER_AUTH_CONFIG","REGISTRY_AUTH_FILE"}
+                for c in containers for e in c.get("env",[])),"REGISTRY_CREDENTIAL_IN_CONTAINER")
         require(pod.get("automountServiceAccountToken") is False and not any(pod.get(k) for k in
                 ("hostNetwork","hostPID","hostIPC","serviceAccountName")),"HOST_OR_API_AUTHORITY")
         require(pod["nodeSelector"]=={"kubernetes.io/hostname":"chota.by","kubernetes.io/arch":"amd64"},"PINNED_CACHE_NODE")

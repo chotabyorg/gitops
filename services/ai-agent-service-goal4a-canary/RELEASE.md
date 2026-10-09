@@ -20,6 +20,24 @@ verification. Existing partial acceptance does not clear this active topology.
    and exact-release CLEAN. Include finite provision Job and fixed IP relay policy.
    No temporary resource uses retained Conversation annotations.
 
+   Kubernetes 1.35 verifies credentials for kubelet-pulled private cached images.
+   AI canary/provision/cleanup Pod specs must reference exactly the existing
+   `ghcr-pull-secret` in `imagePullSecrets`, never container inputs or mounts.
+   Confirm its metadata-only UID/type/key names match normal AI and the native
+   accepted-image pull record. Keep immutable images, IfNotPresent, node pin and
+   kubelet verification settings unchanged. Standalone public relay needs no secret.
+
+   PR116's provision Job v1 never started: anonymous GHCR401, then DeadlineExceeded.
+   Independent predeadline/event/cache proof and complete readonly catalog equality
+   establish temporary-role absence and no ACL mutation. Only after resolving that
+   zero-effect failure may a separately reviewed revision replace it declaratively
+   with `goal4a-ai-readonly-provision-v2`. Recheck terminal old Job/no residual Pod,
+   role absence/complete baseline and accepted live AI immediately before merge.
+   Preserve role.py, release_id, baseline, ciphertexts and absolute expiry. Observe
+   old Job pruning and exactly one successful v2; never manually retry/delete/sync.
+   This correction needs NEW full cumulative source/release reviews and NEW native
+   observer verification; original stage1 clearance is not clearance for the fix.
+
    The network-only `conversation-network-patch.yaml.template` replaces normal AI
    egress with temporary guard8080 for API/worker while worker0, admission bindings[]
    and cohorts{} stay unchanged. It is required for an actual CSAPI positive guard

@@ -1,9 +1,13 @@
 # Goal4A temporary private AI canary candidate
 
-This is **staged GitOps implementation**, not deployed production topology or
-release clearance. There is deliberately no `prod/` directory: the Main
-ApplicationSet discovers `services/*/prod` automatically. Root materializes each
-frozen, independently reviewed release only when its prerequisites pass.
+PR116 materialized `prod/` and started a dark Main rollout. The relay became Ready,
+but provision Job v1 never launched its container: native Kubernetes 1.35 rejected
+anonymous access to the credential-bound cached private AI image. The finite Job
+reached its deadline; no temporary role or ACL change occurred. This separate fix
+adds the existing kubelet-only pull-secret reference and ordinary finite Job v2.
+It requires NEW full reviews and native verification before any activation.
+The Main ApplicationSet discovers `services/*/prod` automatically. Each later
+release remains separately frozen and independently reviewed.
 Normal `ai-agent-service`, its source, schema ownership, Business V2 configuration,
 secrets and current image are unchanged. No Goal4B is included.
 
@@ -12,8 +16,13 @@ AI source `4fa17597b8083d2e09428c9c1ac949aa42f5990d`, immutable image index
 `sha256:5eba680cf018acf0f8062bbc1b0909e8c09ff157795e5a7f79ac4232a863ef4c`.
 Fresh native production source/index/amd64-child/config/cache checks remain required
 before every affected release. Changed production provenance requires cross-track
-confirmation; never substitute an older image. Cache-only `IfNotPresent` is pinned
-to `chota.by`/amd64 and intentionally cannot run on an unverified uncached node.
+confirmation; never substitute an older image. `IfNotPresent` is pinned to
+`chota.by`/amd64. Kubernetes 1.35 also verifies authorization for credential-bound
+private cached images. AI lifecycle/canary Pod specs therefore reference only the
+existing `ghcr-pull-secret` in `imagePullSecrets`; kubelet consumes it and no
+container receives a registry credential, mount, environment value or API token.
+The standalone public nginx relay has no pull-secret reference. See the
+[versioned Kubernetes rule](https://v1-35.docs.kubernetes.io/docs/concepts/containers/images/#ensure-image-pull-credential-verification).
 
 The new design received fresh independent architecture/security clearance at
 design v2 SHA256 `8f78675f1e47865389872bcec9cd7e0cd13018cba26f2f9fc39228fd8ab8a7d6`.

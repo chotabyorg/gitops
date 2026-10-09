@@ -13,6 +13,7 @@ spec:
     spec:
       restartPolicy: Never
       automountServiceAccountToken: false
+      imagePullSecrets: [{name: ghcr-pull-secret}]
       nodeSelector: {kubernetes.io/hostname: chota.by, kubernetes.io/arch: amd64}
       securityContext:
         runAsNonRoot: true
