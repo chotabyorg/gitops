@@ -8,6 +8,7 @@ resources:
   - database-sealed-secret.yaml
   - principals-sealed-secret.yaml
   - managed-ai-sealed-secret.yaml
+  - goal4a-managed-ai-sealed-secret.yaml
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
@@ -32,3 +33,5 @@ generatorOptions:
 patches:
   - path: goal4a-canary-api-network-patch.yaml
   - path: goal4a-canary-worker-network-patch.yaml
+  - path: goal4a-canary-api-binding-patch.yaml
+  - path: goal4a-canary-worker-binding-patch.yaml
