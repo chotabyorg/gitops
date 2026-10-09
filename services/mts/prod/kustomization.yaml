@@ -3,10 +3,11 @@ kind: Kustomization
 namespace: prod
 resources: [../base, ingress.yaml, sealed-secrets.yaml, native-endpoints.yaml]
 # Native services on the voice VPS replace these application workloads.
-# Keep PostgreSQL running only until the final backup and authorized reset.
+# The old databases/artifacts were reset after verified root-only backups.
 replicas:
   - {name: mts-backend, count: 0}
   - {name: mts-web, count: 0}
+  - {name: mts-postgres, count: 0}
 images:
   - name: mts-backend
     newName: ghcr.io/chotabyorg/mts-backend
