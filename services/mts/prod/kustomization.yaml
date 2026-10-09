@@ -8,7 +8,7 @@ images:
     digest: sha256:f96670e85c68743349821d3ba2ff8e615ed24f2a2423740eeb52cf8e0ae5d7a7
   - name: mts-web
     newName: ghcr.io/chotabyorg/mts-web
-    digest: sha256:63ef67fbde0ac047287a7fdf5ebe6695265846ea15533231ddfd7c11fe7897a3
+    digest: sha256:965cd27e04e7c66421ed7a718816d8319a25b40bd90c3a2586c7825295f78adc
 configMapGenerator:
   - name: mts-backend-config
     envs: [config.properties]
