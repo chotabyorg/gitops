@@ -1,0 +1,29 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "conversation-service-worker"
+  },
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "conversation-worker",
+            "env": [
+              {
+                "name": "MANAGED_AI_BINDINGS",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "conversation-goal4a-managed-ai-secret",
+                    "key": "MANAGED_AI_BINDINGS"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
