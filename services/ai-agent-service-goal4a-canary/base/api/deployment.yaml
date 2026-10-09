@@ -1,0 +1,212 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service-goal4a-canary
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        component: api
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: chota.by
+        kubernetes.io/arch: amd64
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+      - name: readonly-schema-authority
+        image: goal4a-accepted-ai
+        imagePullPolicy: IfNotPresent
+        command:
+        - python
+        - -I
+        - -B
+        - /operations/role.py
+        - verify
+        envFrom:
+        - configMapRef:
+            name: goal4a-ai-config
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ai-goal4a-readonly-secret
+              key: POSTGRES_PASSWORD
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+        volumeMounts:
+        - name: operations
+          mountPath: /operations
+          readOnly: true
+        - name: ai-tmp
+          mountPath: /tmp
+      containers:
+      - name: ai-agent-service
+        image: goal4a-accepted-ai
+        imagePullPolicy: IfNotPresent
+        command:
+        - uvicorn
+        - main:app
+        - --host
+        - 127.0.0.1
+        - --port
+        - '8000'
+        - --no-access-log
+        envFrom:
+        - configMapRef:
+            name: goal4a-ai-config
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ai-goal4a-readonly-secret
+              key: POSTGRES_PASSWORD
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-agent-secret
+              key: ENCRYPTION_KEY
+        - name: MANAGED_AI_AUTH_PRINCIPALS
+          valueFrom:
+            secretKeyRef:
+              name: ai-goal4a-managed-secret
+              key: MANAGED_AI_AUTH_PRINCIPALS
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            cpu: '1'
+            memory: 768Mi
+        startupProbe:
+          exec:
+            command:
+            - curl
+            - --fail
+            - --silent
+            - --max-time
+            - '2'
+            - http://127.0.0.1:8000/health
+          periodSeconds: 2
+          timeoutSeconds: 3
+          failureThreshold: 60
+        readinessProbe:
+          exec:
+            command:
+            - curl
+            - --fail
+            - --silent
+            - --max-time
+            - '2'
+            - http://127.0.0.1:8000/health
+          periodSeconds: 10
+          timeoutSeconds: 3
+        livenessProbe:
+          exec:
+            command:
+            - curl
+            - --fail
+            - --silent
+            - --max-time
+            - '2'
+            - http://127.0.0.1:8000/health
+          periodSeconds: 20
+          timeoutSeconds: 3
+        volumeMounts:
+        - name: ai-tmp
+          mountPath: /tmp
+      - name: managed-path-guard
+        image: goal4a-nginx
+        imagePullPolicy: IfNotPresent
+        command:
+        - nginx
+        args:
+        - -c
+        - /etc/goal4a/nginx.conf
+        - -g
+        - daemon off;
+        ports:
+        - name: managed
+          containerPort: 8080
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 200m
+            memory: 64Mi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: managed
+          periodSeconds: 2
+          failureThreshold: 60
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: managed
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: managed
+          periodSeconds: 20
+        volumeMounts:
+        - name: guard-config
+          mountPath: /etc/goal4a
+          readOnly: true
+        - name: guard-tmp
+          mountPath: /tmp
+      volumes:
+      - name: operations
+        configMap:
+          name: goal4a-role-operations
+      - name: guard-config
+        configMap:
+          name: goal4a-ai-guard
+      - name: ai-tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 16Mi
+      - name: guard-tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi

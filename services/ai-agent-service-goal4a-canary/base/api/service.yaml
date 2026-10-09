@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-agent-service-goal4a-canary
+  annotations:
+    argocd.argoproj.io/sync-wave: '-4'
+spec:
+  type: ClusterIP
+  selector:
+    component: api
+  ports:
+  - name: managed
+    port: 8080
+    targetPort: managed
+    protocol: TCP

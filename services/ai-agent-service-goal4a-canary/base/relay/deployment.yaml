@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service-goal4a-llm-relay
+  annotations:
+    argocd.argoproj.io/sync-wave: '-3'
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        component: relay
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: chota.by
+        kubernetes.io/arch: amd64
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: fixed-openrouter-relay
+        image: goal4a-nginx
+        imagePullPolicy: IfNotPresent
+        command:
+        - nginx
+        args:
+        - -c
+        - /etc/goal4a/nginx.conf
+        - -g
+        - daemon off;
+        ports:
+        - name: relay
+          containerPort: 8080
+        securityContext:
+          runAsUser: 10001
+          runAsGroup: 10001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            cpu: 200m
+            memory: 64Mi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: relay
+          periodSeconds: 2
+          failureThreshold: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: relay
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: relay
+          periodSeconds: 20
+        volumeMounts:
+        - name: config
+          mountPath: /etc/goal4a
+          readOnly: true
+        - name: temporary
+          mountPath: /tmp
+      volumes:
+      - name: config
+        configMap:
+          name: goal4a-llm-relay
+      - name: temporary
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
