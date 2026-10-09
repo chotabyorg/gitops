@@ -26,12 +26,12 @@ spec:
       match: Host(`mts.chota.by`) && PathPrefix(`/api/`)
       priority: 30
       middlewares: [{name: mts-response-headers}]
-      services: [{name: mts-native-api, port: 8088}]
+      services: [{name: mts-native-api, port: 18088}]
     - kind: Rule
       match: Host(`mts.chota.by`)
       priority: 10
       middlewares: [{name: mts-response-headers}]
-      services: [{name: mts-native-web, port: 3001}]
+      services: [{name: mts-native-web, port: 13001}]
   tls: {certResolver: le}
 ---
 apiVersion: traefik.io/v1alpha1
@@ -43,4 +43,4 @@ spec:
     - kind: Rule
       match: Host(`mts.chota.by`)
       middlewares: [{name: mts-https}]
-      services: [{name: mts-native-web, port: 3001}]
+      services: [{name: mts-native-web, port: 13001}]
