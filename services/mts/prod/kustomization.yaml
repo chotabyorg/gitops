@@ -1,7 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: prod
-resources: [../base, ingress.yaml, sealed-secrets.yaml]
+resources: [../base, ingress.yaml, sealed-secrets.yaml, native-endpoints.yaml]
+# Native services on the voice VPS replace these application workloads.
+# Keep PostgreSQL running only until the final backup and authorized reset.
+replicas:
+  - {name: mts-backend, count: 0}
+  - {name: mts-web, count: 0}
 images:
   - name: mts-backend
     newName: ghcr.io/chotabyorg/mts-backend
