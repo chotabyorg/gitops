@@ -1,0 +1,46 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata: {name: mts-https}
+spec:
+  redirectScheme: {scheme: https, permanent: true}
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata: {name: mts-response-headers}
+spec:
+  headers:
+    stsSeconds: 31536000
+    contentTypeNosniff: true
+    frameDeny: true
+    referrerPolicy: no-referrer
+    customResponseHeaders:
+      X-Robots-Tag: noindex, nofollow
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata: {name: mts-https}
+spec:
+  entryPoints: [websecure]
+  routes:
+    - kind: Rule
+      match: Host(`mts.chota.by`) && PathPrefix(`/api/`)
+      priority: 30
+      middlewares: [{name: mts-response-headers}]
+      services: [{name: mts-backend, port: 8000}]
+    - kind: Rule
+      match: Host(`mts.chota.by`)
+      priority: 10
+      middlewares: [{name: mts-response-headers}]
+      services: [{name: mts-web, port: 3000}]
+  tls: {certResolver: le}
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata: {name: mts-http}
+spec:
+  entryPoints: [web]
+  routes:
+    - kind: Rule
+      match: Host(`mts.chota.by`)
+      middlewares: [{name: mts-https}]
+      services: [{name: mts-web, port: 3000}]

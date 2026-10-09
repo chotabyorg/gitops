@@ -1,4 +1,44 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: prod
-resources: [sealing-certificate.yaml]
+resources: [../base, ingress.yaml, sealed-secrets.yaml]
+images:
+  - name: mts-backend
+    newName: ghcr.io/chotabyorg/mts-backend
+    digest: sha256:f96670e85c68743349821d3ba2ff8e615ed24f2a2423740eeb52cf8e0ae5d7a7
+  - name: mts-web
+    newName: ghcr.io/chotabyorg/mts-web
+    digest: sha256:63ef67fbde0ac047287a7fdf5ebe6695265846ea15533231ddfd7c11fe7897a3
+configMapGenerator:
+  - name: mts-backend-config
+    envs: [config.properties]
+    options:
+      annotations:
+        argocd.argoproj.io/sync-wave: '-1'
+patches:
+  - target: {kind: Deployment, name: mts-backend}
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value: {argocd.argoproj.io/sync-wave: '1'}
+  - target: {kind: Deployment, name: mts-web}
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value: {argocd.argoproj.io/sync-wave: '2'}
+  - target: {kind: IngressRoute}
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value: {argocd.argoproj.io/sync-wave: '3'}
+  - target: {kind: Deployment, name: mts-postgres}
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/startupProbe/exec/command
+        value: [pg_isready, -h, '127.0.0.1', -U, mts, -d, mts]
+      - op: replace
+        path: /spec/template/spec/containers/0/readinessProbe/exec/command
+        value: [pg_isready, -h, '127.0.0.1', -U, mts, -d, mts]
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe/exec/command
+        value: [pg_isready, -h, '127.0.0.1', -U, mts, -d, mts]
