@@ -29,3 +29,6 @@ configMapGenerator:
 generatorOptions:
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
+patches:
+  - path: goal4a-canary-api-network-patch.yaml
+  - path: goal4a-canary-worker-network-patch.yaml

@@ -1,0 +1,10 @@
+# Final sanitized nonempty Application state permits pruning disposable resources.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: prod
+configMapGenerator:
+  - name: goal4a-ai-canary-closure
+    literals:
+      - lifecycle=closed-after-independent-verification
+      - durable_conversation_evidence=retained
+      - new_website_admission=legacy

@@ -1,0 +1,357 @@
+{
+  "agent": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+  "baseline": {
+    "database": "ai_agents_db",
+    "databases": [
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "TEMPORARY"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CREATE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "TEMPORARY"
+          }
+        ],
+        "datallowconn": true,
+        "datistemplate": false,
+        "datname": "ai_agents_db",
+        "oid": 16384,
+        "owner": "admin",
+        "raw_acl": null
+      },
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "TEMPORARY"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CREATE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "TEMPORARY"
+          }
+        ],
+        "datallowconn": true,
+        "datistemplate": false,
+        "datname": "postgres",
+        "oid": 5,
+        "owner": "admin",
+        "raw_acl": null
+      },
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CREATE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "TEMPORARY"
+          }
+        ],
+        "datallowconn": false,
+        "datistemplate": true,
+        "datname": "template0",
+        "oid": 4,
+        "owner": "admin",
+        "raw_acl": "{=c/admin,admin=CTc/admin}"
+      },
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CONNECT"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "CREATE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "TEMPORARY"
+          }
+        ],
+        "datallowconn": true,
+        "datistemplate": true,
+        "datname": "template1",
+        "oid": 1,
+        "owner": "admin",
+        "raw_acl": "{=c/admin,admin=CTc/admin}"
+      }
+    ],
+    "extensions": [
+      {
+        "extname": "plpgsql",
+        "extversion": "1.0"
+      }
+    ],
+    "functions": [
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          }
+        ],
+        "oid": 715,
+        "owner": "admin",
+        "raw_acl": null,
+        "signature": "lo_create(oid)"
+      },
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          }
+        ],
+        "oid": 957,
+        "owner": "admin",
+        "raw_acl": null,
+        "signature": "lo_creat(integer)"
+      },
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          }
+        ],
+        "oid": 3457,
+        "owner": "admin",
+        "raw_acl": null,
+        "signature": "lo_from_bytea(oid,bytea)"
+      },
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          }
+        ],
+        "oid": 3577,
+        "owner": "admin",
+        "raw_acl": null,
+        "signature": "pg_logical_emit_message(boolean,text,text,boolean)"
+      },
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          },
+          {
+            "grantable": false,
+            "grantee": "admin",
+            "grantor": "admin",
+            "privilege": "EXECUTE"
+          }
+        ],
+        "oid": 3578,
+        "owner": "admin",
+        "raw_acl": null,
+        "signature": "pg_logical_emit_message(boolean,text,bytea,boolean)"
+      }
+    ],
+    "heads": [
+      {
+        "version_num": "bv2_20261008_01"
+      }
+    ],
+    "large_objects": [],
+    "login_roles": [
+      {
+        "rolbypassrls": true,
+        "rolcanlogin": true,
+        "rolcreatedb": true,
+        "rolcreaterole": true,
+        "rolinherit": true,
+        "rolname": "admin",
+        "rolreplication": true,
+        "rolsuper": true
+      }
+    ],
+    "memberships": [
+      {
+        "admin_option": false,
+        "inherit_option": true,
+        "member": "pg_monitor",
+        "role": "pg_read_all_settings",
+        "set_option": true
+      },
+      {
+        "admin_option": false,
+        "inherit_option": true,
+        "member": "pg_monitor",
+        "role": "pg_read_all_stats",
+        "set_option": true
+      },
+      {
+        "admin_option": false,
+        "inherit_option": true,
+        "member": "pg_monitor",
+        "role": "pg_stat_scan_tables",
+        "set_option": true
+      }
+    ],
+    "preloads": [
+      {
+        "name": "local_preload_libraries",
+        "setting": ""
+      },
+      {
+        "name": "session_preload_libraries",
+        "setting": ""
+      },
+      {
+        "name": "shared_preload_libraries",
+        "setting": ""
+      }
+    ],
+    "public_definers": [],
+    "public_table_grants": [],
+    "schema_acl": [
+      {
+        "acl": [
+          {
+            "grantable": false,
+            "grantee": "PUBLIC",
+            "grantor": "pg_database_owner",
+            "privilege": "USAGE"
+          },
+          {
+            "grantable": false,
+            "grantee": "pg_database_owner",
+            "grantor": "pg_database_owner",
+            "privilege": "CREATE"
+          },
+          {
+            "grantable": false,
+            "grantee": "pg_database_owner",
+            "grantor": "pg_database_owner",
+            "privilege": "USAGE"
+          }
+        ],
+        "nspname": "public",
+        "oid": 2200,
+        "owner": "pg_database_owner",
+        "raw_acl": "{pg_database_owner=UC/pg_database_owner,=U/pg_database_owner}"
+      }
+    ],
+    "server_major": 18
+  },
+  "channel": "WEBSITE_WIDGET",
+  "image": "sha256:5eba680cf018acf0f8062bbc1b0909e8c09ff157795e5a7f79ac4232a863ef4c",
+  "integration": "8d4a1b73-7973-4dcc-a3d4-1312d871c1d4",
+  "owner": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+  "release_id": "goal4a-production-technical-smoke-v1",
+  "source": "4fa17597b8083d2e09428c9c1ac949aa42f5990d",
+  "valid_until": "2026-10-10T12:00:00+00:00"
+}
