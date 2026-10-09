@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mts-public-sealing-certificate-20261009
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 90
+  template:
+    metadata:
+      labels: {app: mts-public-sealing-certificate}
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: public-certificate
+          image: python:3.12-slim
+          command: [python, -u, -c]
+          args:
+            - |
+              import os, pathlib, urllib.request
+              for line in pathlib.Path('/proc/meminfo').read_text().splitlines():
+                  if line.startswith(('MemTotal:', 'MemAvailable:')):
+                      print(line)
+              disk = os.statvfs('/')
+              print('Container filesystem available bytes:', disk.f_bavail * disk.f_frsize)
+              for name in ('sealed-secrets-controller', 'sealed-secrets'):
+                  try:
+                      with urllib.request.urlopen(f'http://{name}.kube-system.svc:8080/v1/cert.pem', timeout=10) as response:
+                          certificate = response.read(65536).decode()
+                      if not certificate.startswith('-----BEGIN CERTIFICATE-----'):
+                          raise ValueError('Expected public certificate')
+                      print(certificate)
+                      break
+                  except Exception:
+                      print('Public certificate service unavailable at candidate', name)
+              else:
+                  raise SystemExit(1)
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {cpu: 100m, memory: 96Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
