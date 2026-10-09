@@ -35,3 +35,4 @@ patches:
   - path: goal4a-canary-worker-network-patch.yaml
   - path: goal4a-canary-api-binding-patch.yaml
   - path: goal4a-canary-worker-binding-patch.yaml
+  - path: goal4a-worker-activation-patch.yaml
