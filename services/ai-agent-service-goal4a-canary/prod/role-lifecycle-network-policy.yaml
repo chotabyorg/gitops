@@ -1,19 +1,16 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: goal4a-ai-llm-relay
+  name: goal4a-ai-role-lifecycle
   annotations: {argocd.argoproj.io/sync-wave: '-4'}
 spec:
-  podSelector: {matchLabels: {app: ai-agent-service-goal4a-llm-relay, component: relay}}
+  podSelector: {matchLabels: {app: ai-agent-service-goal4a-canary, component: role-lifecycle}}
   policyTypes: [Ingress, Egress]
-  ingress:
-    - from:
-        - podSelector: {matchLabels: {app: ai-agent-service-goal4a-canary, component: api}}
-      ports: [{protocol: TCP, port: 8080}]
+  ingress: []
   egress:
     - to:
-        - ipBlock: {cidr: '8.47.69.10/32'}
-      ports: [{protocol: TCP, port: 443}]
+        - podSelector: {matchLabels: {app: ai-agent-service, component: postgres}}
+      ports: [{protocol: TCP, port: 5432}]
     - to:
         - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: kube-system}}
           podSelector: {matchLabels: {k8s-app: kube-dns}}
