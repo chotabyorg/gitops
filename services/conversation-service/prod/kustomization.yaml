@@ -36,3 +36,5 @@ patches:
   - path: goal4a-canary-api-binding-patch.yaml
   - path: goal4a-canary-worker-binding-patch.yaml
   - path: goal4a-worker-activation-patch.yaml
+  - path: goal4a-retained-state-api-restart-patch.yaml
+  - path: goal4a-retained-state-worker-restart-patch.yaml
