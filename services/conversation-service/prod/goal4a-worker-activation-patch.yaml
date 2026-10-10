@@ -3,4 +3,4 @@ kind: Deployment
 metadata:
   name: conversation-service-worker
 spec:
-  replicas: 1
+  replicas: 0
