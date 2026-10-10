@@ -11,8 +11,8 @@ resources:
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
-    newTag: 506f3edd7ef26f12f9433fc9f2917c12e7c22453
-    digest: sha256:fa63a329173e4400985ae87d5896ab3effd45f0f7040adb4849b5d3f9ccdfe63
+    newTag: e6137be61c03e007f19ab8aee603e15a6fdf50cc
+    digest: sha256:15fb843804aae7ed72f0b09c01c84d491f2c637236a8cb2b023bca97da9d4e61
   - name: postgres
     newName: docker.io/library/postgres
     newTag: 16.15-alpine
