@@ -348,6 +348,12 @@
     "server_major": 18
   },
   "channel": "WEBSITE_WIDGET",
+  "cleanup_gate": {
+    "all_work_terminal": true,
+    "canary_absent": true,
+    "independent_evidence_sha256": "55c051059c5b7d6147f36cc2fdc5e1c1d660f3f0b47bf7906f1c8829f80d9efd",
+    "worker_inactive": true
+  },
   "image": "sha256:5eba680cf018acf0f8062bbc1b0909e8c09ff157795e5a7f79ac4232a863ef4c",
   "integration": "8d4a1b73-7973-4dcc-a3d4-1312d871c1d4",
   "owner": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",

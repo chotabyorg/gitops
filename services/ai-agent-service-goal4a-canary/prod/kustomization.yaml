@@ -5,6 +5,7 @@ namespace: prod
 resources:
   - role-lifecycle-network-policy.yaml
   - readonly-sealed-secret.yaml
+  - cleanup-job.yaml
 images:
   - name: goal4a-accepted-ai
     newName: ghcr.io/chotabyorg/ai-agent-service
