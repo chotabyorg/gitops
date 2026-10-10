@@ -1,20 +1,10 @@
-# Stage7B retains only the accepted temporary role lifecycle until controlled cleanup.
+# Final sanitized nonempty Application state permits pruning disposable resources.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: prod
-resources:
-  - role-lifecycle-network-policy.yaml
-  - readonly-sealed-secret.yaml
-  - cleanup-job.yaml
-images:
-  - name: goal4a-accepted-ai
-    newName: ghcr.io/chotabyorg/ai-agent-service
-    digest: sha256:5eba680cf018acf0f8062bbc1b0909e8c09ff157795e5a7f79ac4232a863ef4c
-  - name: goal4a-nginx
-    newName: docker.io/library/nginx
-    digest: sha256:8f029c543423e3eac6b08254718bc31eb75633b1e448026b6616927baa7d4bfe
 configMapGenerator:
-  - name: goal4a-role-operations
-    files: [role.py, release-inputs.json]
-generatorOptions:
-  annotations: {argocd.argoproj.io/sync-wave: '-7'}
+  - name: goal4a-ai-canary-closure
+    literals:
+      - lifecycle=closed-after-independent-verification
+      - durable_conversation_evidence=retained
+      - new_website_admission=legacy
