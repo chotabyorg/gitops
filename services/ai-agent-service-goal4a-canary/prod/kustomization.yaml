@@ -1,12 +1,10 @@
-# No prod directory exists until the exact reviewed stage1 is materialized.
+# Stage7B retains only the accepted temporary role lifecycle until controlled cleanup.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: prod
 resources:
-  - ../base
+  - role-lifecycle-network-policy.yaml
   - readonly-sealed-secret.yaml
-  - managed-sealed-secret.yaml
-  - relay-network-policy.yaml
 images:
   - name: goal4a-accepted-ai
     newName: ghcr.io/chotabyorg/ai-agent-service
@@ -15,12 +13,6 @@ images:
     newName: docker.io/library/nginx
     digest: sha256:8f029c543423e3eac6b08254718bc31eb75633b1e448026b6616927baa7d4bfe
 configMapGenerator:
-  - name: goal4a-ai-config
-    envs: [config.properties]
-  - name: goal4a-ai-guard
-    files: [nginx.conf=guard.conf]
-  - name: goal4a-llm-relay
-    files: [nginx.conf=relay.conf]
   - name: goal4a-role-operations
     files: [role.py, release-inputs.json]
 generatorOptions:
