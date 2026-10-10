@@ -1,10 +1,13 @@
-# Dark PostgreSQL storage finding and forward-fix candidate
+# PostgreSQL storage persistence fix
 
-This is the bounded correction for accepted Important finding I1 from independent
-Main dark verification. It is source/release candidate evidence, not a repaired
-runtime or Goal 4A PASS. The author neither deploys nor verifies this production fix.
+**Current status: fixed and verified as part of Goal4A PASS.** PostgreSQL now
+stores its data on the retained PVC at the image's declared volume path. The
+two-stage persistence proof completed; this is no longer an open release gate.
+The sections below preserve the original failure, correction, and verification
+history. Their pre-merge and pre-verification instructions are historical, not
+pending actions. See [RELEASE.md](RELEASE.md) for current production state.
 
-## Observed failure
+## Original failure (historical)
 
 Initial Main GitOps revision `f30e256493cc644c6e8e755446aaf121db248fb1`
 (PR #112; reviewed head `419e72e45a4349d037b23ef9cde3c3b8eff5a365`) deployed
@@ -32,7 +35,7 @@ tables existed. Website bindings were empty, both processing flags false and
 worker replicas zero. No widget, AI or provider call was made by this verification.
 The observed retained PVC UID was `42ef2409-790b-4801-a599-55c4dad74328`.
 
-## Exact correction and release eligibility
+## Correction and original release gates
 
 Only two rendered resources change: PostgreSQL's existing `postgres-data` PVC
 mount becomes `/var/lib/postgresql/data`; the API pod template gains
@@ -69,7 +72,7 @@ complete review of cumulative Goal 4A changes since
 All Website/CP/AI promotions, real widget use, worker enable and managed canary
 remain held until the repaired native storage gate passes.
 
-## Finite two-stage GitOps proof
+## Completed two-stage GitOps proof
 
 Stage 1 is branch `codex/goal4a-conversation-storage-fix`: the exact mapping fix
 and API layout stamp above. It may merge only after complete review and a fresh
@@ -97,7 +100,7 @@ security, private exposure and effective policies. This is the finite durability
 proof; no SQL record insert, manual restart, migration, host copy or volume deletion
 is part of either stage. Neither reviewed source tree alone can claim that proof.
 
-## Regression protection and native proof still required
+## Regression protection and completed native proof
 
 The release validator now rejects a parent-only PVC mount, wrong claim, subPath,
 read-only data mount, PGDATA outside the retained mount, mismatched UID/GID/fsGroup,

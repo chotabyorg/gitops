@@ -1,4 +1,11 @@
-# Goal4A temporary private AI canary candidate
+# Goal4A temporary private AI canary candidate (historical)
+
+> **Closed production candidate — Goal4A passed on 2026-10-10.** The temporary
+> canary runtime and role lifecycle have been removed. Do not follow the candidate
+> activation steps below: production managed execution remains disabled, the
+> normal `ai-agent-service:8000` network path is dormant, and no permanent managed
+> AI principal or binding exists. The detailed material below is retained solely
+> as historical design and verification evidence.
 
 PR116 materialized `prod/` and started a dark Main rollout. The relay became Ready,
 but provision Job v1 never launched its container: native Kubernetes 1.35 rejected

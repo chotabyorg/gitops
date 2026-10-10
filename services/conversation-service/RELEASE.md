@@ -1,20 +1,29 @@
-# Goal 4A Main production release gates
+# Goal 4A Main production release record
 
-**Dark storage forward-fix candidate; no repaired release approved.** Reviewed source
-PRs and the initial dark GitOps PR #112 have merged. Native verification of Main
-revision `f30e256493cc644c6e8e755446aaf121db248fb1` found PostgreSQL on a CRI image
-volume shadowing its PVC, despite healthy probes and schema. All nine journal
-tables were empty and admission was disabled. [STORAGE-FIX.md](STORAGE-FIX.md)
-records the minimal candidate, fresh zero-data pre-merge condition and independent
-post-fix persistence gate. Fresh complete source and exact-release CLEAN are
-required before this separate fix merges. The reviewed v2 architecture
-does not authorize real widget credential use, production canary or Business-provider smoke.
+**Current final state — Goal4A PASS (2026-10-10).** Goal4A is complete. The
+Conversation PostgreSQL storage persistence fix is in place, and the temporary
+Goal4A AI canary runtime and its role lifecycle have been removed. The generic
+Conversation NetworkPolicies permit the normal `ai-agent-service` API on port
+8000; managed execution remains disabled.
+
+Production remains dark for managed execution: the worker has zero replicas,
+`WEBSITE_WORKER_ENABLED=false`, API and worker `MANAGED_AI_BINDINGS=[]`, and
+`MANAGED_WEBSITE_COHORTS={}`. All new Website traffic is LEGACY. Retain the
+Website admissions, integration guard/S2S configuration, and exact Conversation
+`WEBSITE_BINDINGS`; these preserve sticky routing and accepted work and must not
+be deleted as cleanup debris. Do not create a permanent managed AI
+principal/binding here. Goal4B has not started.
+
+The detailed candidate, gate, and stage records below preserve the rollout
+history. Their pre-completion status statements are historical; the current
+production state is the one stated above. This follow-up does not repeat the
+Goal4A rollout or smoke.
 [GitOps #111](https://github.com/chotabyorg/gitops/issues/111),
 [Control Plane #21](https://github.com/chotabyorg/control-plane-service/issues/21)
 and the [Main ADR](../../docs/main-chota-conversation-foundation.md) retain the
 Website-first Goal 4A and subsequent Goal 4B boundary. Foundation is unfinished.
 
-## Recorded Main baseline
+## Historical pre-rollout Main baseline (2026-10-08)
 
 The historical pre-rollout read-only 2026-10-08 baseline identifies Main `chota.by`, node 153.80.244.178,
 context `default`, prod UID `84409e45-1c54-4893-bf30-d353a55acb47` and kube-system
@@ -102,15 +111,12 @@ Website/AI matching seals are privately staged for a later separate release and
 are absent from this dark production overlay. Schema fixtures were never inputs.
 Do not regenerate the database password during redeploy: retain these credentials.
 
-Initial state remains API replicas 1, PostgreSQL replicas 1, worker replicas 0,
-`WEBSITE_BINDINGS=[]` and all worker flags false. Existing Website, AI and CP prod
-overlays are unchanged. Missing Website cohort/guard settings mean legacy default
-only during this dark phase; later stages require explicit exact configuration.
-The separate dark validator staging finding was fixed in a fresh context, with
-six offline tests and retained synthetic-seal/public-exposure negative checks;
-a fresh complete GitOps and exact-release review was performed before dark merge.
-The subsequent native storage Important finding invalidates progression until
-this separate forward fix, another complete review and actual persistence proof.
+The initial dark deployment used API replicas 1, PostgreSQL replicas 1, worker
+replicas 0, `WEBSITE_BINDINGS=[]` and false worker flags. That was the pre-Website
+binding baseline; current final settings are listed at the top of this record.
+The initial dark phase also relied on absent Website guard/cohort fields as empty
+legacy defaults. Later Goal4A stages installed explicit routing fields and then
+closed the cohort while retaining its guard and binding.
 
 All five dedicated credential names and key schemas are in [README](README.md).
 SealedSecret metadata and Secret template must retain strict scope `prod/<name>`,
@@ -121,7 +127,7 @@ the existing overlay; preserve image and every resource/hook. Assess the current
 AI PostSync MCP credential backfill Job on the exact rendered candidate before
 sync; do not remove or redesign it to avoid a gate.
 
-## Candidate routing identities and blocked gates
+## Historical routing candidate and pre-canary gates
 
 The non-secret candidate is integration `8d4a1b73-7973-4dcc-a3d4-1312d871c1d4`,
 owner `dc3dd7eb-536f-45d4-84f2-c8d35575d928`, expected agent
@@ -147,7 +153,7 @@ capability disabling, CRM rebinding or alternate agent/topology is authorized by
 this source candidate. A different safe topology needs explicit human approval
 and a new cross-track design/release review.
 
-## Declarative stages and abort points
+## Historical staged release sequence
 
 1. Complete isolated source branches, baseline/regression/real-PG A–H and
    concurrency proof, migration empty→head and populated upgrade, Docker
@@ -200,23 +206,21 @@ and a new cross-track design/release review.
     candidate, Git main desired, Argo revision and actual runtime. PASS requires
     all user gates and evidence. Handoff then stop; no Goal 4B work here.
 
-## Feature rollback
+## Retained Website admission and rollback authority
 
-Prepare and review the exact rollback before smoke. Edit only Website production
-`MANAGED_WEBSITE_COHORTS={}` through GitOps, using
-`release/activation/rollback-website.properties.template`. Remove the technical
-cohort/session; **retain MANAGED_WEBSITE_GUARDED_INTEGRATIONS**, compatible sticky
-Website image, Conversation API/worker/PG/PVC, exact `WEBSITE_BINDINGS`, principals,
-managed-AI bindings/registry, scopes, guards, network isolation and images. Observe
-the new Argo revision and ready gateway pods, and prove new IDs reserve LEGACY
-while already accepted IDs retain managed disposition/result with zero AI repeat.
+Goal4A ended with the Website cohort empty and managed execution disabled. Keep
+the durable Website admissions, `MANAGED_WEBSITE_GUARDED_INTEGRATIONS`, the
+Website-to-Conversation S2S configuration, and the exact Conversation
+`WEBSITE_BINDINGS`. They keep accepted IDs sticky and ensure guarded new traffic
+continues to reserve LEGACY; they are retained production state, not disposable
+canary material. The temporary AI canary and its managed execution binding were
+removed. The generic network path to normal `ai-agent-service:8000` remains dormant
+while `MANAGED_AI_BINDINGS=[]`.
 
-**Already accepted managed messages are never replayed through legacy AI.**
-Uncertain CS admission/result returns retryable failure. Do not remove the service
-directory, guard, journal/DB or grants, downgrade schema, rotate secrets, or revert
-to a gateway image predating durable sticky routing. If execution needs temporary
-containment, worker can be paused by separately reviewed declarative replicas 0;
-do not confuse that with feature rollback or delete recoverable accepted work.
+Already accepted managed messages are never replayed through legacy AI. Do not
+delete the guard, admission journal, database, Website binding, or compatible
+gateway routing state as cleanup. Do not recreate the temporary AI canary or
+activate managed execution as part of this follow-up.
 
 ## Business-track handoff and next stage
 
