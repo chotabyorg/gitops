@@ -1,4 +1,13 @@
-# Goal4A temporary AI release and cleanup gates
+# Goal4A temporary AI release and cleanup gates (historical)
+
+> **Closed production release — Goal4A passed on 2026-10-10.** The temporary
+> canary runtime and role lifecycle have been removed. The production overlay no
+> longer applies the temporary AI network destination; only the dormant generic
+> path to normal `ai-agent-service:8000` remains. Worker replicas are zero, managed
+> execution is disabled, and new Website traffic is LEGACY. Do not execute the
+> candidate release steps below. Retain the Conversation admissions, guard/S2S
+> configuration, and exact Website binding for sticky routing and accepted work.
+> The detailed material below preserves historical evidence only.
 
 Every numbered release is a separate frozen exact-reviewed GitOps PR. Natural Argo
 is the sole mutation mechanism. No manual apply/sync/restart/production SQL, image

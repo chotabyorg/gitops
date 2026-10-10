@@ -2,11 +2,11 @@
 
 ## Status and scope
 
-**Accepted architecture; Goals 0–3 source foundation complete; Goal 4A production gates in progress.** The initial private dark Conversation rollout reached Main through GitOps PR #112 with admission disabled and worker zero. Independent native verification found PostgreSQL on an image volume shadowing its PVC, so durability failed despite readiness. The [separate storage forward fix](../services/conversation-service/STORAGE-FIX.md) requires a fresh complete review and native persistence proof; no Website managed canary is enabled. Goal 4B will follow with Telegram. The Foundation remains an unfinished umbrella; source maturity or a dark deployment does not establish production readiness or complete the roadmap.
+**Accepted architecture; Goals 0–3 source foundation complete; Goal 4A production gates passed (2026-10-10).** The storage persistence defect is fixed and verified, and the temporary Goal4A AI canary and role lifecycle have been removed. Production keeps worker replicas at zero, `WEBSITE_WORKER_ENABLED=false`, `MANAGED_AI_BINDINGS=[]`, and `MANAGED_WEBSITE_COHORTS={}`; new Website traffic remains LEGACY. The generic Conversation network path to normal `ai-agent-service:8000` remains available but dormant. Retain Website admissions, guard/S2S configuration, and the exact Website binding; they preserve sticky routing and accepted work. No permanent managed AI principal/binding was created. Goal 4B remains a later, separate release decision. The Foundation remains an unfinished umbrella; Goal4A completion does not complete the roadmap.
 
 Main planning belongs to [Project #3 — Chota Platform](https://github.com/orgs/chotabyorg/projects/3). [`chotabyorg/chota`](https://github.com/chotabyorg/chota) / [Project #6 — Chota 2.0](https://github.com/orgs/chotabyorg/projects/6) are a separate, paused fashion/e-commerce product. Their code, E0/E1/E4, Conversation Core, issues and roadmap were **not used as Main architecture evidence**.
 
-The representative legacy-flow statements below remain historical source observations. Goals 1–3 have since added the durable Conversation journal, managed v1 Turn contract and AI-owned Business evidence recovery. The pre-rollout Goal4A read-only Main baseline on 2026-10-08 identified Conversation source `d238064215d3875c5d2061bba5a00b55dc5fad0e` with no production Deployment, Website `fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b`, AI `4fa17597b8083d2e09428c9c1ac949aa42f5990d` with Business V2 enabled, and Control Plane `96a4b40daeb113f435f5cd02a6f7a2fc12502b24`. Preserve that current AI Business baseline; PR #43's earlier draft status is historical, not the current release authority. GitOps desired state, Argo revision and observed pod digests are separate evidence. See the [Goal4A release record](../services/conversation-service/RELEASE.md) for actual dark rollout limits and remaining gates.
+The representative legacy-flow statements below remain historical source observations. Goals 1–3 have since added the durable Conversation journal, managed v1 Turn contract and AI-owned Business evidence recovery. The pre-rollout Goal4A read-only Main baseline on 2026-10-08 identified Conversation source `d238064215d3875c5d2061bba5a00b55dc5fad0e` with no production Deployment, Website `fda632c0f694ae1b5ffc74ce4abd92d87ebeb04b`, AI `4fa17597b8083d2e09428c9c1ac949aa42f5990d` with Business V2 enabled, and Control Plane `96a4b40daeb113f435f5cd02a6f7a2fc12502b24`. Preserve that current AI Business baseline; PR #43's earlier draft status is historical, not the current release authority. GitOps desired state, Argo revision and observed pod digests are separate evidence. See the [Goal4A release record](../services/conversation-service/RELEASE.md) for the completed rollout record and current disabled state.
 
 ## Context and problems
 
@@ -165,8 +165,8 @@ Voice owns provider/PBX media integration, SIP/RTP/Asterisk/AudioSocket where re
 2. Goal1 thin Conversation durable journal and contracts — source complete, unconsumed in production.
 3. Goal2 managed AI v1 contract carrying stable Turn identity and authorized context — source complete.
 4. Goal3 Business receipt/evidence compatibility, retaining AI ownership — source complete.
-5. Goal4A first private Conversation production deployment plus one exact Website integration's dedicated technical session — current stage; ordinary demo and every other Website integration retain legacy. Production cohorts remain empty until separate binding, logging and no-business smoke gates pass.
-6. Goal4B one explicitly selected Telegram canary using the proven production infrastructure — next; no Telegram migration in Goal4A.
+5. Goal4A first private Conversation production deployment plus one exact Website integration's dedicated technical session — complete (PASS). Its cohort is now empty and managed execution is disabled; all new Website traffic remains legacy. Ordinary demo and every other Website integration retain legacy.
+6. Goal4B one explicitly selected Telegram canary using the proven production infrastructure — next, not started; no Telegram migration in Goal4A.
 7. Goal5 advanced settling/debounce/grouping/supersede/fencing policy — later; Goal4 parity is one accepted inbound Message per logical Turn with a durable serial queue.
 8. Remaining text channels, including Instagram and compatible WhatsApp, after their own reviewed cutovers.
 9. Platform handoff/operator authority and optional CRM projection.
@@ -182,7 +182,7 @@ Goal4A uses `SESSION_ALLOWLIST` for exactly one technical session only. Source s
 
 Automatic cross-channel identity merging, full contact center, campaigns, live Voice transfer, production recordings, advanced debounce/settling/supersede, human Inbox/handoff, CRM/provider configuration and backup/HA/DR remain outside Goal4A. This ADR itself applies no manifest or traffic change.
 
-**Current stage: Goal4A — Website technical managed canary and first Main Conversation production rollout. Next: Goal4B — Telegram managed canary, parity-first, after the actual Goal4A production infrastructure and evidence gates pass.** Foundation and Goal4B are not complete.
+**Current stage: Goal4A complete (PASS) — its Website cohort is closed, managed execution is disabled, and all new Website traffic remains legacy. Next: Goal4B — Telegram managed canary, parity-first, after a separate coordinated release decision. Goal4B has not started; Foundation remains unfinished.**
 
 ## Evidence and backlog
 
