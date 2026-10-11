@@ -2,8 +2,8 @@
 
 **Current beauty rollout candidate:** [BEAUTY-CUTOVER](BEAUTY-CUTOVER.md) records
 the permanent exact managed principal and normal-production-AI binding stages.
-Stage 2 replaces the empty managed binding overrides while keeping worker disabled
-at zero replicas and Website cohorts empty. The Goal4A/Goal4A.1 dark-state values
+Stage 3 enables one permanent worker after the exact stage 2 binding gate, while
+Website cohorts remain empty. The Goal4A/Goal4A.1 dark-state values
 below describe the retained pre-cutover baseline, not this stage's binding target.
 Actual deployment acceptance is recorded separately after Argo/runtime checks.
 
