@@ -13,8 +13,13 @@
             "env": [
               {
                 "name": "MANAGED_AI_BINDINGS",
-                "valueFrom": null,
-                "value": "[]"
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "conversation-beauty-managed-secret",
+                    "key": "MANAGED_AI_BINDINGS"
+                  }
+                },
+                "value": null
               }
             ]
           }
