@@ -23,6 +23,92 @@ Goal4A rollout or smoke.
 and the [Main ADR](../../docs/main-chota-conversation-foundation.md) retain the
 Website-first Goal 4A and subsequent Goal 4B boundary. Foundation is unfinished.
 
+## Goal4A.1 reviewed release candidate (2026-10-10)
+
+This is a materialized source/artifact candidate on the separate GitOps release
+branch. It does not claim the subsequent GitOps promotion, Main migration or
+runtime readiness, real-model smoke, final Goal4A.1 acceptance or managed Website
+activation. The Goal4A production state above remains the observed baseline until
+those later gates are independently completed.
+
+AI dual-reader support was released first through [AI PR #49](https://github.com/chotabyorg/ai-agent-service/pull/49)
+and [GitOps PR #129](https://github.com/chotabyorg/gitops/pull/129): source merge
+`bce5e3abd9c423c72021142014c0b24239741bd6`, OCI index
+`sha256:7e005f1c4914c0f3527947500379a9cbbc7a0b7d2c3118a9e8bdb49b6eeee8d9`.
+This candidate preserves that AI pin and all AI Business/configuration resources.
+
+Conversation source is [PR #8](https://github.com/chotabyorg/conversation-service/pull/8):
+reviewed head `eb83c336a9772eece9b31cbd881f2516c31a992d`, published main merge
+`cf95c23c7a4b0e71f9bb1a54136d6675cf8171d1`, identical tree
+`493a5ea46078e0b871fc8de0234279dbd4365f46`. The exact image pin is:
+
+- OCI index: `sha256:0905aac9eba294466b94e1aaabae5fd45597a6c610a5f335710a9c57863f45da`.
+- Linux/amd64 child: `sha256:2c2986447d40c7660904e389e196395f476c13fb0ee6a02c501aad81d31d02c9`.
+- Linked attestation: `sha256:0ed6219c15f5d4af11b2813c5f38077a184a2592f82f2ecb428727e04155ff4d`.
+
+[PR quality run 38077773919](https://github.com/chotabyorg/conversation-service/actions/runs/38077773919),
+[main quality run 38078082224](https://github.com/chotabyorg/conversation-service/actions/runs/38078082224)
+and the build-only [publisher run 38078154664](https://github.com/chotabyorg/conversation-service/actions/runs/38078154664)
+succeeded at those exact heads. Fresh complete source, supplemental security and
+exact published-artifact reviews each recorded 0 BLOCKER / 0 IMPORTANT. Separate
+independent verification passed 455 full-suite cases plus 21 explicit process/guard
+cases with zero failures, errors or skips; the distinct artifact gate verified all
+43 packaged files, unchanged dependency pins and native additive migration,
+frozen-window retry, delivery/history and real-PostgreSQL concurrency behavior.
+The complete combined GitOps/site release requires its own fresh full review.
+
+The actual widget owner is [site PR #60](https://github.com/chotabyorg/chota-site/pull/60),
+with reviewed head `28ab9badd9af002586e1ca0cd611e7666f2a7358`, published main
+merge `bca7ca230ad557541c36cc5dd0f4b1619476082b`, and identical tree
+`373b1798c2a81cd3bf5524f354a4b6c3ebb676a8`. Its published image pin is:
+
+- OCI index: `sha256:9d8231d2ef1a6f187a5edaf9249ad56c5580a752d0c4959f43c8cfa198e5f4a4`.
+- Linux/amd64 child: `sha256:92b9bc2fc5e81657e39fef0664f1ff45ddb0f2486e3ebd68f52337397360bc7c`.
+- Linked attestation: `sha256:7d3b8dd71349fc454e690e1d50fed81350b879b36c9616a7367d86a8c6c59392`.
+
+Site [PR CI 38079691858](https://github.com/chotabyorg/chota-site/actions/runs/38079691858)
+and [main CI/publisher 38080132956](https://github.com/chotabyorg/chota-site/actions/runs/38080132956)
+passed at the exact source heads with Node20 validation and image publication.
+The fresh complete source R2 review recorded 0 BLOCKER / 0 IMPORTANT. Separate
+independent verification passed all 158 frontend tests, lint, live production
+build and typecheck; all 15 Chromium identity/retry/reload/privacy scenarios
+passed with 93 intercepted requests and no continued external request. Bounded
+concurrency repetitions passed and the injected duplicate failed as required.
+The stable identity is generated once for the immutable logical-send envelope,
+reused on response-loss retry and scoped pending reload recovery, with new UUIDs
+for new or edited messages. No browser transcript is canonical authority and
+no widget redesign is included. Published site artifact verification and the
+combined fresh release review remain separate required gates; registry/CI
+provenance alone is not artifact or production acceptance.
+
+The new Conversation image's single additive head is `0004_website_history`.
+The existing API init migration wrapper is retained unchanged; API and worker
+readiness require that exact head and new columns. Old v1 requests/results,
+fingerprints and evidence remain unchanged. Only new immediate Website Turns emit
+v2; durable version/window/bounds/agent/hash freeze prevents rebudgeting on retry.
+The [history policy](README.md#goal4a1-release-candidate) retains whole canonical
+Messages under all three existing limits. A newly committed `WRITE_COMPLETED`
+may promote one exact source-Turn AGENT Message; `WRITE_FAILED`/`UNKNOWN` alone
+cannot. This is local write evidence, never browser READ. Customer input revision,
+frozen Business confirmation authority, OperationReference, strict-v1 evidence
+and execution namespace `main-chota.conversation.v1` are unchanged.
+
+No Secret/seal, principal, binding, cohort, replica, NetworkPolicy, PVC, PostgreSQL
+image, migration wrapper, Argo Application/ApplicationSet, provider or CRM change
+is included. Preserve worker replicas 0, both worker flags false, both managed AI
+bindings `[]`, Website cohort `{}` and all retained sticky-routing state. New
+Website traffic remains LEGACY. Do not create a permanent managed demo principal,
+perform a real CRM write, activate the public widget or start Goal4B.
+
+Promotion must record the exact reviewed GitOps head/merge and both real image
+pins, then observe Argo Synced/Healthy, the actual Main image/runtime, successful
+0004 migration/readiness and unchanged DARK controls. Separate bounded safe
+real-model continuity proof must follow clean deterministic tests and fresh
+reviews; it carries no production Business/provider mutation authority. Rollback
+keeps managed execution disabled and all accepted admission/history data intact.
+After 0004, use a compatible forward fix; old 0003-only images are unready, and
+retained v2 or source-Turn history forbids schema downgrade.
+
 ## Historical pre-rollout Main baseline (2026-10-08)
 
 The historical pre-rollout read-only 2026-10-08 baseline identifies Main `chota.by`, node 153.80.244.178,
@@ -222,7 +308,12 @@ delete the guard, admission journal, database, Website binding, or compatible
 gateway routing state as cleanup. Do not recreate the temporary AI canary or
 activate managed execution as part of this follow-up.
 
-## Business-track handoff and next stage
+## Historical Goal4A Business-track handoff and next stage
+
+This section describes the pre-Goal4A.1 source and handoff. Its inbound-only
+context statement is historical; the reviewed Goal4A.1 candidate above adds
+canonical assistant history. Its later activation and Goal4B sequence do not
+authorize either action within Goal4A.1.
 
 Goal 4A ordinary demo stays legacy. Future full demo cutover requires actual widget
 UUID `message_id` generated once per message and retained on every retry, valid
