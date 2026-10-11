@@ -18,6 +18,45 @@ See [release record](RELEASE.md) for current operational state and historical
 Goal4A rollout evidence. The [storage record](STORAGE-FIX.md) preserves the fix
 history; it is no longer a pending release gate.
 
+## Goal4A.1 release candidate
+
+The reviewed Conversation image adds bounded canonical Website history and managed
+v2 projection support. This GitOps candidate changes only the immutable
+Conversation and widget-owner site images; production deployment,
+migration/readiness and real-model continuity
+remain separate verification gates recorded in [RELEASE](RELEASE.md). It does not
+activate managed Website traffic.
+
+Existing v1 Turns retain their full canonical prefix, immutable wire bytes and
+fingerprints; omitted contract version still means v1. New immediate Website Turns
+use a contiguous v2 window with absolute canonical Message sequences. Creation
+freezes the version, window start, existing selected/context bounds, authoritative
+agent and exact request hash. Whole Messages remain in canonical order; oldest
+eligible prior units are dropped deterministically until the unchanged 256-Message,
+524288 projected UTF-8 text-byte and 1048576 serialized request-byte limits fit.
+Selected input is retained entirely or the Turn fails before dispatch. Retry and
+restart reconstruct the frozen projection without choosing a new window.
+
+A new durable Website `WRITE_COMPLETED` response attempt may append the exact
+retained draft once as `AGENT/OUTBOUND/TEXT`, uniquely related to its source Turn
+in the same Conversation. That append advances `last_message_sequence` once and
+leaves customer-only `input_revision` unchanged. `WRITE_FAILED`, `UNKNOWN` and
+draft existence alone create no assistant history; a later successful attempt
+may append it once. Completion replay creates no Message or backfill. Local write
+completion is not browser READ acknowledgement. Late successful delivery never
+changes an earlier frozen Turn.
+
+The execute endpoint, OperationReference, v1 managed-evidence contracts and
+`main-chota.conversation.v1` execution namespace remain unchanged. Business keeps
+its frozen proposal, confirmation policy and operation authority. The separate
+widget owner is `chotabyorg/chota-site/public/widget.js`; its stable logical-send
+identity is a separate reviewed source/artifact gate in this release. One logical
+send creates one UUID and an immutable `{session_id,message_id,message}` envelope;
+retry reuses that same envelope, while a new or edited message gets a new UUID.
+Pending reload recovery is scoped to the current full widget identity and session,
+and completed pending envelopes are removed. Browser presentation/transcripts are
+never canonical history authority. Legacy traffic remains compatible.
+
 ## Components and ownership
 
 The API uses private ClusterIP port 8000; only Website pods in the same namespace may
@@ -55,7 +94,16 @@ lock 4348534 for the entire child process. DB readiness, lock acquisition and ch
 execution each have 180-second bounds; lock/session loss or child failure prevents
 startup. Driver/Alembic output is suppressed; only fixed phase/status codes reach
 logs. The wrapper reads only `DATABASE_URL`, never auth registries. The worker
-does not run migrations and its readiness requires `0003_website_canary`.
+does not run migrations. The Goal4A.1 image's API and worker readiness require
+exactly `0004_website_history` and the new projection/history column queries.
+The existing wrapper and its lock/time bounds are unchanged.
+
+`0004_website_history` is additive: old Turns default to v1/start 1 with null
+projection agent/hash, and old Messages retain a null source-Turn relation.
+Existing evidence and fingerprints are not rewritten. Downgrade refuses retained
+v2 Turns or source-Turn assistant history, including history from a v1 draft.
+Keep managed execution disabled for rollback; use a compatible forward fix rather
+than an older image expecting schema 0003 or a destructive schema downgrade.
 
 Argo waves within this Application are sealed credentials −2; ConfigMaps,
 NetworkPolicies and Services −1; PVC plus PostgreSQL 0; API/migration 1; worker 2.
@@ -93,6 +141,18 @@ image, Business TLS/signing and PostSync hooks remain intact. Registry templates
 use candidate IDs pending supported credential binding verification.
 
 ## Verification
+
+The commands below retain the historical pre-Goal4A fixture/stage checks, not the
+Goal4A.1 release gate. On exact GitOps base
+`3cf36da5a157788a51581673b75e4d29d3a31fd4` and this candidate, the unchanged
+validator suite runs 21 tests with the same 7 fixture-render errors: its synthetic
+fixture adds a duplicate already-retained Website S2S SealedSecret resource.
+Both historical `--fixture` runs fail; this suite is not reported as PASS.
+The actual complete production overlays render successfully, and separate author
+checks prove the exact image-only resource delta and retained DARK controls.
+Fresh combined release review must independently assess that inherited failure
+and the current candidate before promotion. No validator or resource is changed
+to bypass it.
 
 ```sh
 python3 services/conversation-service/operations/validate.py --fixture
