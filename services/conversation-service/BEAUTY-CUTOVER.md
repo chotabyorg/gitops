@@ -47,3 +47,22 @@ this exact stage 2 render. After Argo sync, verify exact binding/principal pairi
 normal AI reachability, API readiness, unchanged retained queue, and all dark controls.
 Worker activation is a later independently reviewed candidate; this binding change
 does not approve it.
+
+## Stage 3: one permanent worker, new admissions remain dark
+
+Set only the worker-specific `WEBSITE_WORKER_ENABLED=true` and its replicas to 1.
+The API's worker flag remains false because it does not run the worker process.
+The worker's exact PROCESSING principal and permanent managed binding are retained.
+No Website cohort changes accompany this stage. Before merge require stage 2's
+independent live binding/token-pair/normal-AI verification and a fresh check that no
+retained work can cause an unexpected business dispatch: require zero MANAGED
+admissions without a WebsiteImmediateTurn mapping (checked by an anti-join), zero
+PENDING/CLAIMED Turns, zero managed dispatches in flight, and zero unfinished
+Business operations in the exact target scope. Aggregate admission/Turn counts
+alone are insufficient.
+
+After Argo sync, inspect the actual worker `/health` and `/ready`, schema head
+`0004_website_history`, poll heartbeat, exact processing scope and managed binding,
+normal AI reachability and CRM-only-through-AI network policy. Recheck the queue and
+Business ledger. Only a separately reviewed one-session cohort may then admit
+synthetic real-model Business QA. Integration-wide/public traffic remains prohibited.
