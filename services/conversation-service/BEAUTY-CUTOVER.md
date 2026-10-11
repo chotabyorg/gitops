@@ -55,7 +55,11 @@ The API's worker flag remains false because it does not run the worker process.
 The worker's exact PROCESSING principal and permanent managed binding are retained.
 No Website cohort changes accompany this stage. Before merge require stage 2's
 independent live binding/token-pair/normal-AI verification and a fresh check that no
-retained pending or claimed Turns can cause an unexpected business dispatch.
+retained work can cause an unexpected business dispatch: require zero MANAGED
+admissions without a WebsiteImmediateTurn mapping (checked by an anti-join), zero
+PENDING/CLAIMED Turns, zero managed dispatches in flight, and zero unfinished
+Business operations in the exact target scope. Aggregate admission/Turn counts
+alone are insufficient.
 
 After Argo sync, inspect the actual worker `/health` and `/ready`, schema head
 `0004_website_history`, poll heartbeat, exact processing scope and managed binding,
