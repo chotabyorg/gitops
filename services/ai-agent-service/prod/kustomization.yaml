@@ -6,10 +6,12 @@ resources:
   - chat-s2s-sealed-secret.yaml
   - business-transport/sealed-secret.yaml
   - business-transport/signing-sealed-secret.yaml
+  - beauty-managed-sealed-secret.json
   - mcp-credentials-backfill-job.yaml
 patches:
   - path: business-transport/deployment-patch.yaml
   - path: migration-chat-auth-patch.yaml
+  - path: beauty-managed-principal-patch.yaml
 namespace: prod
 images:
   - name: ai-agent-service
