@@ -66,3 +66,22 @@ After Argo sync, inspect the actual worker `/health` and `/ready`, schema head
 normal AI reachability and CRM-only-through-AI network policy. Recheck the queue and
 Business ledger. Only a separately reviewed one-session cohort may then admit
 synthetic real-model Business QA. Integration-wide/public traffic remains prohibited.
+
+## Stage 4: one synthetic session only
+
+After independent stage 3 live acceptance, admit only session
+`b1641525-0244-4d1d-9753-cd3a976ba5a8` for the exact integration and expected Agent
+above using `SESSION_ALLOWLIST`. The retained guard is unchanged. Other sessions
+and other integrations retain their normal legacy disposition; previously MANAGED
+admissions remain sticky. Do not change the public demo HTML at this stage.
+
+Use the real configured model through Website Gateway, Conversation and normal AI
+Business Runtime. Persist each logical message envelope before sending; a response
+retry must reuse that same envelope. Use only clearly synthetic QA contacts. Check
+CRM readback and durable Business receipts after every write. Never retry ambiguous
+writes blindly or remove evidence. Require independent canary acceptance, including
+natural confirmation, changed/rejected proposals, booking/move/cancel, privacy,
+same-message replay and worker restart, before any integration-wide admission.
+
+Rollback removes only this new admission cohort. Keep the exact guard, bindings,
+principal and worker available for retained pending/replay work.
