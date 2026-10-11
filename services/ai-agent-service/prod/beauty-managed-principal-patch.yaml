@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: ai-agent-service
+          env:
+            - name: MANAGED_AI_AUTH_PRINCIPALS
+              valueFrom:
+                secretKeyRef:
+                  name: ai-beauty-managed-secret
+                  key: MANAGED_AI_AUTH_PRINCIPALS
