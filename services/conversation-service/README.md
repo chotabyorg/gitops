@@ -1,5 +1,12 @@
 # Main Conversation production state
 
+**Current beauty rollout candidate:** [BEAUTY-CUTOVER](BEAUTY-CUTOVER.md) records
+the permanent exact managed principal and normal-production-AI binding stages.
+Stage 2 replaces the empty managed binding overrides while keeping worker disabled
+at zero replicas and Website cohorts empty. The Goal4A/Goal4A.1 dark-state values
+below describe the retained pre-cutover baseline, not this stage's binding target.
+Actual deployment acceptance is recorded separately after Argo/runtime checks.
+
 Goal4A is complete and passed. The PostgreSQL storage persistence fix is in place,
 and the temporary Goal4A AI canary runtime has been removed. Production keeps the
 Conversation API, PostgreSQL/PVC, durable Website admissions, integration guard,

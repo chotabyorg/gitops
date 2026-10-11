@@ -31,3 +31,19 @@ full-selector preconditions. Its immediate rollback target is the current
 `default/demo-catalog-7efb04733203`, which must remain available during acceptance.
 
 This source document records the candidate's intent, not runtime acceptance.
+
+## Stage 2: permanent binding, worker and admissions still dark
+
+The Conversation API and worker now reference `conversation-beauty-managed-secret`
+instead of the explicit empty binding overrides. This is the exact matching
+owner/integration/channel/agent binding, using the same dedicated credential as
+stage 1. `MANAGED_AI_BASE_URL=http://ai-agent-service:8000` selects ordinary production
+AI. The historical sealed binding is retained but is not the active credential.
+
+The worker remains `WEBSITE_WORKER_ENABLED=false`, replicas=0, and Website cohorts
+remain empty. No new admission is enabled. Before merging, require independent
+runtime confirmation of stage 1's effective principal and independent review of
+this exact stage 2 render. After Argo sync, verify exact binding/principal pairing,
+normal AI reachability, API readiness, unchanged retained queue, and all dark controls.
+Worker activation is a later independently reviewed candidate; this binding change
+does not approve it.
