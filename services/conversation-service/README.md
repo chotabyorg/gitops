@@ -1,5 +1,12 @@
 # Main Conversation production state
 
+**Goal4B DARK release candidate:** [GOAL4B-RELEASE](GOAL4B-RELEASE.md) is the
+current Telegram release/runbook checkpoint for PR #148. It preserves the live
+Website selector, prepares an isolated zero-replica Telegram worker and defines
+forward-compatible configuration rollback after schema 0005. The historical
+Goal4A sections below do not describe current Website/Beauty activation state.
+This candidate does not authorize merge or Telegram canary activation.
+
 **Current beauty rollout candidate:** [BEAUTY-CUTOVER](BEAUTY-CUTOVER.md) records
 the permanent exact managed principal and normal-production-AI binding stages.
 Stage 3 enables one permanent worker after the exact stage 2 binding gate. Stage 4

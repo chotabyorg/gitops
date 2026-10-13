@@ -2,23 +2,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: conversation-service-telegram-worker
-  labels:
-    worker: telegram
   annotations:
     argocd.argoproj.io/sync-wave: '2'
 spec:
   replicas: 0
   revisionHistoryLimit: 2
   progressDeadlineSeconds: 600
-  selector:
-    matchLabels:
-      worker: telegram
   strategy:
     type: Recreate
   template:
-    metadata:
-      labels:
-        worker: telegram
     spec:
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 150
