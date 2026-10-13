@@ -6,6 +6,7 @@ images:
   - name: telegram-gateway-service
     newName: ghcr.io/chotabyorg/telegram-gateway-service
     newTag: 4ee10d9
+    digest: sha256:c59533541dd0147feea4fe26e94cbbf67977c6a99f19c5076bc225355d294f7a
 configMapGenerator:
   - envs:
       - config.properties

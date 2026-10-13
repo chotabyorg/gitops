@@ -3,5 +3,6 @@ kind: Kustomization
 resources:
   - api
   - worker
+  - telegram-worker
   - postgres
   - network-policies.yaml

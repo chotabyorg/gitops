@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service-telegram-worker
+  annotations:
+    argocd.argoproj.io/sync-wave: '2'
+spec:
+  replicas: 0
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 600
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 150
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: conversation-telegram-worker
+          image: conversation-service
+          command: [python, telegram_worker.py]
+          ports:
+            - name: health
+              containerPort: 8002
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-database-secret
+                  key: DATABASE_URL
+            - name: CONVERSATION_AUTH_PRINCIPALS
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-principals-secret
+                  key: PROCESSING_AUTH_PRINCIPALS
+            - name: MANAGED_AI_BINDINGS
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-managed-ai-secret
+                  key: MANAGED_AI_BINDINGS
+          envFrom:
+            - configMapRef:
+                name: conversation-config
+            - configMapRef:
+                name: conversation-telegram-worker-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 750m
+              memory: 384Mi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: health
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 36
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: health
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: health
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
