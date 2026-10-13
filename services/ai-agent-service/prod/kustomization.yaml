@@ -12,12 +12,18 @@ patches:
   - path: business-transport/deployment-patch.yaml
   - path: migration-chat-auth-patch.yaml
   - path: beauty-managed-principal-patch.yaml
+  - path: business-transport/native-sidecar-patch.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: ai-agent-service
 namespace: prod
 images:
   - name: ai-agent-service
     newName: ghcr.io/chotabyorg/ai-agent-service
-    newTag: "53dfe45"
-    digest: sha256:75d3269137f178e27a37cb92d92466213018af21d4c180c429c3003f7233fae3
+    newTag: "525543713a8b9ed2aecc50658dd77c50c4864842"
+    digest: sha256:32d8affefa5adbd290b9e7c1ad2a5a9e93f52dfff101d40c66870e71ab0716f0
 configMapGenerator:
   - name: ai-agent-config
     env: config.properties
