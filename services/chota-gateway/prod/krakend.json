@@ -5979,6 +5979,90 @@
       ],
       "timeout": "15s",
       "cache_ttl": "0s"
+    },
+    {
+      "endpoint": "/api/voice/reservations",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role",
+        "Origin"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/voice/reservations",
+          "method": "POST",
+          "host": [
+            "http://control-plane-service:8000"
+          ],
+          "encoding": "no-op"
+        }
+      ],
+      "timeout": "15s",
+      "cache_ttl": "0s"
+    },
+    {
+      "endpoint": "/api/voice/reservations/{agent_id}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Content-Type",
+        "Cookie",
+        "X-User-Id",
+        "X-User-Role",
+        "Origin"
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "HS256",
+          "jwk_local_path": "/etc/krakend/krakend-jwk.json",
+          "disable_jwk_security": true,
+          "cookie_key": "access_token",
+          "propagate_claims": [
+            [
+              "sub",
+              "X-User-Id"
+            ],
+            [
+              "role",
+              "X-User-Role"
+            ]
+          ]
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/v1/voice/reservations/{agent_id}",
+          "method": "GET",
+          "host": [
+            "http://control-plane-service:8000"
+          ],
+          "encoding": "no-op"
+        }
+      ],
+      "timeout": "15s",
+      "cache_ttl": "0s"
     }
   ]
 }
