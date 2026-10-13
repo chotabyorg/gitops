@@ -12,8 +12,8 @@ resources:
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
-    newTag: 058b78e4c0482036ad8bea6700b783cc77aa6006
-    digest: sha256:89a1f37cedd36ed8779295469c2a181dbed84d6f215cc40ef4712a20cff79772
+    newTag: d77e75dc3d7b97a3817239b2b6a3c8d58e48acd3
+    digest: sha256:a37fc3344e78664fe861a793393e8dbbe0cdf1268e376965a7a3038ce9274a38
   - name: postgres
     newName: docker.io/library/postgres
     newTag: 16.15-alpine
@@ -23,6 +23,8 @@ configMapGenerator:
     envs: [config.properties]
   - name: conversation-worker-config
     envs: [worker.properties]
+  - name: conversation-telegram-worker-config
+    envs: [telegram-worker.properties]
   - name: conversation-postgres-config
     envs: [postgres.properties]
   - name: conversation-migration

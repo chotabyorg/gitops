@@ -15,6 +15,9 @@ spec:
         - podSelector:
             matchLabels:
               app: website-gateway-service
+        - podSelector:
+            matchLabels:
+              app: telegram-gateway-service
       ports:
         - protocol: TCP
           port: 8000
