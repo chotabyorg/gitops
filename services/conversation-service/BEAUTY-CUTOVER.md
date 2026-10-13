@@ -85,3 +85,20 @@ same-message replay and worker restart, before any integration-wide admission.
 
 Rollback removes only this new admission cohort. Keep the exact guard, bindings,
 principal and worker available for retained pending/replay work.
+
+## Canary recovery proof: controlled worker recreation
+
+This separately reviewed candidate adds only the worker Pod-template annotation
+`beauty.chota.by/recovery-proof=qa-beauty-20261011t1220z`. It triggers ordinary Argo
+reconciliation of the existing Recreate Deployment; images, credentials, scope,
+cohort and replica count stay unchanged. Do not merge before a successful real
+synthetic booking has authoritative CRM readback and durable Business receipts.
+
+Pause QA sends, require settled Turns and terminal Business operations, and retain
+a pre-restart snapshot of exact message, Turn, dispatch epoch, operation, receipt
+and booking identities. After a different worker Pod becomes ready, verify these
+identities and effect counts remain unchanged. Explicitly replay the SAME saved
+confirmation envelope, then send one new follow-up message. Require no duplicate
+model/business execution for the completed Turn and successful new-message handling.
+This proves recovery only for the tested settled state; it is not a fault-injection
+test for ambiguous writes. No intentional production UNKNOWN is induced.

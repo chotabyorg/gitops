@@ -1,0 +1,9 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service-worker
+spec:
+  template:
+    metadata:
+      annotations:
+        beauty.chota.by/recovery-proof: qa-beauty-20261011t1220z
