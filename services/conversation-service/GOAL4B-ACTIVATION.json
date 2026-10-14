@@ -1,0 +1,112 @@
+{
+  "phase": "activation",
+  "gitops_base": "5ca25801830e7a90003c4465681329d1d56551fa",
+  "selected_integration": {
+    "username": "chota_test_4343434_bot",
+    "bot_id": "8778392344",
+    "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+    "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+    "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+    "created_at": "2026-10-13T22:42:17.60813+00:00",
+    "status": "ACTIVE"
+  },
+  "gateway_binding": {
+    "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+    "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+    "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9"
+  },
+  "cohort": [
+    "9b43e8ab-7afa-4201-8a88-99e8d256180a"
+  ],
+  "principals": [
+    {
+      "principal_id": "main-telegram-qa-api",
+      "role": "TELEGRAM",
+      "grants": [
+        {
+          "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+          "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+          "channel": "TELEGRAM",
+          "provider_namespace": "main-chota.telegram.v1"
+        }
+      ]
+    },
+    {
+      "principal_id": "main-telegram-qa-processing",
+      "role": "TELEGRAM_PROCESSING",
+      "grants": [
+        {
+          "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+          "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+          "channel": "TELEGRAM",
+          "provider_namespace": "main-chota.telegram.v1"
+        }
+      ]
+    },
+    {
+      "principal_id": "main-telegram-qa-managed-ai",
+      "caller": "conversation-service",
+      "execution_namespace": "main-chota.conversation.v1",
+      "grants": [
+        {
+          "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+          "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+          "channel": "TELEGRAM",
+          "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+          "agent_owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928"
+        }
+      ]
+    }
+  ],
+  "managed_ai_scope": {
+    "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+    "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+    "channel": "TELEGRAM",
+    "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9"
+  },
+  "worker": {
+    "replicas": 1,
+    "enabled": true,
+    "principal_id": "main-telegram-qa-processing",
+    "health_port": 8002,
+    "lease_seconds": 30,
+    "poll_seconds": 1
+  },
+  "turn_settling_policies": "absent",
+  "preparation": {
+    "production_activated": false,
+    "plaintext_saved_or_printed": false,
+    "existing_secret_values_read": false,
+    "fresh_distinct_tokens_generated": 3
+  },
+  "opaque_registry_extension": [
+    {
+      "path": "services/conversation-service/prod/principals-sealed-secret.yaml",
+      "old_ciphertext_keys_preserved": [
+        "API_AUTH_PRINCIPALS",
+        "PROCESSING_AUTH_PRINCIPALS"
+      ],
+      "new_key": "TELEGRAM_API_AUTH_PRINCIPALS",
+      "compiled_key": "API_AUTH_PRINCIPALS",
+      "template": "{{ concat (mustFromJson (index . \"API_AUTH_PRINCIPALS\")) (mustFromJson (index . \"TELEGRAM_API_AUTH_PRINCIPALS\")) | mustToJson }}"
+    },
+    {
+      "path": "services/conversation-service/prod/beauty-managed-sealed-secret.json",
+      "old_ciphertext_keys_preserved": [
+        "MANAGED_AI_BINDINGS"
+      ],
+      "new_key": "TELEGRAM_MANAGED_AI_BINDINGS",
+      "compiled_key": "MANAGED_AI_BINDINGS",
+      "template": "{{ concat (mustFromJson (index . \"MANAGED_AI_BINDINGS\")) (mustFromJson (index . \"TELEGRAM_MANAGED_AI_BINDINGS\")) | mustToJson }}"
+    },
+    {
+      "path": "services/ai-agent-service/prod/beauty-managed-sealed-secret.json",
+      "old_ciphertext_keys_preserved": [
+        "MANAGED_AI_AUTH_PRINCIPALS"
+      ],
+      "new_key": "TELEGRAM_MANAGED_AI_AUTH_PRINCIPALS",
+      "compiled_key": "MANAGED_AI_AUTH_PRINCIPALS",
+      "template": "{{ concat (mustFromJson (index . \"MANAGED_AI_AUTH_PRINCIPALS\")) (mustFromJson (index . \"TELEGRAM_MANAGED_AI_AUTH_PRINCIPALS\")) | mustToJson }}"
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 resources:
   - ../base
   - sealed-secrets.yaml
+  - conversation-s2s-sealed-secret.json
+patches:
+  - path: goal4b-activation-patch.yaml
 namespace: prod
 images:
   - name: telegram-gateway-service

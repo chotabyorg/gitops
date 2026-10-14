@@ -1,4 +1,4 @@
-"""Offline production-render regression checks for the DARK Goal4B foundation.
+"""Offline production-render checks for the DARK foundation or exact QA candidate.
 
 Requires kubectl's embedded Kustomize and PyYAML, as does validate.py. This suite
 does not contact Kubernetes, decrypt credentials, or establish activation approval.
@@ -15,6 +15,13 @@ import yaml
 
 
 REPO = Path(os.environ.get("GOAL4B_RELEASE_ROOT", Path(__file__).resolve().parents[3]))
+QA_CANDIDATE = (REPO / 'services/conversation-service/GOAL4B-ACTIVATION.json').exists()
+QA_INTEGRATION = '9b43e8ab-7afa-4201-8a88-99e8d256180a'
+QA_BINDING = {
+    'owner_id': 'dc3dd7eb-536f-45d4-84f2-c8d35575d928',
+    'integration_id': QA_INTEGRATION,
+    'agent_id': '0b750714-af8d-4d8c-8fdc-4ddfeda98af9',
+}
 WEBSITE_SELECTOR = {"matchLabels": {"app": "conversation-service", "component": "worker"}}
 TELEGRAM_SELECTOR = {
     "matchLabels": {"app": "conversation-service", "component": "telegram-worker"}
@@ -124,21 +131,28 @@ class Goal4BProductionRenderTests(unittest.TestCase):
                 self.assertTrue(matches(selector,
                                         deployment["spec"]["template"]["metadata"]["labels"]))
 
-    def test_dark_gates_and_goal5_boundary(self):
-        self.assertEqual(self.telegram["spec"]["replicas"], 0)
+    def test_phase_gates_and_goal5_boundary(self):
+        self.assertEqual(self.telegram["spec"]["replicas"], 1 if QA_CANDIDATE else 0)
         api = resource(self.conversation, "Deployment", "conversation-service")
         gateway = resource(self.gateway, "Deployment", "telegram-gateway-service")
         api_env = environment(self.conversation, api["spec"]["template"]["spec"]["containers"][0])
         worker_env = environment(self.conversation, self.telegram["spec"]["template"]["spec"]["containers"][0])
         gateway_env = environment(self.gateway, gateway["spec"]["template"]["spec"]["containers"][0])
-        self.assertEqual(worker_env["TELEGRAM_WORKER_ENABLED"].lower(), "false")
-        self.assertEqual(json.loads(api_env["TELEGRAM_CANARY_INTEGRATION_IDS"]), [])
-        self.assertEqual(json.loads(worker_env["TELEGRAM_CANARY_INTEGRATION_IDS"]), [])
-        self.assertEqual(json.loads(gateway_env["TELEGRAM_CANARY_INTEGRATION_IDS"]), [])
-        self.assertEqual(json.loads(gateway_env["TELEGRAM_MANAGED_BINDINGS"]), [])
+        expected_cohort = [QA_INTEGRATION] if QA_CANDIDATE else []
+        self.assertEqual(worker_env["TELEGRAM_WORKER_ENABLED"].lower(),
+                         "true" if QA_CANDIDATE else "false")
+        self.assertEqual(json.loads(api_env["TELEGRAM_CANARY_INTEGRATION_IDS"]), expected_cohort)
+        self.assertEqual(json.loads(worker_env["TELEGRAM_CANARY_INTEGRATION_IDS"]), expected_cohort)
+        self.assertEqual(json.loads(gateway_env["TELEGRAM_CANARY_INTEGRATION_IDS"]), expected_cohort)
+        self.assertEqual(json.loads(gateway_env["TELEGRAM_MANAGED_BINDINGS"]),
+                         [QA_BINDING] if QA_CANDIDATE else [])
         self.assertEqual(gateway_env["CONVERSATION_SERVICE_URL"], "http://conversation-service:8000")
-        self.assertNotIn("CONVERSATION_SERVICE_TOKEN", gateway_env)
-        self.assertNotIn("TELEGRAM_WORKER_PRINCIPAL_ID", worker_env)
+        if QA_CANDIDATE:
+            self.assertEqual(gateway_env["CONVERSATION_SERVICE_TOKEN"], "<secret-reference>")
+            self.assertEqual(worker_env["TELEGRAM_WORKER_PRINCIPAL_ID"], "main-telegram-qa-processing")
+        else:
+            self.assertNotIn("CONVERSATION_SERVICE_TOKEN", gateway_env)
+            self.assertNotIn("TELEGRAM_WORKER_PRINCIPAL_ID", worker_env)
         for documents in [self.conversation, self.gateway]:
             for document in documents:
                 if document["kind"] == "Deployment":

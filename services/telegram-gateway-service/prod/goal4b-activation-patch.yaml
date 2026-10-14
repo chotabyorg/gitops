@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegram-gateway-service
+spec:
+  replicas: 1
+  # A config rollout must not overlap two long-polling gateway replicas.
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  template:
+    spec:
+      containers:
+        - name: telegram-gateway-service
+          env:
+            - name: CONVERSATION_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: telegram-conversation-s2s-secret
+                  key: CONVERSATION_SERVICE_TOKEN

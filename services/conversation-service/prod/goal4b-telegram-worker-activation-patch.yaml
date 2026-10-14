@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service-telegram-worker
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: conversation-telegram-worker
+          env:
+            - name: CONVERSATION_AUTH_PRINCIPALS
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-telegram-processing-secret
+                  key: PROCESSING_AUTH_PRINCIPALS
+            - name: MANAGED_AI_BINDINGS
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-telegram-managed-ai-secret
+                  key: MANAGED_AI_BINDINGS

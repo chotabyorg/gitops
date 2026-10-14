@@ -1,0 +1,9 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service
+spec:
+  template:
+    metadata:
+      annotations:
+        goal4b.chota.by/managed-registry: exact-telegram-qa-9b43e8ab-v1
