@@ -52,10 +52,12 @@ patches:
 # Dedicated processes expose only the exact Voice principal/cohort.
 replicas:
   - name: conversation-service-voice-api
-    count: 1
+    count: 0
   - name: conversation-service-voice-worker
     count: 0
   - name: conversation-service-worker
     count: 0
   - name: conversation-service-telegram-worker
+    count: 0
+  - name: conversation-service
     count: 0
