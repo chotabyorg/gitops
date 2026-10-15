@@ -21,12 +21,13 @@ patches:
       kind: Deployment
       name: ai-agent-service
   - path: voice-managed-patch.json
+  - path: voice-latency-patch.yaml
 namespace: prod
 images:
   - name: ai-agent-service
     newName: ghcr.io/chotabyorg/ai-agent-service
-    newTag: "525543713a8b9ed2aecc50658dd77c50c4864842"
-    digest: sha256:32d8affefa5adbd290b9e7c1ad2a5a9e93f52dfff101d40c66870e71ab0716f0
+    newTag: "22dbacf"
+    digest: sha256:dd95fade8c06dbc15c35b5bb6c66bd5adec453d50c2360cf657621e35c5ee35e
 configMapGenerator:
   - name: ai-agent-config
     env: config.properties
