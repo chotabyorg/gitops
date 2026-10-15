@@ -12,5 +12,5 @@ rule() {
     iptables -w -t mangle -C PREROUTING "$@" 2>/dev/null || iptables -w -t mangle -I PREROUTING 1 "$@"
   fi
 }
-rule -d 10.250.0.1/32 ! -i wg0 -p tcp -m multiport --dports 18080,18081 -m comment --comment chota-voice-s2s-wg-only -j DROP
-rule -d 10.250.0.1/32 -i wg0 ! -s 10.250.0.2/32 -p tcp -m multiport --dports 18080,18081 -m comment --comment chota-voice-s2s-peer-only -j DROP
+rule -d 10.250.0.1/32 ! -i wg0 -p tcp -m multiport --dports 18080,18081,18082 -m comment --comment chota-voice-s2s-wg-only -j DROP
+rule -d 10.250.0.1/32 -i wg0 ! -s 10.250.0.2/32 -p tcp -m multiport --dports 18080,18081,18082 -m comment --comment chota-voice-s2s-peer-only -j DROP

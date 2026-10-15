@@ -1,0 +1,33 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "control-plane-service"
+  },
+  "spec": {
+    "template": {
+      "spec": {
+        "containers": [
+          {
+            "name": "control-plane-service",
+            "env": [
+              {
+                "name": "VOICE_ROUTING_TOKEN",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "control-plane-voice-routing-secret",
+                    "key": "VOICE_ROUTING_TOKEN"
+                  }
+                }
+              },
+              {
+                "name": "VOICE_ROUTING_ALLOWED_NUMBERS",
+                "value": "+375173820015"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
