@@ -6,8 +6,8 @@ namespace: prod
 images:
   - name: website-gateway-service
     newName: ghcr.io/chotabyorg/website-gateway-service
-    newTag: d9e1622
-    digest: sha256:aa6f8cae622a38bffcde08d788fa6de91737e1cce803263a43f1a836d686ff09
+    newTag: 1284c91
+    digest: sha256:2f4d2b35f36284db85986427fbf049171f19d02c378512c4d2ccfd5992ffb6fd
 configMapGenerator:
   - envs:
       - config.properties
@@ -16,6 +16,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 patches:
   - path: conversation-s2s-patch.yaml
+
 
 # BEGIN GOAL5 MAINTENANCE
 replicas:

@@ -8,14 +8,15 @@ namespace: prod
 images:
   - name: telegram-gateway-service
     newName: ghcr.io/chotabyorg/telegram-gateway-service
-    newTag: 4ee10d9
-    digest: sha256:c59533541dd0147feea4fe26e94cbbf67977c6a99f19c5076bc225355d294f7a
+    newTag: a94256b
+    digest: sha256:252f519db3829602eef5211a4a5aae18f2a101b7df53979bd7fd92fffb9392f5
 configMapGenerator:
   - envs:
       - config.properties
     name: telegram-gateway-config
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
 
 # BEGIN GOAL5 MAINTENANCE
 replicas:
