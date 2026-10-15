@@ -58,9 +58,3 @@ replicas:
     count: 1
   - name: conversation-service-voice-worker
     count: 1
-  - name: conversation-service-worker
-    count: 1
-  - name: conversation-service-telegram-worker
-    count: 1
-  - name: conversation-service
-    count: 1
