@@ -1,6 +1,159 @@
-# Goal4B Telegram DARK release foundation
+# Goal4B Telegram release and QA activation checkpoints
 
-**DO NOT MERGE — NEW INDEPENDENT RELEASE REVIEW REQUIRED.**
+**DRAFT ACTIVATION CANDIDATE — DO NOT MERGE — FRESH INDEPENDENT ACTIVATION REVIEW REQUIRED.**
+
+## Exact new QA activation candidate — 2026-10-14
+
+The DARK foundation PR #148 is already merged. This new candidate starts from
+GitOps main `5ca25801830e7a90003c4465681329d1d56551fa` and prepares only the newly
+created QA Telegram integration. It does not activate production or establish
+Goal4B managed acceptance. The historical DARK release record follows below.
+
+Selection and polling evidence is in [GOAL4B-CANARY-IDENTITY.json](GOAL4B-CANARY-IDENTITY.json);
+the public scope contract is [GOAL4B-ACTIVATION.json](GOAL4B-ACTIVATION.json).
+
+| Identity | Selected value |
+| --- | --- |
+| Bot username / ID | `@chota_test_4343434_bot` / `8778392344` |
+| Owner | `dc3dd7eb-536f-45d4-84f2-c8d35575d928` |
+| Integration | `9b43e8ab-7afa-4201-8a88-99e8d256180a` |
+| Agent | `0b750714-af8d-4d8c-8fdc-4ddfeda98af9`, salon «У Светланы» |
+| Created / status | `2026-10-13T22:42:17.608130Z` / `ACTIVE`, active=true |
+
+The prior stopped checkpoint was `2026-10-13T22:32:40Z`. The selected row is newer.
+Its sole registration at `22:42:32.710521029Z` is followed by the first exact
+username/bot-ID polling start at `22:42:41.887773310Z`. Complete available logs
+from the sole zero-restart gateway pod include the earlier registrations and
+polling starts; those earlier bot IDs are all different. The exhaustive current
+Control Plane Telegram table contains three older rows and this one new row.
+Control Plane has no separate bot-ID column: identity exclusion uses that table
+plus the exhaustive live lifecycle inventory and the user's authoritative fresh
+bot designation, without selecting or decrypting credentials.
+
+The last conflict in any gateway polling task precedes the new integration's
+creation. There are zero gateway conflicts from its creation through the final
+recorded observation, one new-bot polling start and one intended gateway process
+in one ready pod. No extra Docker Telegram container or separate non-container
+Python poller is present; the host Python processes in the observation are the
+two read-only audit probes. **SINGLE POLLER SAFE: YES** for this observed Main
+runtime. Ownership must be rechecked during the independent activation review.
+Handled baseline updates establish only LEGACY behavior. No message content or
+BOT_TOKEN was read; no Telegram API call or message was sent by this preparation.
+The withdrawn older bot/integration is excluded and is not repaired or restarted.
+
+### Exact grants, bindings and credential references
+
+Both gateway and Conversation admission cohorts contain only
+`9b43e8ab-7afa-4201-8a88-99e8d256180a`. The gateway's exact sticky binding is
+`{owner_id,integration_id,agent_id}` with the values above. There is no wildcard,
+owner-wide, agent-wide or second-integration Telegram activation.
+
+- `main-telegram-qa-api`: role `TELEGRAM`, one complete grant
+  `{owner_id,integration_id,channel=TELEGRAM,provider_namespace=main-chota.telegram.v1}`.
+- `main-telegram-qa-processing`: role `TELEGRAM_PROCESSING`, the same single grant.
+  It is the exact `TELEGRAM_WORKER_PRINCIPAL_ID`; its registry contains no API or
+  Website principal.
+- `main-telegram-qa-managed-ai`: caller `conversation-service`, execution namespace
+  `main-chota.conversation.v1`, one grant with exact owner/integration/TELEGRAM/agent
+  and `agent_owner_id=dc3dd7eb-536f-45d4-84f2-c8d35575d928`.
+
+Three distinct fresh S2S credentials were generated only in memory and sealed
+with the Main controller's public key. Existing credentials were not fetched,
+decrypted, printed, replaced or copied into plaintext. No BOT_TOKEN is included.
+
+| Consumer | Secret object / key |
+| --- | --- |
+| Gateway → Conversation | `telegram-conversation-s2s-secret` / `CONVERSATION_SERVICE_TOKEN` |
+| Conversation API auth | `conversation-principals-secret` / `API_AUTH_PRINCIPALS`; fixed template appends `TELEGRAM_API_AUTH_PRINCIPALS` |
+| Telegram worker auth | `conversation-telegram-processing-secret` / `PROCESSING_AUTH_PRINCIPALS` |
+| API + retained Website Managed AI | `conversation-beauty-managed-secret` / `MANAGED_AI_BINDINGS`; fixed template appends `TELEGRAM_MANAGED_AI_BINDINGS` |
+| Telegram worker Managed AI | `conversation-telegram-managed-ai-secret` / `MANAGED_AI_BINDINGS`; only the new Telegram binding |
+| Normal AI auth | `ai-beauty-managed-secret` / `MANAGED_AI_AUTH_PRINCIPALS`; fixed template appends `TELEGRAM_MANAGED_AI_AUTH_PRINCIPALS` |
+
+The three registry extensions keep every existing encryptedData value and all
+prior fields intact. SealedSecrets controller templates combine the raw old JSON
+array with the dedicated new JSON array using
+`concat (mustFromJson ...) (mustFromJson ...) | mustToJson`; no application startup
+wrapper or secret-reading preparation script is introduced. API and Telegram
+worker receive the same exact Telegram Managed AI binding, while the existing
+Website binding and scopes remain present. The helper encrypted keys also remain
+in the generated Secrets. Existing consumers keep their original canonical keyRef.
+
+This behavior is verified for installed controller `0.36.6` against
+[official Unseal source](https://github.com/bitnami/sealed-secrets/blob/v0.36.6/pkg/apis/sealedsecrets/v1alpha1/sealedsecret_expansion.go#L283-L314).
+The six exact manifests passed controller `--validate`: fixed templates execute
+inside the controller, returning status only and writing no resources. This is
+not a claim that arbitrary validation templates are safe: the v0.36.6 validator
+can act as a conditional decryption oracle, fixed upstream in
+[PR #2019](https://github.com/bitnami/sealed-secrets/pull/2019). This preparation uses
+only the fixed concatenation templates and performs no secret-derived probes.
+
+### Worker, rollout and verification boundary
+
+Telegram worker changes `replicas: 0 → 1`, `TELEGRAM_WORKER_ENABLED=true`, principal
+`main-telegram-qa-processing`, lease 30s, poll 1s, health port 8002. It retains
+the accepted immutable Conversation image, isolated selector, Recreate strategy,
+security settings, no Service ingress, PostgreSQL/DNS/normal-AI egress and no
+provider credentials. Managed AI URL is `http://ai-agent-service:8000`;
+gateway Conversation URL is `http://conversation-service:8000`.
+
+Gateway remains one replica and changes to Recreate so a configuration upgrade
+does not overlap two long-polling processes. This future rollout briefly restarts
+the shared gateway and pauses all its pollers; it changes no other integration's
+routing binding or credentials. The normal AI pod receives an explicit registry
+rollout annotation because Secret environment values are captured at startup.
+Conversation API and retained Website worker also roll with the changed shared
+ConfigMap hash; Website settings, processing keyRef and prior grants/bindings stay
+intact. No image, schema, network policy, Service, Website cohort or Business/Voice
+configuration is changed. `TURN_SETTLING_POLICIES` is absent throughout.
+
+Offline checks:
+
+```sh
+python3 -m unittest discover -s services/conversation-service/operations -p 'test_goal4b*.py' -v
+```
+
+- Base DARK render suite: 6/6 PASS. Candidate: 13/13 PASS, including rollback renders.
+- Complete Conversation, Telegram gateway and normal AI production overlays render.
+- Accepted-source synthetic config validation passes for API, retained Website
+  worker, exact Telegram worker and empty-cohort drain; wrong cohort/principal/role
+  configurations are rejected. The accepted AI parser accepts the new exact grant.
+- All prior ciphertext, immutable images, selectors, network rules, Services and
+  unrelated source files are preserved. The source scope contains one Telegram
+  integration only.
+- Historical Goal4A suite is separately unchanged: 21 tests / 7 fixture-render
+  errors on both exact base and candidate. It is not reported as PASS.
+- Six ciphertext manifests and fixed registry templates pass native controller
+  validation without decrypted responses or Kubernetes writes.
+
+This is a draft desired-state diff. Argo applications reconcile independently;
+sync waves do not order gateway, Conversation and AI across applications. A fresh
+review must recheck the bot/CP identity and single poller, inspect this exact head,
+assess credential/controller/network/readiness and cross-application rollout gates,
+and approve any future merge separately. Managed failures remain fail closed while
+dependencies converge. No native managed delivery acceptance or live CNI execution
+proof is claimed by offline checks. No merge, Argo sync, apply, patch, restart,
+database write or Telegram traffic has been performed.
+
+### Supported rollback for the new QA cohort
+
+1. Empty `TELEGRAM_CANARY_INTEGRATION_IDS=[]` on **both** admission sides only.
+   Preserve the exact sticky gateway binding, all new grants/credential references,
+   controller templates and compatible images/schema.
+2. Keep the Telegram worker enabled/one replica while retained MANAGED work needs
+   draining or recovery. Already accepted MANAGED events remain MANAGED, including
+   replay; there is no legacy AI fallback for managed uncertainty/failure.
+3. Disable `TELEGRAM_WORKER_ENABLED=false` and scale that worker to zero only after
+   a separately observed safe drain. Emergency containment before drain leaves
+   work MANAGED/pending/uncertain for compatible recovery, never relabelled LEGACY.
+4. Retain Turns, canonical history, admissions, delivery attempts and evidence.
+   No blind resend, removal of credentials/bindings, whole-PR git revert, old-image
+   rollback or DB downgrade. A binary replacement requires a reviewed compatible
+   forward fix.
+
+**DRAFT ONLY. PRODUCTION MANAGED CANARY ACTIVE: NO. STOP FOR FRESH INDEPENDENT ACTIVATION REVIEW.**
+
+## Historical DARK foundation release record
 
 This is the release/runbook checkpoint for GitOps PR #148. Goal4B source remains
 accepted and merged. This PR prepares topology, reviewed image pins and an empty

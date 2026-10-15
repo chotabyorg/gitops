@@ -1,0 +1,75 @@
+{
+  "selected_integration": {
+    "id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+    "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+    "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+    "channel_type": "TELEGRAM",
+    "is_active": true,
+    "status": "ACTIVE",
+    "created_at": "2026-10-13T22:42:17.60813+00:00",
+    "updated_at": "2026-10-13T22:42:17.60813+00:00"
+  },
+  "username": "chota_test_4343434_bot",
+  "bot_id": "8778392344",
+  "agent_metadata": {
+    "id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+    "user_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+    "name": "AI-ассистент Салон красоты \"У Светланы\""
+  },
+  "previous_stop_checkpoint_utc": "2026-10-13T22:32:40+00:00",
+  "observed_at_utc": "2026-10-14T00:53:09.090954+00:00",
+  "poller_pod": {
+    "namespace": "prod",
+    "pod": "telegram-gateway-service-5b6d46c8bc-pxg9n",
+    "created_at": "2026-10-13T21:57:38Z",
+    "phase": "Running",
+    "deleting": false,
+    "containers": [
+      {
+        "name": "telegram-gateway-service",
+        "ready": true,
+        "restartCount": 0,
+        "imageID": "ghcr.io/chotabyorg/telegram-gateway-service@sha256:c59533541dd0147feea4fe26e94cbbf67977c6a99f19c5076bc225355d294f7a"
+      }
+    ],
+    "owners": [
+      {
+        "kind": "ReplicaSet",
+        "name": "telegram-gateway-service-5b6d46c8bc",
+        "uid": "bf655648-0a4a-49b3-8e14-9eaa7f3f775b"
+      }
+    ]
+  },
+  "registration": {
+    "pod": "telegram-gateway-service-5b6d46c8bc-pxg9n",
+    "timestamp": "2026-10-13T22:42:32.710521029Z",
+    "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+    "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9"
+  },
+  "polling_start": {
+    "pod": "telegram-gateway-service-5b6d46c8bc-pxg9n",
+    "timestamp": "2026-10-13T22:42:41.887773310Z",
+    "username": "chota_test_4343434_bot",
+    "bot_id": "8778392344"
+  },
+  "prior_new_bot_polling_records": 0,
+  "current_control_plane_telegram_rows": 4,
+  "older_rows": 3,
+  "older_registered_bot_ids_disjoint_from_canary": true,
+  "new_canary_polling_conflicts_after_creation": 0,
+  "last_any_gateway_conflict_utc": "2026-10-13T22:42:17.344262415Z",
+  "intended_poller_count": 1,
+  "additional_docker_telegram_containers": [],
+  "non_container_python_processes_are_only_read_only_audit_probes": true,
+  "single_poller_safe": true,
+  "baseline": "LEGACY only; no managed acceptance claimed",
+  "verification_method": "Exhaustive current CP metadata plus complete available zero-restart gateway lifecycle, sole new registration and exact new username/bot_id; pre-existing pollers have different bot IDs. CP stores no bot_id column; no credentials were selected/decrypted.",
+  "scope": "Current trusted Main production state; fresh independent activation review must recheck current ownership before merge.",
+  "production_mutations": false,
+  "telegram_api_calls": false,
+  "secret_values_read": false,
+  "evidence_sha256": {
+    "reselection-final-observation.json": "e5dc9ccea731a88a3bbde9f0c7f0a0a2e6a7312ac86d99f9a716bed3068a731a",
+    "runtime-final-inventory.json": "3c892d799a444e827eca0fafb7c570bffe129347b4059040f37f044125be3b5f"
+  }
+}

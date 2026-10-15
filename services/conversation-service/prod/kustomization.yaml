@@ -9,6 +9,8 @@ resources:
   - principals-sealed-secret.yaml
   - managed-ai-sealed-secret.yaml
   - beauty-managed-sealed-secret.json
+  - telegram-processing-sealed-secret.json
+  - telegram-managed-ai-sealed-secret.json
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
@@ -38,3 +40,4 @@ patches:
   - path: goal4a-worker-activation-patch.yaml
   - path: goal4a-retained-state-api-restart-patch.yaml
   - path: goal4a-retained-state-worker-restart-patch.yaml
+  - path: goal4b-telegram-worker-activation-patch.yaml

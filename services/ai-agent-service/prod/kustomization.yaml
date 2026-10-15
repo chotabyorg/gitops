@@ -12,6 +12,7 @@ patches:
   - path: business-transport/deployment-patch.yaml
   - path: migration-chat-auth-patch.yaml
   - path: beauty-managed-principal-patch.yaml
+  - path: goal4b-managed-registry-restart-patch.yaml
   - path: business-transport/native-sidecar-patch.yaml
     target:
       group: apps

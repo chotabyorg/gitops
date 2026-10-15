@@ -1,5 +1,13 @@
 # Main Conversation production state
 
+**Goal4B exact QA draft activation:** [GOAL4B-RELEASE](GOAL4B-RELEASE.md) now starts
+with the separate activation candidate for newly created `@chota_test_4343434_bot`,
+integration `9b43e8ab-7afa-4201-8a88-99e8d256180a`. The candidate prepares one scoped
+Telegram cohort/worker and retains the current Website/Beauty configuration.
+It is DRAFT ONLY and requires a fresh independent activation review before any
+merge or production acceptance. The older foundation sections below are retained
+historical checkpoints, not a description of this draft or current Beauty state.
+
 **Goal4B DARK release candidate:** [GOAL4B-RELEASE](GOAL4B-RELEASE.md) is the
 current Telegram release/runbook checkpoint for PR #148. It preserves the live
 Website selector, prepares an isolated zero-replica Telegram worker and defines
