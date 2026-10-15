@@ -1,0 +1,159 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "conversation-service-voice-api",
+    "annotations": {
+      "argocd.argoproj.io/sync-wave": "1"
+    }
+  },
+  "spec": {
+    "replicas": 0,
+    "revisionHistoryLimit": 2,
+    "progressDeadlineSeconds": 600,
+    "strategy": {
+      "type": "Recreate"
+    },
+    "template": {
+      "spec": {
+        "automountServiceAccountToken": false,
+        "terminationGracePeriodSeconds": 60,
+        "imagePullSecrets": [
+          {
+            "name": "ghcr-pull-secret"
+          }
+        ],
+        "securityContext": {
+          "runAsNonRoot": true,
+          "runAsUser": 10001,
+          "runAsGroup": 10001,
+          "fsGroup": 10001,
+          "seccompProfile": {
+            "type": "RuntimeDefault"
+          }
+        },
+        "containers": [
+          {
+            "name": "conversation-voice-api",
+            "image": "conversation-service",
+            "command": [
+              "uvicorn",
+              "main:app",
+              "--host",
+              "0.0.0.0",
+              "--port",
+              "8000",
+              "--no-access-log"
+            ],
+            "ports": [
+              {
+                "name": "health",
+                "containerPort": 8000
+              }
+            ],
+            "env": [
+              {
+                "name": "DATABASE_URL",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "conversation-database-secret",
+                    "key": "DATABASE_URL"
+                  }
+                }
+              },
+              {
+                "name": "CONVERSATION_AUTH_PRINCIPALS",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "conversation-voice-principals-secret",
+                    "key": "API_AUTH_PRINCIPALS"
+                  }
+                }
+              },
+              {
+                "name": "MANAGED_AI_BINDINGS",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "conversation-voice-managed-ai-secret",
+                    "key": "MANAGED_AI_BINDINGS"
+                  }
+                }
+              },
+              {
+                "name": "VOICE_WORKER_ENABLED",
+                "value": "false"
+              }
+            ],
+            "envFrom": [
+              {
+                "configMapRef": {
+                  "name": "conversation-voice-config"
+                }
+              }
+            ],
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "readOnlyRootFilesystem": true,
+              "capabilities": {
+                "drop": [
+                  "ALL"
+                ]
+              }
+            },
+            "resources": {
+              "requests": {
+                "cpu": "100m",
+                "memory": "192Mi"
+              },
+              "limits": {
+                "cpu": "750m",
+                "memory": "384Mi"
+              }
+            },
+            "startupProbe": {
+              "httpGet": {
+                "path": "/health",
+                "port": "health"
+              },
+              "periodSeconds": 5,
+              "timeoutSeconds": 3,
+              "failureThreshold": 36
+            },
+            "livenessProbe": {
+              "httpGet": {
+                "path": "/health",
+                "port": "health"
+              },
+              "periodSeconds": 20,
+              "timeoutSeconds": 3,
+              "failureThreshold": 3
+            },
+            "readinessProbe": {
+              "httpGet": {
+                "path": "/ready",
+                "port": "health"
+              },
+              "periodSeconds": 5,
+              "timeoutSeconds": 5,
+              "failureThreshold": 3
+            },
+            "volumeMounts": [
+              {
+                "name": "tmp",
+                "mountPath": "/tmp"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "tmp",
+            "emptyDir": {
+              "sizeLimit": "64Mi"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

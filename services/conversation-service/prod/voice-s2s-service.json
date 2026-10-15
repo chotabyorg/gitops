@@ -1,0 +1,26 @@
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "name": "conversation-voice-s2s"
+  },
+  "spec": {
+    "type": "ClusterIP",
+    "externalTrafficPolicy": "Local",
+    "externalIPs": [
+      "10.250.0.1"
+    ],
+    "ports": [
+      {
+        "name": "http-voice",
+        "protocol": "TCP",
+        "port": 18082,
+        "targetPort": 8000
+      }
+    ],
+    "selector": {
+      "app": "conversation-service",
+      "component": "voice-api"
+    }
+  }
+}

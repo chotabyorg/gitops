@@ -11,6 +11,9 @@ resources:
   - beauty-managed-sealed-secret.json
   - telegram-processing-sealed-secret.json
   - telegram-managed-ai-sealed-secret.json
+  - voice-principals-sealed-secret.json
+  - voice-managed-ai-sealed-secret.json
+  - voice-s2s-service.json
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
@@ -31,6 +34,9 @@ configMapGenerator:
     envs: [postgres.properties]
   - name: conversation-migration
     files: [migrate.py]
+  - name: conversation-voice-config
+    envs: [voice.properties]
+
 generatorOptions:
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
@@ -41,3 +47,11 @@ patches:
   - path: goal4a-retained-state-api-restart-patch.yaml
   - path: goal4a-retained-state-worker-restart-patch.yaml
   - path: goal4b-telegram-worker-activation-patch.yaml
+  - path: voice-api-node-patch.json
+
+# Dedicated processes expose only the exact Voice principal/cohort.
+replicas:
+  - name: conversation-service-voice-api
+    count: 1
+  - name: conversation-service-voice-worker
+    count: 1

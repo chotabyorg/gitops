@@ -6,3 +6,6 @@ resources:
   - telegram-worker
   - postgres
   - network-policies.yaml
+  - voice-api
+  - voice-worker
+  - voice-network-policies.json
