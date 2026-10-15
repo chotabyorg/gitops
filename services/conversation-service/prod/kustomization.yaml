@@ -14,8 +14,8 @@ resources:
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
-    newTag: d77e75dc3d7b97a3817239b2b6a3c8d58e48acd3
-    digest: sha256:a37fc3344e78664fe861a793393e8dbbe0cdf1268e376965a7a3038ce9274a38
+    newTag: d7118849fb7883afb920c71402a3c4b8dcf01845
+    digest: sha256:3ab7179ccf1850609e6a9d358e4b840230afec6f9fb574fdd36e538501a53f08
   - name: postgres
     newName: docker.io/library/postgres
     newTag: 16.15-alpine
@@ -42,12 +42,13 @@ patches:
   - path: goal4a-retained-state-worker-restart-patch.yaml
   - path: goal4b-telegram-worker-activation-patch.yaml
 
+
 # BEGIN GOAL5 MAINTENANCE
 replicas:
   - name: conversation-service
-    count: 0
+    count: 1
   - name: conversation-service-worker
-    count: 0
+    count: 1
   - name: conversation-service-telegram-worker
-    count: 0
+    count: 1
 # END GOAL5 MAINTENANCE
