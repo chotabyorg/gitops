@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: ai-agent-service
+          env:
+            - name: BUSINESS_CONVERSATION_URL
+              value: http://conversation-service:8000
+            - name: BUSINESS_CONVERSATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ai-conversation-business-secret
+                  key: BUSINESS_CONVERSATION_TOKEN
