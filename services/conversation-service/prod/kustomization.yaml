@@ -41,3 +41,13 @@ patches:
   - path: goal4a-retained-state-api-restart-patch.yaml
   - path: goal4a-retained-state-worker-restart-patch.yaml
   - path: goal4b-telegram-worker-activation-patch.yaml
+
+# BEGIN GOAL5 MAINTENANCE
+replicas:
+  - name: conversation-service
+    count: 0
+  - name: conversation-service-worker
+    count: 0
+  - name: conversation-service-telegram-worker
+    count: 0
+# END GOAL5 MAINTENANCE
