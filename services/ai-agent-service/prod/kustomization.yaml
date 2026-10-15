@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../base
+  - conversation-business-sealed-secret.json
   - voice-managed-sealed-secret.json
   - sealed-secrets.yaml
   - chat-s2s-sealed-secret.yaml
@@ -10,6 +11,7 @@ resources:
   - beauty-managed-sealed-secret.json
   - mcp-credentials-backfill-job.yaml
 patches:
+  - path: conversation-business-patch.yaml
   - path: business-transport/deployment-patch.yaml
   - path: migration-chat-auth-patch.yaml
   - path: beauty-managed-principal-patch.yaml
@@ -26,8 +28,8 @@ namespace: prod
 images:
   - name: ai-agent-service
     newName: ghcr.io/chotabyorg/ai-agent-service
-    newTag: "22dbacf"
-    digest: sha256:dd95fade8c06dbc15c35b5bb6c66bd5adec453d50c2360cf657621e35c5ee35e
+    newTag: "0bd2e290b82030b2161112939b06df686b883105"
+    digest: sha256:062e90c2054e25a96480653734ff38ecdd09ed8a2b009f866ca5026fae18754f
 configMapGenerator:
   - name: ai-agent-config
     env: config.properties
