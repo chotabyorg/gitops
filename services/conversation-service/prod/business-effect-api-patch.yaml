@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: conversation-service
+          env:
+            - name: CONVERSATION_AUTH_PRINCIPALS
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-business-principals-secret
+                  key: API_AUTH_PRINCIPALS

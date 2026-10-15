@@ -5,6 +5,8 @@ kind: Kustomization
 namespace: prod
 resources:
   - ../base
+  - business-principals-sealed-secret.json
+  - business-effect-network-policy.yaml
   - database-sealed-secret.yaml
   - principals-sealed-secret.yaml
   - managed-ai-sealed-secret.yaml
@@ -17,8 +19,8 @@ resources:
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
-    newTag: d7118849fb7883afb920c71402a3c4b8dcf01845
-    digest: sha256:3ab7179ccf1850609e6a9d358e4b840230afec6f9fb574fdd36e538501a53f08
+    newTag: 8f0b7e5a9230e1a00e3cacb9e28e0860ffa4834b
+    digest: sha256:95f2a5d5dbd779299ffdff9a0f344ad6f36caae725c47953de7430faa2dcf406
   - name: postgres
     newName: docker.io/library/postgres
     newTag: 16.15-alpine
@@ -41,6 +43,7 @@ generatorOptions:
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
 patches:
+  - path: business-effect-api-patch.yaml
   - path: goal4a-canary-api-binding-patch.yaml
   - path: goal4a-canary-worker-binding-patch.yaml
   - path: goal4a-worker-activation-patch.yaml
@@ -52,7 +55,7 @@ patches:
 # Dedicated processes expose only the exact Voice principal/cohort.
 replicas:
   - name: conversation-service-voice-api
-    count: 0
+    count: 1
   - name: conversation-service-voice-worker
     count: 0
   - name: conversation-service-worker
@@ -60,4 +63,4 @@ replicas:
   - name: conversation-service-telegram-worker
     count: 0
   - name: conversation-service
-    count: 0
+    count: 1
