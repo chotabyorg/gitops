@@ -28,8 +28,8 @@ namespace: prod
 images:
   - name: ai-agent-service
     newName: ghcr.io/chotabyorg/ai-agent-service
-    newTag: "d84e1d7692ce7d4a34b14fef8bd62886c1b55323"
-    digest: sha256:af5b720687015f30a198413cd5c76ba22a4ca1f365f5ca548a29d40600d30aa9
+    newTag: "dce45557fcbbe9ce1939c16daa1a7d78579829fb"
+    digest: sha256:00939bb76af00dbdafa5d0ce368efe7d945a4dc97a2f90a7a9ee2e0419fcaf12
 configMapGenerator:
   - name: ai-agent-config
     env: config.properties
