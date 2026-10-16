@@ -7,8 +7,8 @@ namespace: prod
 images:
   - name: chota-site
     newName: ghcr.io/chotabyorg/chota-site
-    newTag: "e64af4df199ecfd61ded3127efc25973239b3ee0"
-    digest: sha256:fe3963def0fd7929f508fdc237185e8b9f86099fb69d321eb272301cf35a02b2
+    newTag: "9db8a21e8231a9df2a907649515ba0b180b85b32"
+    digest: sha256:eaadab588903dfa8e5f668968bedc5a2a41683f9342d4d0d7e81e56d213980c9
 configMapGenerator:
   - name: chota-site-config
     env: config.properties
