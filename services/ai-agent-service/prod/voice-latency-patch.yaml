@@ -10,4 +10,4 @@ spec:
           env:
             - name: MANAGED_VOICE_LATENCY_PROFILES
               value: >-
-                [{"owner_id":"dc3dd7eb-536f-45d4-84f2-c8d35575d928","integration_id":"3d241be9-d9c3-431f-9d46-5c8781b48b38","agent_id":"0b750714-af8d-4d8c-8fdc-4ddfeda98af9","model":"openai/gpt-6-luna","completion_model":"google/gemma-4-26b-a4b-it","provider_only":["nextbit/bf16"],"max_input_price":0.09,"max_output_price":0.30,"reuse_signing_key":true}]
+                [{"owner_id":"dc3dd7eb-536f-45d4-84f2-c8d35575d928","integration_id":"3d241be9-d9c3-431f-9d46-5c8781b48b38","agent_id":"0b750714-af8d-4d8c-8fdc-4ddfeda98af9","model":"openai/gpt-6-luna","completion_model":"google/gemma-4-26b-a4b-it","provider_only":["makora","nextbit/bf16"],"max_input_price":0.10,"max_output_price":0.30,"reuse_signing_key":true}]
