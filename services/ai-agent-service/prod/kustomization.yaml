@@ -14,7 +14,7 @@ namespace: prod
 images:
   - name: ai-agent-service
     newName: ghcr.io/chotabyorg/ai-agent-service
-    newTag: "c332095"
+    newTag: "109829f"
 configMapGenerator:
   - name: ai-agent-config
     env: config.properties
