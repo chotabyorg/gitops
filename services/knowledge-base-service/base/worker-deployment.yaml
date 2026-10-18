@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knowledge-base-service-worker
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: worker
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - image: knowledge-base-service
+          name: knowledge-base-service-worker
+          command:
+            - python
+            - -m
+            - workers.indexing_worker
+          envFrom:
+            - configMapRef:
+                name: knowledge-base-config
+            - secretRef:
+                name: knowledge-base-secret
