@@ -8,8 +8,8 @@ namespace: prod
 images:
   - name: telegram-gateway-service
     newName: ghcr.io/chotabyorg/telegram-gateway-service
-    newTag: a94256b
-    digest: sha256:252f519db3829602eef5211a4a5aae18f2a101b7df53979bd7fd92fffb9392f5
+    newTag: 084eba8aba447546f4f8f28cef8a9c6c051726a2
+    digest: sha256:2d16d5f4cd6c55d6f519740fda5ab107219ff60462f8566caa9942f06ce67d49
 configMapGenerator:
   - envs:
       - config.properties
