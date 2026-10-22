@@ -6,12 +6,19 @@ keeping Website `COMMON_WEBSITE_MESSAGE_SESSION_ALLOWLIST={}` and Telegram gatew
 issuance, provider/model call, grant-generation change or paid admission.
 
 **Release dependencies:** finish and accept Stage B's original-process exit
-observer and supervised drain, rebase this branch on its merged fresh main, then
-pin the independently accepted Website message-allowlist image. **The Website image in this draft is still the predecessor and does not enforce
-the new message fence. A nonempty common map must never deploy with that image.**
-The current candidate is not deployable before those dependencies. Retain every Stage B
-legacy guard/drain and producer/witness binding. Cross-Application sync waves do
-not establish ordering. No rollout or production acceptance is claimed here.
+observer and supervised drain, then rebase this branch on its merged fresh main.
+The accepted Website message-allowlist source is
+`827a65dad8e82a887952a5d4440d77e75b978559` (tree equal to reviewed PR24 head
+`6f4db23`), pinned as `827a65d` at index
+`sha256:f8584ce6fc541d65b44d2cd253104dbb1dd8accddf6a5363b54f86b64f4878f5`.
+Its linux/amd64 manifest is
+`sha256:1acc937ee20564ff0bf0ceaf57b765858ed15eabfc3715bcaf140dbde48f1db0`.
+Source labels/buildargs/VCS/attestation subject and successful publication run
+39829805104 were checked by the release lane. Final image runtime gates remain.
+The current candidate is not deployable before accepted Stage B and fresh review.
+Retain every Stage B legacy guard/drain and producer/witness binding.
+Cross-Application sync waves do not establish ordering. No rollout or production
+acceptance is claimed here.
 
 ## Exact scope and settings
 
@@ -127,7 +134,7 @@ From this repository:
 
 ```sh
 python3 services/conversation-service/operations/controlled_enrollment/validate.py <accepted-base-sha>
-python3 services/conversation-service/operations/controlled_enrollment/settings_check.py --workspace /path/to/chota
+python3 services/conversation-service/operations/controlled_enrollment/settings_check.py --workspace /path/to/chota --website-image ghcr.io/chotabyorg/website-gateway-service:827a65d@sha256:f8584ce6fc541d65b44d2cd253104dbb1dd8accddf6a5363b54f86b64f4878f5
 python3 services/conversation-service/operations/controlled_enrollment/test_tls.py
 python3 services/conversation-service/operations/controlled_enrollment/test_edge.py
 ```
@@ -138,7 +145,7 @@ It validates effective envFrom order and explicit per-container overrides,
 including CP/AI migration startup. The live sealing helper separately proved
 preservation of all old principals and exact Website managed-binding selection.
 
-Before final freeze: rebase on accepted Stage B, pin accepted Website image, render
+Before final freeze: rebase on accepted Stage B, reconfirm the accepted Website image, render
 all overlays again and independently review exact tree, scope, credentials and
 Business safety. Before enrollment: verify normal Argo health/image IDs, schema,
 Settings, mounted certificate/CA/fingerprint/expiry, TLS handshake and wrong-token
@@ -157,7 +164,8 @@ has terminated.
 
 All 26 production service overlays plus the edge overlay render successfully.
 Nine effective Settings configurations (API/workers and CP/AI migrations) pass
-against the source snapshots, including Website PR24 code, using synthetic tokens.
+against the source snapshots, using synthetic tokens. The pinned final Website image also passes isolated
+network-disabled Settings startup and rejects a malformed message fence.
 Six real pinned-NGINX tests and three native Traefik 3.6.13 tests pass.
 
 The additional dev-overlay sweep has 9 successful renders and 11 failures from

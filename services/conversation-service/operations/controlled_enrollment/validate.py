@@ -36,6 +36,8 @@ def verify(base='origin/main'):
   assert tg['MANAGED_AI_BINDINGS']['secretKeyRef']['name']=='conversation-telegram-managed-ai-secret'
   assert ret['TELEGRAM_HANDOFF_INTEGRATION_IDS']==ret['WEBSITE_HANDOFF_INTEGRATION_IDS']=='[]'
   for env in [web,tg,ret]:assert 'WRITER_PRODUCERS' not in env or env['WRITER_PRODUCERS']=='[]'
+  webdep=next(o for o in after['services/website-gateway-service/prod'] if o['kind']=='Deployment')
+  assert next(c for c in webdep['spec']['template']['spec']['containers'] if c['name']=='website-gateway-service')['image']=='ghcr.io/chotabyorg/website-gateway-service:827a65d@sha256:f8584ce6fc541d65b44d2cd253104dbb1dd8accddf6a5363b54f86b64f4878f5'
   webobjs=after['services/website-gateway-service/prod'];gw=config(webobjs,'website-gateway-service','website-gateway-service');assert gw['COMMON_WEBSITE_MESSAGE_SESSION_ALLOWLIST']=='{}';assert set(json.loads(gw['COMMON_WEBSITE_INTEGRATIONS']))=={WEB};assert gw['COMMON_WEBSITE_TRUSTED_PROXY_CIDRS']=='10.42.0.95/32'
   tgobj=render(ROOT/'services/telegram-gateway-service/prod');tggw=config(tgobj,'telegram-gateway-service','telegram-gateway-service');assert tggw.get('TELEGRAM_HANDOFF_INTEGRATION_IDS','[]')=='[]'
   for obj in cs:
@@ -57,5 +59,5 @@ def verify(base='origin/main'):
   newenv={e['name']:e for e in next(c for c in newai['containers'] if c['name']=='ai-agent-service').get('env',[])}
   assert all(newenv[k]==v for k,v in oldenv.items())
   assert set(newenv)-set(oldenv)=={'HANDOFF_AI_ENROLLED_SCOPES','HANDOFF_CONVERSATION_URL','HANDOFF_LIFECYCLE_TOKEN'}
-  return {'all_overlays_rendered':len(paths),'changed_overlays':changed,'voice_and_retirement_unchanged':True,'business_resources_and_existing_ai_settings_unchanged':True,'declared_closed_admissions':True,'release_ready':False,'website_allowlist_image_pin_pending':True,'exact_per_workload_scopes':True,'tls_key_sidecar_only':True,'gateway_auth_and_config_unchanged':True}
+  return {'all_overlays_rendered':len(paths),'changed_overlays':changed,'voice_and_retirement_unchanged':True,'business_resources_and_existing_ai_settings_unchanged':True,'declared_closed_admissions':True,'release_ready':False,'website_allowlist_image_pinned':True,'stage_b_acceptance_and_rebase_pending':True,'exact_per_workload_scopes':True,'tls_key_sidecar_only':True,'gateway_auth_and_config_unchanged':True}
 if __name__=='__main__':print(json.dumps(verify(__import__('sys').argv[1] if len(__import__('sys').argv)>1 else 'origin/main'),indent=2))

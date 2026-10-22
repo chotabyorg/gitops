@@ -1,6 +1,6 @@
-import subprocess,json,pathlib,yaml,os,hashlib
+import subprocess,json,pathlib,yaml,os,hashlib,tempfile
 import argparse
-parser=argparse.ArgumentParser();parser.add_argument('--workspace',type=pathlib.Path,required=True);args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--workspace',type=pathlib.Path,required=True);parser.add_argument('--website-image');args=parser.parse_args()
 root=args.workspace.resolve();repo=pathlib.Path(__file__).resolve().parents[4];ev=pathlib.Path(__file__).resolve().parent/'fixtures'
 registry={o['name']:o.get('entries',{}) for o in map(json.loads,(ev/'registries.jsonl').read_text().splitlines())}
 registry['conversation-common-website-principals-secret']={'API_AUTH_PRINCIPALS':registry['conversation-business-principals-secret']['API_AUTH_PRINCIPALS']+[{'principal_id':'main-common-website-gateway','role':'WEBSITE','token':True,'grants':registry['conversation-business-principals-secret']['API_AUTH_PRINCIPALS'][0]['grants']}]}
@@ -41,7 +41,19 @@ for svc in ['conversation-service','ai-agent-service','control-plane-service','w
    if svc=='website-gateway-service':src=root/'worktrees/website-common-message-allowlist'
    py=root/f'.native-handoff-20261022/venvs/{svc}/bin/python'
    script='from core.config import Settings; Settings(_env_file=None); print("settings_ok")'
-   run=subprocess.run([str(py),'-c',script],cwd=src,env={**os.environ,**env,'PYTHONPATH':str(src)},capture_output=True,text=True)
+   if svc=='website-gateway-service' and args.website_image:
+    env['COMMON_WEBSITE_CONVERSATION_CA_FILE']='/fixture-ca.crt'
+    with tempfile.NamedTemporaryFile(mode='w',suffix='.env') as fixture:
+     fixture.write(''.join(k+'='+v+'\n' for k,v in env.items()));fixture.flush()
+     command=['docker','run','--rm','--network','none','--platform','linux/amd64','--env-file',fixture.name,'-v',str(repo/'services/website-gateway-service/prod/common-website-ca.crt')+':/fixture-ca.crt:ro','--entrypoint','python',args.website_image,'-c',script]
+     run=subprocess.run(command,capture_output=True,text=True)
+     # Confirm the image enforces the new field, rather than silently ignoring it.
+     malformed=dict(env,COMMON_WEBSITE_MESSAGE_SESSION_ALLOWLIST='{"invalid":"*"}')
+     fixture.seek(0);fixture.truncate();fixture.write(''.join(k+'='+v+'\n' for k,v in malformed.items()));fixture.flush()
+     negative=subprocess.run(command,capture_output=True,text=True)
+     assert negative.returncode!=0,'Website image ignored malformed admission fence'
+   else:
+    run=subprocess.run([str(py),'-c',script],cwd=src,env={**os.environ,**env,'PYTHONPATH':str(src)},capture_output=True,text=True)
    checks.append({'deployment':dep['metadata']['name'],'container':c['name'],'ok':run.returncode==0})
    if run.returncode:print(c['name'],run.stderr[-2200:])
 print(json.dumps(checks,indent=2))
