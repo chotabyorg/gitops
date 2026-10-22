@@ -43,6 +43,16 @@ generatorOptions:
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
 patches:
+  - target:
+      kind: NetworkPolicy
+      name: conversation-service-api
+    patch: |-
+      - op: add
+        path: /spec/ingress/0/from/-
+        value:
+          podSelector:
+            matchLabels:
+              app: chota-gateway
   - path: business-effect-api-patch.yaml
   - path: goal4a-canary-api-binding-patch.yaml
   - path: goal4a-canary-worker-binding-patch.yaml
