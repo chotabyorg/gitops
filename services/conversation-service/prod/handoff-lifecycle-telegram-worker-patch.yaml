@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service-telegram-worker
+spec:
+  template:
+    spec:
+      containers:
+      - name: conversation-telegram-worker
+        env:
+        - name: INBOX_LIFECYCLE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: conversation-handoff-lifecycle-secret
+              key: INBOX_LIFECYCLE_TOKEN
+        - name: HANDOFF_LIFECYCLE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: conversation-handoff-lifecycle-secret
+              key: HANDOFF_LIFECYCLE_TOKEN

@@ -3,6 +3,8 @@ resources:
   - ../base
   - sealed-secrets.yaml
   - conversation-s2s-sealed-secret.yaml
+  - common-session.sealed.json
+  - common-ingress-policy.yaml
 namespace: prod
 images:
   - name: website-gateway-service
@@ -13,8 +15,12 @@ configMapGenerator:
   - envs:
       - config.properties
     name: website-gateway-config
+  - name: common-website-ca
+    files:
+    - ca.crt=common-website-ca.crt
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 patches:
   - path: writer-producer-patch.yaml
   - path: conversation-s2s-patch.yaml
+  - path: common-session-patch.yaml

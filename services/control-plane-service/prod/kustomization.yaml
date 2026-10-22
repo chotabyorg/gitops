@@ -4,6 +4,7 @@ resources:
   - sealed-secrets.yaml
   - voice-s2s-service.yaml
   - ai-voice-s2s-service.yaml
+  - handoff-lifecycle.sealed.json
 namespace: prod
 images:
   - name: control-plane-service
@@ -18,3 +19,4 @@ configMapGenerator:
 
 patches:
   - path: voice-routing-patch.json
+  - path: handoff-lifecycle-patch.yaml

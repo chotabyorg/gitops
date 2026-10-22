@@ -120,8 +120,10 @@ class Goal4BActivationTests(unittest.TestCase):
         self.assertEqual(env['WEBSITE_WORKER_PRINCIPAL_ID'],'main-website-immediate-worker')
         self.assertEqual(reference(self.conversation,'conversation-service-worker','CONVERSATION_AUTH_PRINCIPALS'),
                          dict(name='conversation-principals-secret',key='PROCESSING_AUTH_PRINCIPALS'))
+        # Controlled Handoff preparation now isolates this worker to the exact
+        # retained Website binding; the API retains the combined registry.
         self.assertEqual(reference(self.conversation,'conversation-service-worker','MANAGED_AI_BINDINGS'),
-                         dict(name='conversation-beauty-managed-secret',key='MANAGED_AI_BINDINGS'))
+                         dict(name='conversation-website-worker-managed-secret',key='MANAGED_AI_BINDINGS'))
 
     def test_cohort_rollback_retains_bindings_credentials_and_compatible_images(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,0 +1,23 @@
+{
+  "kind": "SealedSecret",
+  "apiVersion": "bitnami.com/v1alpha1",
+  "metadata": {
+    "name": "ai-handoff-lifecycle-secret",
+    "namespace": "prod"
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "name": "ai-handoff-lifecycle-secret",
+        "namespace": "prod",
+        "annotations": {
+          "argocd.argoproj.io/sync-wave": "-2"
+        }
+      },
+      "type": "Opaque"
+    },
+    "encryptedData": {
+      "HANDOFF_LIFECYCLE_TOKEN": "AgA66PhLW4KGJaMZQ3j7Ye3mKKuIfZ6c22k4GoApLsM/jrj8J/F2/vJV9tNw1otFu+tN46zOrZunlRd9MghUUZSB5dRuxRTD2ryNagQ/mMZE6oj2qe1A6mqFgGVHKx7tIxWb/KAFIP+7NQsXx+YfHOAQBTx7zhRjRf5Hu0GOEiGbmGfkfPiQkCKD3PIMu8cvcXpXDcEg9JfWNovmuCecJRvr5u4khCVwrjCB6dg0ed/NmpTQ/4b+DYuL/TsP6E2ap4vxAb6EPLU3dMi+7rnV8QBAiw1SFy4mQOmuvo30nX+Bh+PO1FLia63aag2w3OI9XWG+VONwJM/2RZAKaMS/rscrpzcGqLKM210JM2TC4Y+MFL+NcPu2Q0/x89CIjZ7nYqJoCX6OS6bEoQbHJ0idiCNDJ5itt4m45zvnCi06c4QAreaZ75DAiTRUwD1SisWxn6OQAUcFiTO9Nc56mGcok1+rg2akBbkG1jzR6F9Li8QmZrrYCRX08JG6y/mouO//xivGdyE+ZERlzqRRrri1HEFwm7exlERyX9QDk762SxwwjZNJJ6InX+fldNw+u/Jsv8YZSV+KTDBPDWwdz5tVRc413TrjIay76kSlBeFvVQlwfGFR9YXiQ1bw7ilqOG6CFCAbijrT8uABzdwrTPtiZE9vDlT6oiORgeBfHJahoP5l4HVjoCmQH1SQPI/KWvSxK3mvRVIb9u79PtLv5Ra46U0wIsKvT8uRZJqU5ClBmypZUnHGCHnpcr51J9oveHayN75bdxg2XCXLiTRmfrl0M0LU"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: api-inbox-no-store
+  namespace: prod
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`api.chota.by`) && (Path(`/api/v1/inbox/cases`) || PathRegexp(`^/api/v1/inbox/cases/[^/]+(/(claim|messages|return-to-agent))?$`))
+    services:
+    - kind: Service
+      name: chota-gateway
+      namespace: prod
+      port: 8080
+    priority: 100
+    middlewares:
+    - name: inbox-no-store
+  tls:
+    certResolver: le

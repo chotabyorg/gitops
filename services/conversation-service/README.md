@@ -1,5 +1,9 @@
 # Main Conversation production state
 
+The next, still-closed controlled QA prerequisites are documented in
+[CONTROLLED-ENROLLMENT-PREREQUISITES](CONTROLLED-ENROLLMENT-PREREQUISITES.md).
+This draft requires accepted Stage B and the final Website admission image.
+
 The additive text writer attestor release and its staged production gates are
 documented in [ATTESTOR-RELEASE](ATTESTOR-RELEASE.md). Stage A keeps Handoff
 admission empty and existing managed bindings unchanged.

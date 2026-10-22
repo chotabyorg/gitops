@@ -1,0 +1,24 @@
+{
+  "kind": "SealedSecret",
+  "apiVersion": "bitnami.com/v1alpha1",
+  "metadata": {
+    "name": "conversation-handoff-lifecycle-secret",
+    "namespace": "prod"
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "name": "conversation-handoff-lifecycle-secret",
+        "namespace": "prod",
+        "annotations": {
+          "argocd.argoproj.io/sync-wave": "-2"
+        }
+      },
+      "type": "Opaque"
+    },
+    "encryptedData": {
+      "HANDOFF_LIFECYCLE_TOKEN": "AgB9LxQRxLLaHJzJGrsobGOb3mOvRRCnYs4rYtWddaKDyBbxadtzGVClABKjwO0Jrwoqf2a5NwG/YEcflEPnb4R8losjm68kFYjKqtlCoV2u99SKTc6h8ALWNAJjUPzTAOTTLVaWg3CVDcM3Snps32/c5W7SwJ8oN6Iibj9bc6mfqvq5YP6EaGbG2TBsH1k35Fz6OErnYcwtkDjmn+nxpqCs8Bvq2WCeBCLxZwgpZOqx58LieVAQx+QB6iRTepbY06BnqMevioiGXC720OdDI6rdx6POXe42tAqb+rdw2eT16X6Sw7qagsDSmltZY5RibYfkKsi1r+LDTCwLK/8sHJJ2FH1FA338R0KTkuZ1KPf+rZYk3AGQZUZDX+lv6IecsBv1/JzyyPEfsA8dh+3MpP6PHnskOG6J5HjFcghXYiIVTJ386/lMFcsrAKy6wh7w9XMHAsHpUF1CZ3pYFvZy1DK0fujTRzoEWcdgfkwmf9jjKtDI93/CWtf21viqkl47grz8T7mEFS7aa8NlFjo1QFrRQAinNTLEDiuho7ogYy7pKVuLqVkQTNA8WbebH5WapYhZnbHqO9N8AETnnJQpnDtF2Fjrb59p9ZDp7TGNPBEn8SYUJT8pqqsjb3z98EQDi3063tOqSUntC8TFQsql6MOKZcxwa9yv9fqUa9/kT1lddglk34okQ9l2xv9yJzSXw00m2C8U/VbO2tMFBl/ELa8EDtwaTrwrfuDaV0CgVxq6TfdDF02OnaQRCAKOwMMFDRQiLntSkV3PkvVhc5q4Ttx4",
+      "INBOX_LIFECYCLE_TOKEN": "AgB+fYra/dL3+Dbjt7wlIPlYjqk6KyO0y0kFEpQq5m9pTtuukUdqkdjjlVx07abthrmKz5WJB25MaqwmEsgb5JKfdT5BFCVgaB0v/G/7NHwT9H7op0XzA9fR8jZDrA7qUyCJSfkA1faCFDruAs/HoqxNOaN5G5NzdFzHyxVwt0LSN8rsIauGU9A3QQK3+RZv7fR5HMw3MGyoGYFncBmS8Rh1fVsmQmD4wNrB9GfM2sy8Mxk+gPAkDJ4agQE/ormGpp0lxIeF1klYeZqFqJY/BVWUoaVadRpGZqQN01d5N87/1erqpNtLzvpvS1APkrz6weg6vCBb4DvY+JsG9Xy/lV3op3r6qO4jJkGO6oFqFJY5dhYWXXuRH2LRqrnakiYRzUGQrhAnd0EdsJSO4WNwoN9WJrZ4Q1WmSBQG8Toeragv+wSWFJmoztc4f9eu7jfm3/9luC/U7x0/u9G/dHj6PKsXMuBZQdkBjjU9U6RoGV6R7VrhWwvIoXk4yTnXAB2u63R40tU28Q7Cjg06Ge/UglmoSh5fqUyuTAVGb3ECIsNjSUTFmRlrNehe29zyCNFNHWqtvFwQ/JYc7fZinypUxXrmLwbdXLoQKs+ESBV3MTLFsTQH7j9ueb5K+URanZOGYN7IJuHXTqEmQVE9I6QOWnbp+hTUmkvIu9SUMOteBsy6/gds71iKsbXo3f+A1sGHKV+Xi8y+4gzG97rhVSu5QyUd+3fjxtlWTdQ5G+oe2DAc9xQkMP8h8j0P6vmiLUED72OQIN6TU0DVPpHJfpJmMa2E"
+    }
+  }
+}

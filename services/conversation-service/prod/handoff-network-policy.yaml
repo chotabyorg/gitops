@@ -1,0 +1,113 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: conversation-website-private-tls
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  podSelector:
+    matchLabels:
+      app: conversation-service
+      component: api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: website-gateway-service
+    ports:
+    - protocol: TCP
+      port: 8443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: conversation-handoff-supplier-ingress
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  podSelector:
+    matchLabels:
+      app: conversation-service
+      component: api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: control-plane-service
+          component: api
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: conversation-handoff-api-egress
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  podSelector:
+    matchLabels:
+      app: conversation-service
+      component: api
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: control-plane-service
+          component: api
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: conversation-handoff-worker-egress
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  podSelector:
+    matchLabels:
+      app: conversation-service
+      component: worker
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: control-plane-service
+          component: api
+    ports:
+    - protocol: TCP
+      port: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: conversation-handoff-telegram-worker-egress
+  annotations:
+    argocd.argoproj.io/sync-wave: '-1'
+spec:
+  podSelector:
+    matchLabels:
+      app: conversation-service
+      component: telegram-worker
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: control-plane-service
+          component: api
+    ports:
+    - protocol: TCP
+      port: 8000

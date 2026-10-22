@@ -1,0 +1,23 @@
+{
+  "kind": "SealedSecret",
+  "apiVersion": "bitnami.com/v1alpha1",
+  "metadata": {
+    "name": "website-common-session-secret",
+    "namespace": "prod"
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "name": "website-common-session-secret",
+        "namespace": "prod",
+        "annotations": {
+          "argocd.argoproj.io/sync-wave": "-2"
+        }
+      },
+      "type": "Opaque"
+    },
+    "encryptedData": {
+      "COMMON_WEBSITE_S2S_TOKEN": "AgA7VHt1u/+mnBiKhdMcfOKNZF2h23OvOUJqKs5mA4h3yDfqmLpLvEgpDsyMtBpSe+o2XAyvDaOTf6y+kUk49QxYrPF0IPVPrLIKYJElYRRDbQ8zNdxHR71hTug9y1UIddXx2w7Yx1p9YedPAc+kRepmrnCsdQ0DHmfFu9Kgz283N8GEdw2KW3LF7VRpFrmne35afHFl68p+8SumvyYwEHFTAwAQTnlLElUHaycuAwuVF2sJ9VGIFs/rZnf3EaWPq7NHv3fEM5FXXILArjFw3etTCS3EUq8mdrZYx4tORXZdhclXGGrwARdQVMOf594WtLW2Z5fAIwiUuJ6BNJaFh5uygkqDbqubQoigu/hzZB7aENh8Mg16OUPdcTF3g+RIg/5/Nyan+l79xGD3Tm42R84mwOt0gax7SNM47MFJ1Xnu65BAuXqmosIixdetWMukUTrGY2MMyONYuMOg4mbYvMN2nXiCfNIErMxd/YnXjE6q1tSyqmJkMixBvhZV3TGoalLZO+Z6Yk2O5pYPBX1fYP65MRJVZouUOo+xaWzweIqVH9khxO2/JGO8vLkz7svMyqCWtCxAu4fvUUjBWjlxP/p1gW7JAQzdByPX/6q/JnwD3dYZMndt9kI6U7+eStJTXbfAZYmhSkJ/1ByaFtCGCezizrw1Vvj7Ve/MI/rxt1E+S09oThlUB0Bd8NNW4dTNVPANIQegfeNjsEuiUi6YO1RGJJQojU/yZvmspMzMTkEJubyJWsJNGKSE34SlQ7RIiglZKvt0JtuWOLrNyilTcV6s"
+    }
+  }
+}

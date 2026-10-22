@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-gateway-service
+spec:
+  template:
+    spec:
+      containers:
+      - name: website-gateway-service
+        env:
+        - name: COMMON_WEBSITE_S2S_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: website-common-session-secret
+              key: COMMON_WEBSITE_S2S_TOKEN
+        volumeMounts:
+        - name: common-website-ca
+          mountPath: /etc/common-website-ca
+          readOnly: true
+      volumes:
+      - name: common-website-ca
+        configMap:
+          name: common-website-ca
+          defaultMode: 292
