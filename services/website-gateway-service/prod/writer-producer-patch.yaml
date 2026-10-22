@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website-gateway-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: website-gateway-service
+          env:
+            # Parent-only capability; supervised child environment strips it.
+            - name: WRITER_PRODUCER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: website-writer-producer-secret
+                  key: WRITER_PRODUCER_TOKEN

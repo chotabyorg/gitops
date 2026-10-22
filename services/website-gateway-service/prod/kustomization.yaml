@@ -1,4 +1,5 @@
 resources:
+  - website-writer-producer-secret.sealed.json
   - ../base
   - sealed-secrets.yaml
   - conversation-s2s-sealed-secret.yaml
@@ -6,8 +7,8 @@ namespace: prod
 images:
   - name: website-gateway-service
     newName: ghcr.io/chotabyorg/website-gateway-service
-    newTag: ef38586
-    digest: sha256:bef5827d8b5269bb903b56521e590af71bc89672139399bfe560ef3778bbd22b
+    newTag: 63cd1aa
+    digest: sha256:cd8e3535eff93ef33e08f6626ad0d0f948ee35199ac83c0fd17c3b937944b463
 configMapGenerator:
   - envs:
       - config.properties
@@ -15,4 +16,5 @@ configMapGenerator:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 patches:
+  - path: writer-producer-patch.yaml
   - path: conversation-s2s-patch.yaml

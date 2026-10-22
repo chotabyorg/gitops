@@ -113,6 +113,19 @@ UNKNOWN/LIVE. CLOSED fences remain enforced even with registration optional.
    a provider/model call as a probe. End-to-end production retirement acceptance
    remains a later controlled gate.
 
+## Stage A acceptance and remaining owner gate
+
+Stage A #260 is independently accepted at GitOps
+`eb70cca03b5297c37ddc71bcf08415d298dc42d1` for additive deployment and idle-driver
+readiness. The main API now reaches user-service with the verifier URL configured.
+Both Handoff cohorts remain empty, so Inbox middleware deliberately returns404
+before owner verification. Authenticated list/render/no-store acceptance remains
+pending legitimate exact QA enrollment; do not enable a cohort solely to probe
+Inbox. These runtime findings qualify the earlier owner-verification checklist.
+
+The separately reviewed gateway candidate and observer gate are documented in
+[ATTESTOR-GATEWAY-RELEASE](ATTESTOR-GATEWAY-RELEASE.md).
+
 ## Stage B prerequisite and exact drain
 
 Create its branch from fresh main only after Stage A acceptance. Before merging
