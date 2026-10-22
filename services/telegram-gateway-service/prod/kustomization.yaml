@@ -1,15 +1,17 @@
 resources:
+  - telegram-writer-producer-secret.sealed.json
   - ../base
   - sealed-secrets.yaml
   - conversation-s2s-sealed-secret.json
 patches:
+  - path: writer-producer-patch.yaml
   - path: goal4b-activation-patch.yaml
 namespace: prod
 images:
   - name: telegram-gateway-service
     newName: ghcr.io/chotabyorg/telegram-gateway-service
-    newTag: 084eba8aba447546f4f8f28cef8a9c6c051726a2
-    digest: sha256:2d16d5f4cd6c55d6f519740fda5ab107219ff60462f8566caa9942f06ce67d49
+    newTag: 8e771a3
+    digest: sha256:38f70094b5a0bd9d1447e0d224e5b724a1911e28b23e4f74df4fbdaf08577868
 configMapGenerator:
   - envs:
       - config.properties

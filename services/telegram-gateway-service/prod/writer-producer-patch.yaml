@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegram-gateway-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: telegram-gateway-service
+          env:
+            # Parent-only capability; supervised child environment strips it.
+            - name: WRITER_PRODUCER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: telegram-writer-producer-secret
+                  key: WRITER_PRODUCER_TOKEN
