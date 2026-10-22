@@ -6,8 +6,8 @@ namespace: prod
 images:
   - name: website-gateway-service
     newName: ghcr.io/chotabyorg/website-gateway-service
-    newTag: df3b200
-    digest: sha256:bfc9249bfcc63320b8a3f1e24f3e2ed257c35530f41eec8e3ade5543c2678b14
+    newTag: ef38586
+    digest: sha256:bef5827d8b5269bb903b56521e590af71bc89672139399bfe560ef3778bbd22b
 configMapGenerator:
   - envs:
       - config.properties
