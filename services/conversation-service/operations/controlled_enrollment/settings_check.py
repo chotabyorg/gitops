@@ -19,7 +19,7 @@ def secret(n,k):
  if k=='ENCRYPTION_KEY':return 'A'*43+'='
  return token(n+k)
 checks=[]
-for svc in ['conversation-service','ai-agent-service','control-plane-service','website-gateway-service']:
+for svc in ['conversation-service','ai-agent-service','control-plane-service','website-gateway-service','telegram-gateway-service']:
  objs=list(yaml.safe_load_all(subprocess.check_output(['kubectl','kustomize',str(repo/f'services/{svc}/prod')],text=True)));cms={o['metadata']['name']:o.get('data',{}) for o in objs if o['kind']=='ConfigMap'}
  for dep in [o for o in objs if o['kind']=='Deployment']:
   if 'voice' in dep['metadata']['name'] or 'postgres' in dep['metadata']['name'] or 'redis' in dep['metadata']['name']:continue
@@ -31,6 +31,7 @@ for svc in ['conversation-service','ai-agent-service','control-plane-service','w
    for e in c.get('env',[]):
     if 'value' in e:env[e['name']]=e['value']
     elif 'secretKeyRef' in e.get('valueFrom',{}):s=e['valueFrom']['secretKeyRef'];env[e['name']]=secret(s['name'],s['key'])
+   if svc=='telegram-gateway-service':env['INTERNAL_API_TOKEN']=token('telegram-internal')
    if svc=='website-gateway-service':
     env['CONVERSATION_S2S_TOKEN']=token('old-web');env['COMMON_WEBSITE_CONVERSATION_CA_FILE']=str(repo/'services/website-gateway-service/prod/common-website-ca.crt')
    if svc=='ai-agent-service':
@@ -39,8 +40,27 @@ for svc in ['conversation-service','ai-agent-service','control-plane-service','w
    src=root/f'.native-handoff-20261022/sources/{svc}'
    if svc=='conversation-service':src=root/'.native-handoff-20261022/final-sources/conversation-service'
    if svc=='website-gateway-service':src=root/'worktrees/website-common-message-allowlist'
+   if svc=='telegram-gateway-service':src=root/'.native-handoff-20261022/final-sources/telegram-gateway-service'
    py=root/f'.native-handoff-20261022/venvs/{svc}/bin/python'
    script='from core.config import Settings; Settings(_env_file=None); print("settings_ok")'
+   if svc in ['website-gateway-service','telegram-gateway-service']:
+    script="""import os
+from services.writer_attestor import Parent, scopes, matches
+allowed=scopes(); drains=scopes('WRITER_LEGACY_DRAIN_SCOPES')
+assert len(allowed)==len(drains)==1
+assert all(any(matches(row,scope) for row in drains) for scope in allowed)
+assert os.environ['WRITER_PRODUCER_URL']=='http://conversation-service:8000'
+assert 32<=len(os.environ['WRITER_PRODUCER_TOKEN'])<=256
+before=dict(os.environ); child=Parent(None,allowed).child_environment('/tmp/fixture.sock')
+assert 'WRITER_PRODUCER_TOKEN' not in child and 'WRITER_PRODUCER_URL' not in child
+assert child['WRITER_ATTESTOR_SCOPES']==before['WRITER_ATTESTOR_SCOPES']
+assert child['WRITER_LEGACY_DRAIN_SCOPES']==before['WRITER_LEGACY_DRAIN_SCOPES']
+for key in ['COMMON_WEBSITE_S2S_TOKEN','COMMON_WEBSITE_CONVERSATION_CA_FILE']:
+ if key in before:assert child[key]==before[key]
+os.environ.clear(); os.environ.update(child)
+from core.config import Settings
+Settings(_env_file=None)
+print('settings_and_supervised_child_ok')"""
    if svc=='website-gateway-service' and args.website_image:
     env['COMMON_WEBSITE_CONVERSATION_CA_FILE']='/fixture-ca.crt'
     with tempfile.NamedTemporaryFile(mode='w',suffix='.env') as fixture:

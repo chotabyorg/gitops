@@ -5,8 +5,9 @@ keeping Website `COMMON_WEBSITE_MESSAGE_SESSION_ALLOWLIST={}` and Telegram gatew
 `TELEGRAM_HANDOFF_INTEGRATION_IDS=[]`. It performs no CP enrollment, session
 issuance, provider/model call, grant-generation change or paid admission.
 
-**Release dependencies:** finish and accept Stage B's original-process exit
-observer and supervised drain, then rebase this branch on its merged fresh main.
+**Release dependencies:** this branch is rebased onto Stage B merge
+`ba74814c40d9b3ac8ffbfb27c2cffeddd293e440`. Stage B's original-process exit
+observer and supervised drain still require runtime acceptance before release.
 The accepted Website message-allowlist source is
 `827a65dad8e82a887952a5d4440d77e75b978559` (tree equal to reviewed PR24 head
 `6f4db23`), pinned as `827a65d` at index
@@ -142,12 +143,14 @@ python3 services/conversation-service/operations/controlled_enrollment/test_edge
 The Settings harness uses captured public registry shapes with synthetic tokens,
 never production values, and the accepted source snapshots/venvs in the workspace.
 It validates effective envFrom order and explicit per-container overrides,
-including CP/AI migration startup. The live sealing helper separately proved
+including CP/AI migration startup. Telegram and Website supervised child environments
+retain their exact drain scopes; producer URL/token are stripped before application
+startup, while the new Website token and CA configuration remain available. The live sealing helper separately proved
 preservation of all old principals and exact Website managed-binding selection.
 
-Before final freeze: rebase on accepted Stage B, reconfirm the accepted Website image, render
-all overlays again and independently review exact tree, scope, credentials and
-Business safety. Before enrollment: verify normal Argo health/image IDs, schema,
+The fresh Stage B base and final Website image have been validated locally.
+Before release, accept Stage B runtime evidence and independently review the exact
+final tree, scope, credentials and Business safety. Before enrollment: verify normal Argo health/image IDs, schema,
 Settings, mounted certificate/CA/fingerprint/expiry, TLS handshake and wrong-token
 failures, exact NetworkPolicy behavior and public logs/no-store. Recheck the CP
 binding generation and retained writer evidence. Keep external input closed.
@@ -163,14 +166,18 @@ has terminated.
 ## Current preparation evidence (2026-10-22)
 
 All 26 production service overlays plus the edge overlay render successfully.
-Nine effective Settings configurations (API/workers and CP/AI migrations) pass
+Ten effective Settings configurations (API/workers, both gateways and CP/AI migrations) pass
 against the source snapshots, using synthetic tokens. The pinned final Website image also passes isolated
 network-disabled Settings startup and rejects a malformed message fence.
 Six real pinned-NGINX tests and three native Traefik 3.6.13 tests pass.
+The entire rendered Telegram gateway overlay is byte-equivalent to Stage B, as
+are Website legacy guard/drain/producer bindings and both producer sealed secrets.
+All rebase verification used local renders, source and disposable Docker peers;
+no production process inspection was performed during the exclusive observer window.
 
 The additional dev-overlay sweep has 9 successful renders and 11 failures from
 missing existing sealed-secrets.yaml files; the exact same outcomes occur at base
-`eb70cca03b5297c37ddc71bcf08415d298dc42d1`. No dev resource is changed. Historical
+`ba74814c40d9b3ac8ffbfb27c2cffeddd293e440`. No dev resource is changed. Historical
 Conversation GitOps tests run 34 cases: both the detached baseline and candidate
 have the same 4 failures/7 errors and exactly the same failing test identities. These fixture/legacy
 expectation failures are not reported as a passing suite and are not changed here.

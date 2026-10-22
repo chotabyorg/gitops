@@ -47,6 +47,16 @@ def verify(base='origin/main'):
     if c['name']!='website-tls-server':assert not any(m['name']=='conversation-website-tls-identity' for m in c.get('volumeMounts',[]))
   edge=after['platform/traefik-routes'];route=next(o for o in edge if o['metadata']['name']=='api-inbox-no-store');broad=next(o for o in edge if o['metadata']['name']=='api-chota-by');assert route['spec']['routes'][0]['services']==broad['spec']['routes'][0]['services'];assert 'PathPrefix' not in route['spec']['routes'][0]['match']
   assert before['services/chota-gateway/prod']==after['services/chota-gateway/prod']
+  assert before['services/telegram-gateway-service/prod']==after['services/telegram-gateway-service/prod']
+  oldgw=config(before['services/website-gateway-service/prod'],'website-gateway-service','website-gateway-service')
+  for key in ['WRITER_ATTESTOR_SCOPES','WRITER_LEGACY_DRAIN_SCOPES','WRITER_PRODUCER_URL','WRITER_PRODUCER_TOKEN','MANAGED_WEBSITE_GUARDED_INTEGRATIONS','MANAGED_WEBSITE_COHORTS','CONVERSATION_S2S_TOKEN']:
+   assert gw[key]==oldgw[key],key
+  assert gw['MANAGED_WEBSITE_COHORTS']=='{}'
+  assert tggw['TELEGRAM_CANARY_INTEGRATION_IDS']=='[]'
+  for service in ['website-gateway-service','telegram-gateway-service']:
+   b=before['services/'+service+'/prod'];a=after['services/'+service+'/prod']
+   name=service.split('-')[0]+'-writer-producer-secret'
+   assert next(o for o in b if o['kind']=='SealedSecret' and o['metadata']['name']==name)==next(o for o in a if o['kind']=='SealedSecret' and o['metadata']['name']==name)
   for service in ['conversation-service','ai-agent-service']:
    old=before['services/'+service+'/prod'];new=after['services/'+service+'/prod']
    for obj in old:
@@ -59,5 +69,5 @@ def verify(base='origin/main'):
   newenv={e['name']:e for e in next(c for c in newai['containers'] if c['name']=='ai-agent-service').get('env',[])}
   assert all(newenv[k]==v for k,v in oldenv.items())
   assert set(newenv)-set(oldenv)=={'HANDOFF_AI_ENROLLED_SCOPES','HANDOFF_CONVERSATION_URL','HANDOFF_LIFECYCLE_TOKEN'}
-  return {'all_overlays_rendered':len(paths),'changed_overlays':changed,'voice_and_retirement_unchanged':True,'business_resources_and_existing_ai_settings_unchanged':True,'declared_closed_admissions':True,'release_ready':False,'website_allowlist_image_pinned':True,'stage_b_acceptance_and_rebase_pending':True,'exact_per_workload_scopes':True,'tls_key_sidecar_only':True,'gateway_auth_and_config_unchanged':True}
+  return {'all_overlays_rendered':len(paths),'changed_overlays':changed,'voice_and_retirement_unchanged':True,'business_resources_and_existing_ai_settings_unchanged':True,'declared_closed_admissions':True,'release_ready':False,'website_allowlist_image_pinned':True,'stage_b_runtime_acceptance_pending':True,'stage_b_base_and_drains_preserved':True,'exact_per_workload_scopes':True,'tls_key_sidecar_only':True,'gateway_auth_and_config_unchanged':True}
 if __name__=='__main__':print(json.dumps(verify(__import__('sys').argv[1] if len(__import__('sys').argv)>1 else 'origin/main'),indent=2))
