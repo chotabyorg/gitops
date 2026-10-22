@@ -7,8 +7,8 @@ namespace: prod
 images:
   - name: control-plane-service
     newName: ghcr.io/chotabyorg/control-plane-service
-    newTag: c7ae561
-    digest: sha256:4e1124f3917357885ed9bba63f100d224d79f6495baa38600b1e854ef0b935c7
+    newTag: a8237b4
+    digest: sha256:21a7d2bdb44c34745ae7c6c89a173ecec02c6e465231c5eb2ef25d039ad9e12f
 configMapGenerator:
   - name: control-plane-config
     env: config.properties
