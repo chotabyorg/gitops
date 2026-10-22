@@ -50,6 +50,7 @@ generatorOptions:
     argocd.argoproj.io/sync-wave: '-1'
 patches:
   - path: writer-attestation-api-patch.yaml
+  - path: inbox-owner-verifier-api-patch.yaml
   - target:
       kind: NetworkPolicy
       name: conversation-service-api
@@ -67,6 +68,17 @@ patches:
             matchLabels:
               app: conversation-service
               component: retirement-worker
+      - op: add
+        path: /spec/egress/-
+        value:
+          to:
+            - podSelector:
+                matchLabels:
+                  app: user-service
+                  component: api
+          ports:
+            - protocol: TCP
+              port: 8000
   - target:
       kind: NetworkPolicy
       name: conversation-service-postgres

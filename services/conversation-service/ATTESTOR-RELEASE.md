@@ -20,6 +20,25 @@ succeeded. OCI revision/source labels and BuildKit provenance bind that source.
 These are release inputs, not a claim of production reconciliation or formal
 GitOps acceptance. A new independent review of this frozen candidate is required.
 
+## Owner Inbox verification binding
+
+The promoted Inbox page could not load for a legitimate signed-in owner because
+Conversation's `USER_SERVICE_BASE_URL` was unset: its existing verifier returns no
+principal in that state. The main API also lacked egress to user-service. This
+release sets `USER_SERVICE_BASE_URL=http://user-service:8000` only on the main
+Conversation API and allows only that component to pods labeled
+`app=user-service, component=api`, TCP 8000. Worker and Voice environments retain
+their prior settings. No credential is copied; the existing live cookie verifier,
+verified-email/consent validation and owner isolation remain unchanged.
+
+After Argo reconciliation, verify a bounded unauthenticated GET from the main API
+to `http://user-service:8000/api/v1/me` reaches the service and returns 401, then
+use the existing legitimate owner browser session to load the Inbox. Record the
+actual authenticated list response and `Cache-Control: no-store`, successful list
+rendering (including a valid empty list), and unauthenticated Inbox rejection 401.
+Do not extract/mint a token or treat a public page 200 as authenticated acceptance.
+The production authenticated response remains unverified until that observation.
+
 ## Stage A topology and authority
 
 The main Conversation API loads the two exact producer grants from
