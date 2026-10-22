@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: conversation-service
+          env:
+            - name: USER_SERVICE_BASE_URL
+              value: http://user-service:8000

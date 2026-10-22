@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service-retirement-worker
+  annotations:
+    argocd.argoproj.io/sync-wave: '2'
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 600
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: conversation-retirement-worker
+          image: conversation-service
+          command: [python, retirement_worker.py]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-database-secret
+                  key: DATABASE_URL
+            # Settings requires a registry; retain only the existing narrow
+            # processing registry, never the API or producer registry.
+            - name: CONVERSATION_AUTH_PRINCIPALS
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-principals-secret
+                  key: PROCESSING_AUTH_PRINCIPALS
+            - name: WRITER_RETIREMENT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-writer-recovery-secret
+                  key: WRITER_RETIREMENT_TOKEN
+            - name: WRITER_SUPERVISOR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-writer-recovery-secret
+                  key: WRITER_SUPERVISOR_TOKEN
+          envFrom:
+            - configMapRef:
+                name: conversation-retirement-worker-config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          # This executable has no HTTP health listener. Deployment availability
+          # is process availability; the release runbook verifies DB/loop progress.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

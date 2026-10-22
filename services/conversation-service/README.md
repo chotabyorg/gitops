@@ -1,5 +1,9 @@
 # Main Conversation production state
 
+The additive text writer attestor release and its staged production gates are
+documented in [ATTESTOR-RELEASE](ATTESTOR-RELEASE.md). Stage A keeps Handoff
+admission empty and existing managed bindings unchanged.
+
 **Goal4B exact QA draft activation:** [GOAL4B-RELEASE](GOAL4B-RELEASE.md) now starts
 with the separate activation candidate for newly created `@chota_test_4343434_bot`,
 integration `9b43e8ab-7afa-4201-8a88-99e8d256180a`. The candidate prepares one scoped
