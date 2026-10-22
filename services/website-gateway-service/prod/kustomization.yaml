@@ -3,18 +3,24 @@ resources:
   - ../base
   - sealed-secrets.yaml
   - conversation-s2s-sealed-secret.yaml
+  - common-session.sealed.json
+  - common-ingress-policy.yaml
 namespace: prod
 images:
   - name: website-gateway-service
     newName: ghcr.io/chotabyorg/website-gateway-service
-    newTag: 63cd1aa
-    digest: sha256:cd8e3535eff93ef33e08f6626ad0d0f948ee35199ac83c0fd17c3b937944b463
+    newTag: 827a65d
+    digest: sha256:f8584ce6fc541d65b44d2cd253104dbb1dd8accddf6a5363b54f86b64f4878f5
 configMapGenerator:
   - envs:
       - config.properties
     name: website-gateway-config
+  - name: common-website-ca
+    files:
+    - ca.crt=common-website-ca.crt
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 patches:
   - path: writer-producer-patch.yaml
   - path: conversation-s2s-patch.yaml
+  - path: common-session-patch.yaml

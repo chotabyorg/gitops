@@ -10,6 +10,7 @@ resources:
   - business-transport/signing-sealed-secret.yaml
   - beauty-managed-sealed-secret.json
   - mcp-credentials-backfill-job.yaml
+  - handoff-lifecycle.sealed.json
 patches:
   - path: conversation-business-patch.yaml
   - path: business-transport/deployment-patch.yaml
@@ -24,6 +25,7 @@ patches:
       name: ai-agent-service
   - path: voice-managed-patch.json
   - path: voice-latency-patch.yaml
+  - path: handoff-lifecycle-patch.yaml
 namespace: prod
 images:
   - name: ai-agent-service

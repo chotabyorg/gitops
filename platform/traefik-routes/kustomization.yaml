@@ -15,3 +15,5 @@ resources:
   - ingressroute-repetly-storage.yaml
   - ingressroute-widget.yaml
   - ingressroute-crm.yaml
+  - middleware-inbox-no-store.yaml
+  - ingressroute-api-inbox.yaml

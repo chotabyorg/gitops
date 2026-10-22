@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: conversation-service
+spec:
+  ports:
+  - name: website-tls
+    port: 8443
+    targetPort: website-tls

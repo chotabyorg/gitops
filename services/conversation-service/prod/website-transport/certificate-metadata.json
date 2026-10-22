@@ -1,0 +1,7 @@
+{
+  "dns_san": "conversation-service.prod.svc.cluster.local",
+  "ca_sha256": "8fc75513d4440495cf6cf05e760fd22122a21f38addd6c7500d6702467ef4f32",
+  "server_sha256": "1ee119dd207e169c76225361251df4c7a8055f937a7edf382e12e3e795dd1398",
+  "expires_at": "2027-01-20T18:02:00+00:00",
+  "rotate_by": "2026-12-21"
+}

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent-service
+spec:
+  template:
+    spec:
+      containers:
+      - name: ai-agent-service
+        env:
+        - name: HANDOFF_LIFECYCLE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ai-handoff-lifecycle-secret
+              key: HANDOFF_LIFECYCLE_TOKEN
+        - name: HANDOFF_CONVERSATION_URL
+          value: http://conversation-service:8000
+        - name: HANDOFF_AI_ENROLLED_SCOPES
+          value: '[{"owner_id":"dc3dd7eb-536f-45d4-84f2-c8d35575d928","integration_id":"8d4a1b73-7973-4dcc-a3d4-1312d871c1d4","channel":"WEBSITE_WIDGET","agent_id":"0b750714-af8d-4d8c-8fdc-4ddfeda98af9"},{"owner_id":"dc3dd7eb-536f-45d4-84f2-c8d35575d928","integration_id":"9b43e8ab-7afa-4201-8a88-99e8d256180a","channel":"TELEGRAM","agent_id":"0b750714-af8d-4d8c-8fdc-4ddfeda98af9"}]'

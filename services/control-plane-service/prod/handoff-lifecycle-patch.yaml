@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: control-plane-service
+spec:
+  template:
+    spec:
+      containers:
+      - name: control-plane-service
+        env:
+        - name: INBOX_ENROLLMENT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: control-plane-handoff-lifecycle-secret
+              key: INBOX_ENROLLMENT_TOKEN
+        - name: INBOX_LIFECYCLE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: control-plane-handoff-lifecycle-secret
+              key: INBOX_LIFECYCLE_TOKEN

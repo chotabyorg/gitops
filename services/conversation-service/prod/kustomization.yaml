@@ -20,6 +20,11 @@ resources:
   - voice-principals-sealed-secret.json
   - voice-managed-ai-sealed-secret.json
   - voice-s2s-service.json
+  - handoff-lifecycle.sealed.json
+  - common-website-principals.sealed.json
+  - website-worker-managed.sealed.json
+  - website-tls.sealed.json
+  - handoff-network-policy.yaml
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
@@ -45,6 +50,9 @@ configMapGenerator:
   - name: conversation-voice-config
     envs: [voice.properties]
 
+  - name: conversation-website-tls-config
+    files:
+    - nginx.conf=website-transport/nginx.conf
 generatorOptions:
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
@@ -99,6 +107,11 @@ patches:
   - path: goal4b-telegram-worker-activation-patch.yaml
   - path: voice-api-node-patch.json
 
+  - path: handoff-lifecycle-api-patch.yaml
+  - path: handoff-lifecycle-website-worker-patch.yaml
+  - path: handoff-lifecycle-telegram-worker-patch.yaml
+  - path: website-transport/deployment-patch.yaml
+  - path: website-transport/service-patch.yaml
 # Dedicated processes expose only the exact Voice principal/cohort.
 replicas:
   - name: conversation-service-voice-api

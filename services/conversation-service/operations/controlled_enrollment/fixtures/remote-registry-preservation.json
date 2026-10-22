@@ -1,0 +1,52 @@
+{
+  "prior_principals_unchanged": true,
+  "new_token_distinct": true,
+  "website_worker_binding_is_exact_existing_subset": true,
+  "ai_principals": [
+    {
+      "caller": "conversation-service",
+      "execution_namespace": "main-chota.conversation.v1",
+      "grants": [
+        {
+          "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+          "agent_owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+          "channel": "WEBSITE_WIDGET",
+          "integration_id": "8d4a1b73-7973-4dcc-a3d4-1312d871c1d4",
+          "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928"
+        }
+      ],
+      "principal_id": "main-beauty-website-permanent",
+      "token": true
+    },
+    {
+      "caller": "conversation-service",
+      "execution_namespace": "main-chota.conversation.v1",
+      "grants": [
+        {
+          "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+          "agent_owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+          "channel": "TELEGRAM",
+          "integration_id": "9b43e8ab-7afa-4201-8a88-99e8d256180a",
+          "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928"
+        }
+      ],
+      "principal_id": "main-telegram-qa-managed-ai",
+      "token": true
+    },
+    {
+      "principal_id": "main-voice-pilot-managed-ai",
+      "token": true,
+      "caller": "conversation-service",
+      "execution_namespace": "main-chota.conversation.v1",
+      "grants": [
+        {
+          "owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928",
+          "integration_id": "3d241be9-d9c3-431f-9d46-5c8781b48b38",
+          "channel": "VOICE",
+          "agent_id": "0b750714-af8d-4d8c-8fdc-4ddfeda98af9",
+          "agent_owner_id": "dc3dd7eb-536f-45d4-84f2-c8d35575d928"
+        }
+      ]
+    }
+  ]
+}

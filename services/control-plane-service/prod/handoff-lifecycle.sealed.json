@@ -1,0 +1,24 @@
+{
+  "kind": "SealedSecret",
+  "apiVersion": "bitnami.com/v1alpha1",
+  "metadata": {
+    "name": "control-plane-handoff-lifecycle-secret",
+    "namespace": "prod"
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "name": "control-plane-handoff-lifecycle-secret",
+        "namespace": "prod",
+        "annotations": {
+          "argocd.argoproj.io/sync-wave": "-2"
+        }
+      },
+      "type": "Opaque"
+    },
+    "encryptedData": {
+      "INBOX_ENROLLMENT_TOKEN": "AgAXs9c37d3uEDoIGlJbR6BZjhEhG5CwpUVWFraupDCm1gLybuRV+cSSDcQbw5EuN5irvKxWZ0Wa94mxik1rwRqTjC1HnzpWVTjL9syfR0796IxSzOBzzX3WmQDazsEDHOZVnBiWKo1SrOJRPJp/VFnDN3Mt3WNxcGOubhEltE6riEQ7WJ0EI5AtzthuK7MQVgck9shzEp2LUK5jX64PnjG3oFSUDA9cAziDE+GtthP2HWTykncB6qFIYfcn1laPFFetZv0hDcov4Eh/h47nkp2qBYuMm153ujoRiKB9mXS6aq9bR9jfCNwbz22L70Jz1FWDNF2j7pXYpuJCT42sjGCWb63VoOn6S1Q8ODiYeL35sv47UF2KDvRnD5IBdqvxaquGPA7OsgrCxuaWFFlxCc0rqaXckbfaQVZxTqemuQS5CL/2X6qavGTA1l8F3ZebwGmU2DW1ASX0qPh5Z/jMKgyPUANFtauR1cpbG5nhMtOHXKXf7lSVJwfY1zs6KOxvb69qXPwSwLx3K5slY3jwJ7JOywLkRvyKJPiunM1YUBgLIPJGgbFxaw0e2oUd1QFcxSMbajnm4221hVKdTlCQSSUySZ8IFgNVBC8WebCpwuVxnGACQ2Y5LY7r6we9JmUJuLM6OMkY8bmz3VeCtn9LfaOOJ63qdJ9092EhWm14Mc5OdMVccAKlBWrh/EgpuVwqK4NKT1S7X2P4fYjIXi1y3M0EcrzvN32Scz5gf0jy+oSLfwvaeNyyMX/NsTNecPQnf0VkUvrPL11skRIbH2YJyJek",
+      "INBOX_LIFECYCLE_TOKEN": "AgB+2l5beXaGFboToh720z7Ics55fSB10E5lKly8NBDUoCA4lE78aiDybYt6V580l23D87YAtZ2cEQlWQ9b73++ckC9oKoGKS9hHWsJRGu45kHiO6CzayEmjnU71a2POk8Gmj+kaBvz/fpdGx1R2VgNYF6+VhKm9sPWPMLhxb1iP/5XcO7YiC4hC94IjGXMny5fZczAffkCqEO7KsMNKKEqxPIuD+Z3Wg7KGdW+MN3j437fZEStdtxM9csqsl9hZNdZ10agy9r0yGglwLjlptvlE66jZp6IBRt1vqxzuI248s+RzrSieUBKgrPVUcwgGBfFBZCOuLbF7Ksx/fNMmUhIx9Qlmt1JPfBxlGeOqXRu6xPJMK3ZVns2qjfH0HPieb/pN6TcY1MysAM+mI19uxsY+HdzTGAeLzwCpGPIqvzQy1Jguzim9a+OWll6ICThSNd1inQEfm2roT/GdhOjAWchT1lBFoQJYF8dSkTp9a/43UGujSgo3PmDyKWSk7cFEVuWcwPcodkrahUEhac3/TlH2DMGWAgHPUtCcl3q5J5VAA4kwNrkmz62yjFBBnEYUaMoafL3sktFQOVXT75E1IGg5kuQ/HixeQIxUcW4T6J+XgG3dqhOKeYBM7ciZaflXnLvmxxojUWocd+P2Wkdnxc4YT9lMCjGOl81AzK84VxO6lO1XjkG9blVie18wN5qkDSUXNu1jxdNjrfmJg8hnn9KdfIZrX+Nb9OyA0AexYIgH4tcZ+Jnmehi6edLu+9/Jd4+xtJxisMMHdxVTBQj1nvyU"
+    }
+  }
+}
