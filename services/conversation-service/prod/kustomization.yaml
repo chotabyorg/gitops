@@ -5,6 +5,10 @@ kind: Kustomization
 namespace: prod
 resources:
   - ../base
+  - ../base/retirement-worker
+  - conversation-writer-attestation-secret.sealed.json
+  - conversation-writer-recovery-secret.sealed.json
+  - writer-retirement-network-policy.yaml
   - business-principals-sealed-secret.json
   - business-effect-network-policy.yaml
   - database-sealed-secret.yaml
@@ -19,8 +23,8 @@ resources:
 images:
   - name: conversation-service
     newName: ghcr.io/chotabyorg/conversation-service
-    newTag: 27624a7ce548989e750075e4c29ec5c89944550e
-    digest: sha256:4862385efc0c36592ea4896ba40af3cdc25162ba859ebfaef0f94fb64b31d307
+    newTag: d1e41d582ccb7191ba93f8652a85b03fc5802c6a
+    digest: sha256:28924aa627d95b040ec644dbd90a43c469d8d5a8d79bf96dfe9b36cb11a976c1
   - name: postgres
     newName: docker.io/library/postgres
     newTag: 16.15-alpine
@@ -32,6 +36,8 @@ configMapGenerator:
     envs: [worker.properties]
   - name: conversation-telegram-worker-config
     envs: [telegram-worker.properties]
+  - name: conversation-retirement-worker-config
+    envs: [retirement-worker.properties]
   - name: conversation-postgres-config
     envs: [postgres.properties]
   - name: conversation-migration
@@ -43,6 +49,7 @@ generatorOptions:
   annotations:
     argocd.argoproj.io/sync-wave: '-1'
 patches:
+  - path: writer-attestation-api-patch.yaml
   - target:
       kind: NetworkPolicy
       name: conversation-service-api
@@ -53,6 +60,24 @@ patches:
           podSelector:
             matchLabels:
               app: chota-gateway
+      - op: add
+        path: /spec/ingress/0/from/-
+        value:
+          podSelector:
+            matchLabels:
+              app: conversation-service
+              component: retirement-worker
+  - target:
+      kind: NetworkPolicy
+      name: conversation-service-postgres
+    patch: |-
+      - op: add
+        path: /spec/ingress/0/from/-
+        value:
+          podSelector:
+            matchLabels:
+              app: conversation-service
+              component: retirement-worker
   - path: business-effect-api-patch.yaml
   - path: goal4a-canary-api-binding-patch.yaml
   - path: goal4a-canary-worker-binding-patch.yaml

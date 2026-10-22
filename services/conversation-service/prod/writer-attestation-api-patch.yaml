@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conversation-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: conversation-service
+          env:
+            # Self proof reads stay on loopback; no API-to-API CNI allowance.
+            - name: WRITER_SUPERVISOR_BASE_URL
+              value: http://127.0.0.1:8000
+            - name: WRITER_PRODUCERS
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-writer-attestation-secret
+                  key: WRITER_PRODUCERS
+            - name: WRITER_RETIREMENT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-writer-attestation-secret
+                  key: WRITER_RETIREMENT_TOKEN
+            - name: WRITER_SUPERVISOR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: conversation-writer-attestation-secret
+                  key: WRITER_SUPERVISOR_TOKEN
